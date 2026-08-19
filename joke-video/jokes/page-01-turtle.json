@@ -1,0 +1,619 @@
+{
+  "id": "page-01-turtle",
+  "type": "B",
+  "title": "乌龟为什么不搬家",
+  "scene": "pond",
+  "pace": "bedtime",
+  "intro": 3,
+  "hold": 3.2,
+  "ambience": "none",
+  "series": {
+    "name": "一页故事",
+    "no": 1
+  },
+  "bgm": {
+    "enabled": true,
+    "stopAtPunch": false,
+    "key": "happy",
+    "gain": 0.13
+  },
+  "cues": {
+    "subtitlePop": false,
+    "replyWood": false,
+    "introHiss": false
+  },
+  "characters": [
+    {
+      "id": "旁白",
+      "rig": "none",
+      "side": "left",
+      "cast": "青年女",
+      "rate": "-8%"
+    },
+    {
+      "id": "小龟",
+      "rig": "turtle",
+      "variant": "kid",
+      "side": "right",
+      "cast": "大块头",
+      "length": 380,
+      "x": 838,
+      "rate": "-4%"
+    },
+    {
+      "id": "兔子",
+      "rig": "still",
+      "art": "rabbit-white",
+      "side": "left",
+      "cast": "女童",
+      "length": 560,
+      "x": 167
+    },
+    {
+      "id": "猫",
+      "rig": "cat",
+      "variant": "day",
+      "side": "left",
+      "cast": "大叔",
+      "length": 460,
+      "x": 469
+    }
+  ],
+  "lines": [
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "小龟住在池塘边，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "一块石头旁边。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "开场先把「龟 + 石头」这一对立住。石头画在场景里（pond 的 ROCK_X），第 30 页要同一机位回扣它。",
+      "dur": 3.89,
+      "audio": "out/voice/page-01-turtle/1-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "那块石头不大，灰扑扑的，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "太阳一出来，先照到它。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 5.87,
+      "audio": "out/voice/page-01-turtle/2-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "水面上飘着一层雾，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "芦苇轻轻地晃。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.99,
+      "audio": "out/voice/page-01-turtle/3-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "小龟就趴在石头边上，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "趴了很多年。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 4.076,
+      "audio": "out/voice/page-01-turtle/4-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "text": "他认得那块石头上的每一道纹。",
+      "delivery": "叙缓",
+      "dur": 3.144,
+      "audio": "out/voice/page-01-turtle/5-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "小龟",
+        "兔子",
+        "猫"
+      ],
+      "text": "那一年，大家都在搬家。",
+      "delivery": "叙平",
+      "note": "三人同框只用这一镜，交代「所有人都在动，只有他没动」。往后拆成两人镜，三个挤在 1080 宽里谁都看不清。",
+      "dur": 2.402,
+      "audio": "out/voice/page-01-turtle/6-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "scene": "hillside",
+      "stage": [
+        "兔子"
+      ],
+      "text": "兔子搬去了山那边。",
+      "delivery": "叙平",
+      "dur": 1.864,
+      "audio": "out/voice/page-01-turtle/7-旁白.wav"
+    },
+    {
+      "who": "兔子",
+      "beat": "reply",
+      "scene": "hillside",
+      "stage": [
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "站得高，看得远。",
+          "delivery": "拔高"
+        },
+        {
+          "text": "那儿风景好得很。",
+          "delivery": "急"
+        }
+      ],
+      "note": "兔子是急性子，唯一的两句台词都要快。still 形象不会张嘴，靠点头 + 语速把「急」交出去。",
+      "dur": 3.183,
+      "audio": "out/voice/page-01-turtle/8-兔子.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "scene": "eaves",
+      "stage": [
+        "猫"
+      ],
+      "text": "猫搬到了屋檐底下。",
+      "delivery": "叙平",
+      "dur": 1.844,
+      "audio": "out/voice/page-01-turtle/9-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "scene": "eaves",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "猫不爱说话，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "只说了四个字：冬天暖和。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "猫的台词故意让旁白转述——cat rig 的嘴不能动，让它开口就露馅。「不爱说话」把这条限制变成人设。",
+      "dur": 4.832,
+      "audio": "out/voice/page-01-turtle/10-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "小龟",
+        "兔子"
+      ],
+      "text": "他们轮流来劝小龟。",
+      "delivery": "叙平",
+      "dur": 1.954,
+      "audio": "out/voice/page-01-turtle/11-旁白.wav"
+    },
+    {
+      "who": "兔子",
+      "beat": "ask",
+      "stage": [
+        "小龟",
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "你也搬吧。",
+          "delivery": "急"
+        },
+        {
+          "text": "你这块地方，到底有什么好的。",
+          "delivery": "平"
+        }
+      ],
+      "dur": 3.661,
+      "audio": "out/voice/page-01-turtle/12-兔子.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "小龟没有马上回答。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 2.486,
+      "audio": "out/voice/page-01-turtle/13-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "他看了看水面，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "又看了看那块石头。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.832,
+      "audio": "out/voice/page-01-turtle/14-旁白.wav"
+    },
+    {
+      "who": "小龟",
+      "beat": "reply",
+      "stage": [
+        "小龟"
+      ],
+      "text": "我考虑考虑。",
+      "delivery": "拖长",
+      "note": "全片小龟只说三次话，每次都要比周围慢一档。这是他的人设，不是配音参数。",
+      "dur": 1.46,
+      "audio": "out/voice/page-01-turtle/15-小龟.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "text": "他考虑了一年。",
+      "delivery": "叙缓",
+      "dur": 1.578,
+      "audio": "out/voice/page-01-turtle/16-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "小龟",
+        "兔子"
+      ],
+      "text": "第二年春天，兔子回来了。",
+      "delivery": "叙平",
+      "dur": 2.616,
+      "audio": "out/voice/page-01-turtle/17-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟",
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "山那边风太大，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "一到晚上就呼呼地响。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 4.388,
+      "audio": "out/voice/page-01-turtle/18-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟",
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "兔子瘦了一圈，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "整个冬天没睡踏实过。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 4.222,
+      "audio": "out/voice/page-01-turtle/19-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "小龟",
+        "猫"
+      ],
+      "text": "猫也回来了。",
+      "delivery": "叙平",
+      "dur": 1.128,
+      "audio": "out/voice/page-01-turtle/20-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟",
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "屋檐是暖和，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "可是会漏雨。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.166,
+      "audio": "out/voice/page-01-turtle/21-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟",
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "一下雨就得挪窝，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "一晚上挪三回。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.762,
+      "audio": "out/voice/page-01-turtle/22-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟",
+        "猫"
+      ],
+      "text": "猫的毛，好几天没干过。",
+      "delivery": "叙缓",
+      "dur": 2.952,
+      "audio": "out/voice/page-01-turtle/23-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "text": "两个人回到池塘边。",
+      "delivery": "叙平",
+      "dur": 1.936,
+      "audio": "out/voice/page-01-turtle/24-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "小龟还趴在那块石头旁边。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "这一镜故意只给小龟。回来的人看到的就是这个画面——他一个人，还在原地。",
+      "dur": 3.09,
+      "audio": "out/voice/page-01-turtle/25-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "还是那个位置，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "还是那个姿势，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "一动没动过。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 5.054,
+      "audio": "out/voice/page-01-turtle/26-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "小龟",
+        "兔子"
+      ],
+      "text": "兔子有点不服气。",
+      "delivery": "叙平",
+      "dur": 1.724,
+      "audio": "out/voice/page-01-turtle/27-旁白.wav"
+    },
+    {
+      "who": "兔子",
+      "beat": "ask",
+      "stage": [
+        "小龟",
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "我们都搬了一圈了。",
+          "delivery": "急"
+        },
+        {
+          "text": "你到底为什么不搬？",
+          "delivery": "疑问"
+        }
+      ],
+      "dur": 3.164,
+      "audio": "out/voice/page-01-turtle/28-兔子.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "小龟慢慢地，",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "慢慢地抬起头。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "单人镜自动推近（render 的 solo 机位），这就是分镜里那一下「缓推小龟的壳」。别在这里加运镜参数。",
+      "dur": 3.664,
+      "audio": "out/voice/page-01-turtle/29-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "text": "池塘边安静了一会儿。",
+      "delivery": "叙缓",
+      "note": "落点前的一拍空。原先这里写的是「壳上有一道新的划痕」——想给「我一直在搬」一个物证，但龟壳上并没有划痕，**旁白不能断言画面里没有的东西**（要么画出来，要么别说）。第 24 页《乌龟的壳裂了一道缝》真要用到壳上的痕迹时，再给 turtle rig 加，别为一句话临时糊一个。",
+      "dur": 2.126,
+      "audio": "out/voice/page-01-turtle/30-旁白.wav"
+    },
+    {
+      "who": "小龟",
+      "beat": "reply",
+      "stage": [
+        "小龟"
+      ],
+      "text": "我一直在搬啊。",
+      "delivery": "拖长",
+      "dur": 1.525,
+      "audio": "out/voice/page-01-turtle/31-小龟.wav"
+    },
+    {
+      "who": "小龟",
+      "beat": "reply",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "我每天背着我的家，",
+          "delivery": "拖长"
+        },
+        {
+          "text": "走两里路。",
+          "delivery": "延宕"
+        }
+      ],
+      "note": "落点。「走两里路」要拖到最慢——这句慢下来，前面所有的「他没动」才翻过来。",
+      "dur": 4.181,
+      "audio": "out/voice/page-01-turtle/32-小龟.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "say": [
+        {
+          "text": "家不是一个地方，",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "是你愿意每天背着走的那样东西。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "收尾金句，脚本集里原样保留、位置不许动——这是整集的落点。",
+      "dur": 6.068,
+      "audio": "out/voice/page-01-turtle/33-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "小龟"
+      ],
+      "text": "这一页翻过去了，明天见。",
+      "delivery": "叙缓",
+      "note": "系列固定尾句，30 期都是这一句。",
+      "dur": 3.106,
+      "audio": "out/voice/page-01-turtle/34-旁白.wav"
+    }
+  ],
+  "hook": "家不是一个地方，是你愿意每天背着走的那样东西",
+  "cover": {
+    "title": "我一直在搬",
+    "at": 135.35
+  }
+}

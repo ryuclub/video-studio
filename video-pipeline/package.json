@@ -1,0 +1,15 @@
+{
+  "name": "video-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "动效管线：SVG 帧序列 + ffmpeg，零绘图依赖",
+  "//": "父项目是 ESM，这里必须显式声明 commonjs —— 源码的 import 都不带 .js 后缀，ESM 解析不了",
+  "type": "commonjs",
+  "main": "dist/build.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
+}

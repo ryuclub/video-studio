@@ -1,0 +1,12 @@
+# 仓库统一存 LF，工作区也保持 LF。
+# 不写这条的话，Windows 上 core.autocrlf=true 会把 276 个文件全换成 CRLF，
+# 首次提交就是一次无意义的全量改动，之后 Mac/Linux 上再改又要抖回来。
+* text=auto eol=lf
+
+# 二进制：别让 git 尝试做行尾转换或文本 diff
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.wav binary
+*.mp3 binary
+*.cube binary

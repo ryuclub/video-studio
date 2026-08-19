@@ -1,0 +1,65 @@
+{
+  "id": "snake-poison",
+  "type": "A",
+  "scene": "grass",
+  "intro": 2,
+  "freeze": 2,
+  "hold": 4,
+  "ambience": "grass",
+  "bgm": {
+    "enabled": true,
+    "stopAtPunch": true,
+    "key": "cheeky"
+  },
+  "characters": [
+    {
+      "id": "small",
+      "rig": "serpentine",
+      "side": "left",
+      "color": "secondary",
+      "length": 560,
+      "cast": "童声"
+    },
+    {
+      "id": "big",
+      "rig": "serpentine",
+      "side": "right",
+      "color": "primary",
+      "length": 640,
+      "cast": "大块头"
+    }
+  ],
+  "lines": [
+    {
+      "who": "small",
+      "text": "大哥，我们有毒吗？",
+      "beat": "ask",
+      "padBefore": 0.2,
+      "dur": 1.813,
+      "audio": "out/voice/snake-poison/1-small.wav"
+    },
+    {
+      "who": "big",
+      "text": "你说这干啥？",
+      "beat": "reply",
+      "padBefore": 0.25,
+      "dur": 1.176,
+      "audio": "out/voice/snake-poison/2-big.wav"
+    },
+    {
+      "who": "small",
+      "text": "我咬到了自己的舌头",
+      "beat": "punch",
+      "padBefore": 0.45,
+      "padAfter": 0.35,
+      "highlight": "舌头",
+      "delivery": "泄气",
+      "dur": 2.076,
+      "audio": "out/voice/snake-poison/3-small.wav"
+    }
+  ],
+  "hook": "所以这条蛇……还有救吗",
+  "cover": {
+    "title": "大哥，我完了"
+  }
+}

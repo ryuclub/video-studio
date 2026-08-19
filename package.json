@@ -1,0 +1,29 @@
+{
+  "name": "vidgen",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "文案驱动的解说视频自动化管线：选题 → 稿件 → 配音 → 字幕 → 素材 → 成片",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "vg": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
+    "dotenv": "^17.0.0",
+    "msedge-tts": "^2.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "workspaces": [
+    "joke-video",
+    "voice-clone"
+  ]
+}

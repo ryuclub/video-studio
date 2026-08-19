@@ -1,0 +1,63 @@
+{
+  "id": "example-human",
+  "type": "A",
+  "scene": "office",
+  "intro": 1.8,
+  "freeze": 1.8,
+  "hold": 3.6,
+  "ambience": "none",
+  "bgm": {
+    "enabled": true,
+    "stopAtPunch": true,
+    "key": "happy"
+  },
+  "characters": [
+    {
+      "id": "pm",
+      "rig": "human",
+      "side": "left",
+      "color": "secondary",
+      "proportion": "adultF",
+      "hair": "long",
+      "cast": "干练女"
+    },
+    {
+      "id": "dev",
+      "rig": "human",
+      "side": "right",
+      "color": "primary",
+      "proportion": "adultM",
+      "hair": "short",
+      "props": [
+        "glasses"
+      ],
+      "cast": "青年男"
+    }
+  ],
+  "lines": [
+    {
+      "who": "pm",
+      "text": "这个需求今天能上线吗？",
+      "beat": "ask",
+      "padBefore": 0.2
+    },
+    {
+      "who": "dev",
+      "text": "能，只要不改。",
+      "beat": "reply",
+      "padBefore": 0.25
+    },
+    {
+      "who": "pm",
+      "text": "那我们改一下吧",
+      "beat": "punch",
+      "padBefore": 0.45,
+      "highlight": "改一下",
+      "delivery": "压低"
+    }
+  ],
+  "hook": "这活儿谁干过谁懂",
+  "cover": {
+    "title": "需求就改一个字"
+  }
+}

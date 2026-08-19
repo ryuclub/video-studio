@@ -1,0 +1,213 @@
+{
+  "title": "三层素材管线 — 演示片",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "subtitle": "subs/demo.ass",
+  "defaultTransition": null,
+  "shots": [
+    {
+      "id": "s01",
+      "start": 0,
+      "duration": 5,
+      "tier": "A",
+      "source": "assets/images/opening.png",
+      "motion": "zoomIn",
+      "intensity": 1,
+      "note": "A层 缓推。最安全的默认运镜"
+    },
+    {
+      "id": "s02",
+      "start": 5,
+      "duration": 5,
+      "tier": "A",
+      "source": "assets/images/city.png",
+      "motion": "panRight",
+      "intensity": 1.3,
+      "transition": {
+        "type": "fade",
+        "duration": 0.5
+      },
+      "note": "A层 横移。幅度要比缓推大才看得出来"
+    },
+    {
+      "id": "s03",
+      "start": 10,
+      "duration": 6,
+      "tier": "B",
+      "pseudo": "render",
+      "scene": {
+        "kind": "lineChart",
+        "title": "不良债权余额推移",
+        "subtitle": "1992 — 2002",
+        "series": [
+          12,
+          18,
+          15,
+          27,
+          24,
+          41,
+          38,
+          55,
+          72,
+          68,
+          91
+        ],
+        "unit": "単位：兆円"
+      },
+      "note": "伪B/render 折线生长。数据类画面绝对不能交给AI"
+    },
+    {
+      "id": "s04",
+      "start": 16,
+      "duration": 5,
+      "tier": "B",
+      "pseudo": "render",
+      "scene": {
+        "kind": "counter",
+        "title": "三年内破产企业",
+        "from": 0,
+        "to": 18704,
+        "suffix": " 社",
+        "subtitle": "1997 — 1999"
+      },
+      "note": "伪B/render 数字滚动 + 缓动"
+    },
+    {
+      "id": "s05",
+      "start": 21,
+      "duration": 6,
+      "tier": "B",
+      "pseudo": "render",
+      "scene": {
+        "kind": "timeline",
+        "title": "危机时间轴",
+        "events": [
+          {
+            "year": "1990",
+            "text": "股价见顶回落"
+          },
+          {
+            "year": "1997",
+            "text": "山一证券破产"
+          },
+          {
+            "year": "1998",
+            "text": "长银国有化"
+          },
+          {
+            "year": "2003",
+            "text": "りそな注资"
+          }
+        ]
+      },
+      "transition": {
+        "type": "fade",
+        "duration": 0.5
+      },
+      "note": "伪B/render 时间轴交错入场"
+    },
+    {
+      "id": "s06",
+      "start": 27,
+      "duration": 5,
+      "tier": "B",
+      "pseudo": "overlay",
+      "source": "assets/images/archive.png",
+      "grain": 50,
+      "overlayMode": "screen",
+      "overlayOpacity": 0.18,
+      "note": "伪B/overlay 程序化胶片颗粒。不需要任何素材文件"
+    },
+    {
+      "id": "s07",
+      "start": 32,
+      "duration": 5,
+      "tier": "B",
+      "pseudo": "render",
+      "scene": {
+        "kind": "barChart",
+        "title": "主要银行公积金注入额",
+        "series": [
+          18,
+          45,
+          32,
+          76,
+          61
+        ],
+        "labels": [
+          "1998Q1",
+          "1998Q3",
+          "1999Q1",
+          "1999Q3",
+          "2003Q2"
+        ]
+      },
+      "note": "伪B/render 柱状图交错生长"
+    },
+    {
+      "id": "s08",
+      "start": 37,
+      "duration": 5,
+      "tier": "A",
+      "source": "assets/images/candles.png",
+      "motion": "still",
+      "note": "A层 still。画面本身信息密集，任何运镜都会让它变糊"
+    },
+    {
+      "id": "s09",
+      "start": 42,
+      "duration": 6,
+      "tier": "B",
+      "pseudo": "render",
+      "scene": {
+        "kind": "quote",
+        "text": "泡沫破裂之后真正漫长的，不是股价的下跌，而是资产负债表的修复。",
+        "cite": "辜朝明《大衰退》"
+      },
+      "transition": {
+        "type": "fade",
+        "duration": 0.8
+      },
+      "note": "伪B/render 金句卡。段落分界处才加转场"
+    },
+    {
+      "id": "s10",
+      "start": 48,
+      "duration": 6,
+      "tier": "A",
+      "source": "assets/images/dawn.png",
+      "motion": "breath",
+      "intensity": 1.2,
+      "note": "A层 breath。几乎察觉不到的手持漂移，画面不死但也不抢戏"
+    },
+    {
+      "id": "s11",
+      "start": 54,
+      "duration": 6,
+      "tier": "B",
+      "pseudo": "render",
+      "scene": {
+        "kind": "steps",
+        "title": "不良债权处理的四个阶段",
+        "ordStyle": "cn",
+        "items": [
+          {
+            "text": "隐藏与拖延"
+          },
+          {
+            "text": "公的资金注入"
+          },
+          {
+            "text": "银行合并重组"
+          },
+          {
+            "text": "最终处理完了"
+          }
+        ]
+      },
+      "note": "伪B/render 序号卡。逐条从下往上浮，当前条徽标实心"
+    }
+  ],
+  "//": "demo.mp4 的前两段。A 层镜头引用的 assets/images/*.png 和 subs/demo.ass 不在仓库里，所以整片重渲跑不了 —— 只有 pseudo:render 的镜头能用 --only 单渲。第三段（fx-kit 移植段）在 storyboard.fx.json，全幅特效在 overlays.demo-fx.json"
+}

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>音色实验室</title>
+<style>
+  :root{
+    --washi:#EFE9DC; --panel:#F8F4EB; --ink:#1B1917; --muted:#7D766A;
+    --shu:#B7352C; --ai:#253458; --rule:#D9D0BE; --rule-soft:#E6DECE;
+    --display:"Yu Mincho","Hiragino Mincho ProN","Songti SC","Noto Serif CJK SC",Georgia,serif;
+    --body:"Yu Gothic UI","PingFang SC","Hiragino Sans","Noto Sans CJK SC",system-ui,sans-serif;
+    --data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--washi); color:var(--ink); font-family:var(--body);
+    font-size:15px; line-height:1.65;
+    background-image:
+      repeating-linear-gradient(0deg,transparent 0 27px,rgba(27,25,23,.028) 27px 28px),
+      radial-gradient(circle at 18% 12%,rgba(37,52,88,.05),transparent 45%);
+  }
+  header{
+    border-bottom:1px solid var(--rule); padding:22px 26px 18px;
+    display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;
+  }
+  h1{
+    font-family:var(--display); font-size:27px; font-weight:600;
+    margin:0; letter-spacing:.06em;
+  }
+  h1 span{color:var(--shu)}
+  .tagline{color:var(--muted); font-size:13px; letter-spacing:.02em}
+  .warn{
+    margin-left:auto; font-family:var(--data); font-size:12px;
+    color:var(--shu); border:1px solid var(--shu); padding:3px 9px; border-radius:2px;
+  }
+  main{
+    display:grid; grid-template-columns:minmax(340px,420px) 1fr;
+    gap:0; align-items:start;
+  }
+  .console{
+    border-right:1px solid var(--rule); padding:22px 26px 40px;
+    position:sticky; top:0; max-height:100vh; overflow-y:auto;
+  }
+  .stage{padding:22px 26px 60px}
+  h2{
+    font-family:var(--display); font-size:14px; font-weight:600; letter-spacing:.22em;
+    margin:0 0 12px; color:var(--ai); text-transform:none;
+  }
+  h2 + .hint{margin-top:-8px}
+  .hint{color:var(--muted); font-size:12.5px; margin:0 0 14px}
+  label{display:block; font-size:12px; letter-spacing:.12em; color:var(--muted); margin-bottom:5px}
+  textarea,select,input[type=text]{
+    width:100%; font-family:var(--body); font-size:14px; color:var(--ink);
+    background:var(--panel); border:1px solid var(--rule); border-radius:2px;
+    padding:9px 11px; resize:vertical;
+  }
+  textarea{min-height:76px; line-height:1.7}
+  textarea:focus-visible,select:focus-visible,button:focus-visible,input:focus-visible{
+    outline:2px solid var(--ai); outline-offset:2px;
+  }
+  .field{margin-bottom:16px}
+  .row{display:flex; gap:10px}
+  .row > *{flex:1; min-width:0}
+
+  /* ── 音色地图（签名元素）───────────────────────── */
+  .map-wrap{position:relative; margin:6px 0 4px}
+  .map{
+    width:100%; aspect-ratio:1/.86; display:block; touch-action:none;
+    background:var(--panel); border:1px solid var(--rule); border-radius:2px; cursor:crosshair;
+  }
+  .axis{
+    display:flex; justify-content:space-between; font-family:var(--data);
+    font-size:11px; color:var(--muted); margin-top:5px;
+  }
+  .axis-y{
+    position:absolute; left:-1px; top:0; height:100%;
+    display:flex; flex-direction:column; justify-content:space-between;
+    font-family:var(--data); font-size:11px; color:var(--muted);
+    transform:translateX(-100%); padding-right:7px; text-align:right;
+  }
+  .readout{
+    font-family:var(--data); font-size:12.5px; color:var(--ai);
+    display:flex; gap:14px; margin:10px 0 14px; flex-wrap:wrap;
+  }
+  .readout b{color:var(--ink); font-weight:600}
+
+  input[type=range]{width:100%; accent-color:var(--shu)}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px}
+  .chip{
+    font-size:12.5px; padding:4px 11px; border:1px solid var(--rule);
+    background:var(--panel); border-radius:999px; cursor:pointer; color:var(--muted);
+    font-family:var(--body);
+  }
+  .chip[aria-pressed=true]{background:var(--ai); border-color:var(--ai); color:#F8F4EB}
+
+  button{
+    font-family:var(--body); font-size:14px; cursor:pointer;
+    background:var(--panel); border:1px solid var(--rule); color:var(--ink);
+    border-radius:2px; padding:9px 14px;
+  }
+  button:hover{border-color:var(--ai)}
+  button.primary{background:var(--shu); border-color:var(--shu); color:#F8F4EB; font-weight:600}
+  button.primary:hover{background:#9E2C24}
+  button:disabled{opacity:.45; cursor:default}
+  .filterbox{
+    font-family:var(--data); font-size:11px; color:var(--muted); background:var(--panel);
+    border:1px solid var(--rule-soft); border-radius:2px; padding:8px 10px; margin-top:14px;
+    word-break:break-all; max-height:88px; overflow-y:auto;
+  }
+
+  /* ── 预设卡 ─────────────────────────────────── */
+  .group-head{
+    display:flex; align-items:baseline; gap:12px; margin:26px 0 12px;
+    border-bottom:1px solid var(--rule-soft); padding-bottom:7px;
+  }
+  .group-head:first-child{margin-top:0}
+  .group-head h3{font-family:var(--display); font-size:16px; margin:0; letter-spacing:.1em}
+  .group-head span{font-family:var(--data); font-size:11px; color:var(--muted)}
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)); gap:11px}
+  .card{
+    background:var(--panel); border:1px solid var(--rule); border-radius:2px;
+    padding:12px 13px 11px; display:flex; flex-direction:column; gap:7px;
+  }
+  .card.playing{border-color:var(--shu); box-shadow:inset 0 0 0 1px var(--shu)}
+  .card.playing .cname{color:var(--shu)}
+  .cname{font-family:var(--display); font-size:16px; letter-spacing:.05em}
+  .cparams{font-family:var(--data); font-size:11px; color:var(--ai)}
+  .cnote{font-size:12.5px; color:var(--muted); flex:1; margin:0}
+  .cbase{font-family:var(--data); font-size:10.5px; color:var(--muted)}
+  .cbtns{display:flex; gap:6px; align-items:center}
+  .cbtns button{padding:5px 10px; font-size:13px}
+  .cbtns .fav{border:none; background:none; font-size:17px; line-height:1; padding:4px 7px; color:var(--rule); margin-left:auto}
+  .cbtns .fav[aria-pressed=true]{color:var(--shu)}
+
+  .banner{
+    border:1px solid var(--shu); background:#F6E9E7; color:#7E241D;
+    padding:10px 13px; border-radius:2px; font-size:13.5px; margin-bottom:16px;
+  }
+  .banner:empty{display:none}
+  .toolbar{display:flex; gap:9px; flex-wrap:wrap; align-items:center; margin-bottom:18px}
+  .progress{font-family:var(--data); font-size:12px; color:var(--muted)}
+  .basket{border-top:1px solid var(--rule); margin-top:28px; padding-top:18px}
+  .basket ul{list-style:none; margin:0 0 12px; padding:0; font-family:var(--data); font-size:12.5px}
+  .basket li{display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dotted var(--rule-soft)}
+  .basket li button{border:none; background:none; color:var(--shu); padding:0 4px}
+  .empty{color:var(--muted); font-size:12.5px; margin:0 0 12px}
+
+  @media (max-width:900px){
+    main{grid-template-columns:1fr}
+    .console{position:static; max-height:none; border-right:none; border-bottom:1px solid var(--rule)}
+    .axis-y{display:none}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .card.playing{animation:pulse 1.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{box-shadow:inset 0 0 0 1px var(--shu)}50%{box-shadow:inset 0 0 0 2px var(--shu)}}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>音色<span>実験</span>室</h1>
+  <p class="tagline">Edge 朗读发声 · ffmpeg 变声 · 全部本地生成</p>
+  <span class="warn" id="rbwarn" hidden>ffmpeg 缺 rubberband，音高与共振峰已锁死</span>
+</header>
+
+<main>
+  <section class="console">
+    <div class="banner" id="banner"></div>
+
+    <div class="field">
+      <label for="text">试听台词</label>
+      <textarea id="text" placeholder="填一句你真会用到的台词，别用「测试测试」——听感差别在真实语句里才听得出来"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="voice">基础音色</label>
+      <select id="voice"></select>
+    </div>
+
+    <h2>音色地图</h2>
+    <p class="hint">横轴是体型（共振峰），纵轴是音高。拖动十字准线自己调，点小圆点载入预设。</p>
+    <div class="map-wrap">
+      <div class="axis-y"><span>高</span><span>低</span></div>
+      <canvas class="map" id="map" width="760" height="654"></canvas>
+      <div class="axis"><span>体型大</span><span>体型小</span></div>
+    </div>
+
+    <div class="readout">
+      <span>音高 <b id="rPitch">1.00</b></span>
+      <span>共振峰 <b id="rFormant">1.00</b></span>
+      <span>语速 <b id="rTempo">1.00</b></span>
+    </div>
+
+    <div class="field">
+      <label for="tempo">语速</label>
+      <input type="range" id="tempo" min="0.7" max="1.3" step="0.01" value="1">
+    </div>
+
+    <label>质感</label>
+    <div class="chips" id="tones"></div>
+
+    <div class="row">
+      <button class="primary" id="preview">试听这个音色</button>
+      <button id="save">存到 out/</button>
+    </div>
+    <div class="filterbox" id="filter">滤镜链会在试听后显示</div>
+
+    <div class="basket">
+      <h2>候选名单</h2>
+      <p class="empty" id="basketEmpty">还没有收藏。听到合适的就点卡片上的心。</p>
+      <ul id="basketList"></ul>
+      <button id="export" disabled>导出 voices.selected.json</button>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="toolbar">
+      <button id="renderAll">批量生成全部预设</button>
+      <button id="stop">停止</button>
+      <span class="progress" id="progress"></span>
+    </div>
+    <div id="groups"></div>
+  </section>
+</main>
+
+<audio id="player"></audio>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const LS = "voicelab.v1";
+let CFG = null;
+let state = {
+  text: "各位老铁，今天咱们聊一个特别离谱的事儿。你听我说完，保证你笑出声。",
+  voice: "zh-CN-YunxiNeural",
+  pitch: 1, formant: 1, tempo: 1,
+  tones: [],
+  favorites: [],
+};
+let busy = false, cancelBatch = false, playingId = null;
+
+// ── 持久化 ────────────────────────────────────────────
+try { Object.assign(state, JSON.parse(localStorage.getItem(LS) || "{}")); } catch {}
+const persist = () => localStorage.setItem(LS, JSON.stringify(state));
+
+// ── 启动 ──────────────────────────────────────────────
+(async function init(){
+  try {
+    CFG = await (await fetch("/api/presets")).json();
+  } catch {
+    return fail("连不上本地服务。确认 npm run lab 还在跑，然后刷新。");
+  }
+  $("rbwarn").hidden = CFG.rubberband;
+
+  $("text").value = state.text;
+  $("text").addEventListener("input", (e) => { state.text = e.target.value; persist(); });
+
+  const sel = $("voice");
+  const groups = {};
+  CFG.baseVoices.forEach(v => { (groups[v.lang] ||= []).push(v); });
+  Object.entries(groups).forEach(([lang, list]) => {
+    const g = document.createElement("optgroup"); g.label = lang;
+    list.forEach(v => { const o = document.createElement("option"); o.value = v.id; o.textContent = v.label; g.appendChild(o); });
+    sel.appendChild(g);
+  });
+  sel.value = state.voice;
+  sel.addEventListener("change", (e) => { state.voice = e.target.value; persist(); });
+
+  CFG.toneModules.forEach(m => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = m.label; b.dataset.id = m.id;
+    b.setAttribute("aria-pressed", state.tones.includes(m.id));
+    b.addEventListener("click", () => {
+      const on = b.getAttribute("aria-pressed") === "true";
+      b.setAttribute("aria-pressed", !on);
+      state.tones = on ? state.tones.filter(x => x !== m.id) : [...state.tones, m.id];
+      persist();
+    });
+    $("tones").appendChild(b);
+  });
+
+  $("tempo").value = state.tempo;
+  $("tempo").addEventListener("input", (e) => { state.tempo = Number(e.target.value); readout(); persist(); });
+
+  renderCards();
+  drawMap();
+  readout();
+  renderBasket();
+
+  $("preview").addEventListener("click", () => previewCustom(false));
+  $("save").addEventListener("click", () => previewCustom(true));
+  $("renderAll").addEventListener("click", renderAll);
+  $("stop").addEventListener("click", () => { cancelBatch = true; $("player").pause(); markPlaying(null); });
+  $("export").addEventListener("click", exportPicks);
+  window.addEventListener("resize", drawMap);
+})();
+
+function fail(msg){ $("banner").textContent = msg; }
+function clearFail(){ $("banner").textContent = ""; }
+
+// ── 音色地图 ──────────────────────────────────────────
+const F_MIN = 0.6, F_MAX = 1.5, P_MIN = 0.55, P_MAX = 1.7;
+const toX = (f, w) => ((f - F_MIN) / (F_MAX - F_MIN)) * w;
+const toY = (p, h) => h - ((p - P_MIN) / (P_MAX - P_MIN)) * h;
+const fromX = (x, w) => F_MIN + (x / w) * (F_MAX - F_MIN);
+const fromY = (y, h) => P_MIN + ((h - y) / h) * (P_MAX - P_MIN);
+
+function drawMap(){
+  const c = $("map"), rect = c.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  c.width = rect.width * dpr; c.height = rect.height * dpr;
+  const ctx = c.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const w = rect.width, h = rect.height;
+  const css = getComputedStyle(document.documentElement);
+  const ink = css.getPropertyValue("--ink").trim();
+  const shu = css.getPropertyValue("--shu").trim();
+  const ai = css.getPropertyValue("--ai").trim();
+  const rule = css.getPropertyValue("--rule-soft").trim();
+
+  ctx.clearRect(0, 0, w, h);
+  // 罫線
+  ctx.strokeStyle = rule; ctx.lineWidth = 1;
+  for (let i = 1; i < 9; i++){
+    ctx.beginPath(); ctx.moveTo((w/9)*i, 0); ctx.lineTo((w/9)*i, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, (h/9)*i); ctx.lineTo(w, (h/9)*i); ctx.stroke();
+  }
+  // 原点十字（1.0 / 1.0 = 未改动）
+  ctx.strokeStyle = ink + "44"; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(toX(1,w), 0); ctx.lineTo(toX(1,w), h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, toY(1,h)); ctx.lineTo(w, toY(1,h)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 预设点
+  CFG.presets.forEach(p => {
+    const x = toX(p.formant, w), y = toY(p.pitch, h);
+    ctx.fillStyle = p.group === "特色角色" ? ai + "AA" : ink + "77";
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI*2); ctx.fill();
+  });
+
+  // 当前十字准线
+  const cx = toX(state.formant, w), cy = toY(state.pitch, h);
+  ctx.strokeStyle = shu; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(cx - 11, cy); ctx.lineTo(cx + 11, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy - 11); ctx.lineTo(cx, cy + 11); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, 6.5, 0, Math.PI*2); ctx.stroke();
+}
+
+function mapPick(ev){
+  const c = $("map"), r = c.getBoundingClientRect();
+  const x = Math.max(0, Math.min(r.width, ev.clientX - r.left));
+  const y = Math.max(0, Math.min(r.height, ev.clientY - r.top));
+  // 命中预设点则整套载入
+  const hit = CFG.presets.find(p => Math.hypot(toX(p.formant, r.width) - x, toY(p.pitch, r.height) - y) < 8);
+  if (hit && ev.type === "pointerdown") return loadPreset(hit);
+  state.formant = round(fromX(x, r.width));
+  state.pitch = round(fromY(y, r.height));
+  persist(); readout(); drawMap();
+}
+const round = (n) => Math.round(n * 100) / 100;
+$("map").addEventListener("pointerdown", (e) => { $("map").setPointerCapture(e.pointerId); mapPick(e); });
+$("map").addEventListener("pointermove", (e) => { if (e.buttons) mapPick(e); });
+
+function readout(){
+  $("rPitch").textContent = state.pitch.toFixed(2);
+  $("rFormant").textContent = state.formant.toFixed(2);
+  $("rTempo").textContent = Number(state.tempo).toFixed(2);
+}
+
+function loadPreset(p){
+  state.pitch = p.pitch; state.formant = p.formant; state.tempo = p.tempo;
+  state.voice = p.base; $("voice").value = p.base; $("tempo").value = p.tempo;
+  // 载入预设不再清空质感勾选 —— 勾了质感又载入预设，勾选被悄悄清掉是最容易踩的坑
+  persist(); readout(); drawMap();
+}
+
+// ── 预设卡 ────────────────────────────────────────────
+function renderCards(){
+  const host = $("groups"); host.innerHTML = "";
+  CFG.groups.forEach(g => {
+    const list = CFG.presets.filter(p => p.group === g);
+    const head = document.createElement("div");
+    head.className = "group-head";
+    head.innerHTML = `<h3>${g}</h3><span>${list.length} 个</span>`;
+    host.appendChild(head);
+
+    const grid = document.createElement("div"); grid.className = "cards";
+    list.forEach(p => grid.appendChild(cardOf(p)));
+    host.appendChild(grid);
+  });
+}
+
+function cardOf(p){
+  const el = document.createElement("article");
+  el.className = "card"; el.dataset.id = p.id;
+  el.innerHTML = `
+    <div class="cname">${p.name}</div>
+    <div class="cparams">音高 ${p.pitch.toFixed(2)} · 共振峰 ${p.formant.toFixed(2)} · 语速 ${p.tempo.toFixed(2)}</div>
+    <p class="cnote">${p.note}</p>
+    <div class="cbase">${p.base}</div>
+    <div class="cbtns">
+      <button data-act="play">▶ 试听</button>
+      <button data-act="load">载入</button>
+      <button class="fav" data-act="fav" aria-label="收藏" aria-pressed="false">♥</button>
+    </div>`;
+  const fav = el.querySelector(".fav");
+  fav.setAttribute("aria-pressed", state.favorites.includes(p.id));
+  el.querySelector('[data-act=play]').addEventListener("click", () => playPreset(p));
+  el.querySelector('[data-act=load]').addEventListener("click", () => loadPreset(p));
+  fav.addEventListener("click", () => {
+    const on = state.favorites.includes(p.id);
+    state.favorites = on ? state.favorites.filter(x => x !== p.id) : [...state.favorites, p.id];
+    fav.setAttribute("aria-pressed", !on);
+    persist(); renderBasket();
+  });
+  return el;
+}
+
+function markPlaying(id){
+  playingId = id;
+  document.querySelectorAll(".card").forEach(c => c.classList.toggle("playing", c.dataset.id === id));
+}
+
+// ── 生成与播放 ────────────────────────────────────────
+async function post(body){
+  const res = await fetch("/api/render", {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "生成失败");
+  return data;
+}
+
+function tonesFor(ids){
+  return ids.flatMap(id => (CFG.toneModules.find(m => m.id === id)?.filters) || []);
+}
+
+async function playPreset(p){
+  if (busy) return;
+  busy = true; clearFail();
+  const btn = document.querySelector(`.card[data-id="${p.id}"] [data-act=play]`);
+  const old = btn.textContent; btn.textContent = "生成中"; btn.disabled = true;
+  try {
+    const d = await post({ text: state.text, voice: p.base, pitch: p.pitch, formant: p.formant, tempo: p.tempo, tone: [...(p.tone || []), ...tonesFor(state.tones)], prosody: p.prosody });
+    $("filter").textContent = d.filter;
+    markPlaying(p.id);
+    const a = $("player"); a.src = d.audio; await a.play();
+    a.onended = () => markPlaying(null);
+  } catch (e) { fail(e.message); }
+  finally { btn.textContent = old; btn.disabled = false; busy = false; }
+}
+
+async function previewCustom(save){
+  if (busy) return;
+  busy = true; clearFail();
+  const btn = save ? $("save") : $("preview");
+  const old = btn.textContent; btn.textContent = "生成中"; btn.disabled = true;
+  try {
+    const name = save ? `custom-p${state.pitch}-f${state.formant}-t${state.tempo}` : undefined;
+    const d = await post({
+      text: state.text, voice: state.voice,
+      pitch: state.pitch, formant: state.formant, tempo: state.tempo,
+      tone: tonesFor(state.tones), save: name,
+    });
+    $("filter").textContent = d.filter;
+    markPlaying(null);
+    const a = $("player"); a.src = d.audio; await a.play();
+    if (save) $("banner").textContent = `已存：${d.savedTo}`;
+  } catch (e) { fail(e.message); }
+  finally { btn.textContent = old; btn.disabled = false; busy = false; }
+}
+
+async function renderAll(){
+  if (busy) return;
+  busy = true; cancelBatch = false; clearFail();
+  $("renderAll").disabled = true;
+  let done = 0;
+  for (const p of CFG.presets){
+    if (cancelBatch) break;
+    $("progress").textContent = `${p.name}（${done + 1}/${CFG.presets.length}）`;
+    try {
+      await post({ text: state.text, voice: p.base, pitch: p.pitch, formant: p.formant, tempo: p.tempo, tone: p.tone || [], prosody: p.prosody, save: p.id });
+      done++;
+    } catch (e) { fail(`${p.name} 失败：${e.message}`); }
+  }
+  $("progress").textContent = cancelBatch ? `已停止，完成 ${done} 个` : `全部完成，${done} 个已写入 out/`;
+  $("renderAll").disabled = false; busy = false;
+}
+
+// ── 候选名单 ──────────────────────────────────────────
+function renderBasket(){
+  const ul = $("basketList"); ul.innerHTML = "";
+  $("basketEmpty").hidden = state.favorites.length > 0;
+  $("export").disabled = state.favorites.length === 0;
+  state.favorites.forEach(id => {
+    const p = CFG.presets.find(x => x.id === id); if (!p) return;
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${p.name} · ${id}</span>`;
+    const rm = document.createElement("button");
+    rm.textContent = "移除"; rm.addEventListener("click", () => {
+      state.favorites = state.favorites.filter(x => x !== id);
+      persist(); renderBasket(); renderCards();
+    });
+    li.appendChild(rm); ul.appendChild(li);
+  });
+}
+
+async function exportPicks(){
+  const picks = state.favorites.map(id => CFG.presets.find(p => p.id === id)).filter(Boolean);
+  const res = await fetch("/api/export", {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ pickedAt: new Date().toISOString(), sampleText: state.text, voices: picks }),
+  });
+  const d = await res.json();
+  $("banner").textContent = res.ok ? `已导出：${d.file}` : (d.error || "导出失败");
+}
+</script>
+</body>
+</html>

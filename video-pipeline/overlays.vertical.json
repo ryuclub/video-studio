@@ -1,0 +1,11 @@
+{
+  "fps": 30,
+  "overlays": [
+    { "id": "v1", "at": 2, "duration": 7, "scale": 0.90, "x": "center", "y": "10%",
+      "scene": { "kind": "barChart", "title": "地价指数",
+        "series": [100,164,210,142], "labels": ["1985","1989","1991","1995"] } },
+    { "id": "v2", "at": 16, "duration": 8, "scale": 0.88, "x": "center", "y": "12%",
+      "scene": { "kind": "japanMap", "title": "地价跌幅",
+        "cities": [{"name":"東京","value":"-68%"},{"name":"大阪","value":"-74%"},{"name":"福岡","value":"-45%"}] } }
+  ]
+}

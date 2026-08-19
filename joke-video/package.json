@@ -1,0 +1,41 @@
+{
+  "name": "joke-video",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cast": "tsx src/cli.ts cast",
+    "try": "tsx src/cli.ts try",
+    "voices": "tsx src/cli.ts voices",
+    "voice": "tsx src/cli.ts voice",
+    "lines": "tsx src/cli.ts lines",
+    "align": "tsx src/cli.ts align",
+    "audio": "tsx src/cli.ts audio",
+    "still": "tsx src/cli.ts still",
+    "draft": "tsx src/cli.ts draft",
+    "build": "tsx src/cli.ts build",
+    "ship": "tsx src/ship.ts",
+    "sfx": "tsx src/cli.ts sfx",
+    "batch": "tsx src/cli.ts batch",
+    "preview": "tsx src/cli.ts preview",
+    "cover": "tsx src/cli.ts cover",
+    "voicedoc": "tsx src/cli.ts voicedoc",
+    "scene": "tsx src/cli.ts scene",
+    "shotdoc": "tsx src/cli.ts shotdoc",
+    "layout": "tsx src/cli.ts layout",
+    "cast:check": "tsx src/cast-check.ts",
+    "shuoshu:parse": "tsx src/shuoshu-parse.ts",
+    "shuoshu:check": "tsx src/shuoshu-ship.ts --check",
+    "shuoshu:preview": "tsx src/shuoshu-build.ts --preview",
+    "shuoshu:ship": "tsx src/shuoshu-ship.ts"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "msedge-tts": "^2.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

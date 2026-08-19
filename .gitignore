@@ -1,0 +1,43 @@
+# ── 依赖与构建产物 ──
+node_modules/
+dist/
+build/
+.cache/
+.smoke/
+
+# ── 密钥 ──
+# .env 里有真的 PEXELS_API_KEY，永远不要提交。
+# 要加新变量先加到 .env.example（只写键名和占位符）
+.env
+
+# ── 生成的媒体 ──
+# 成片、音轨、配音分句、BGM —— 全部可以重新跑出来，一共 16G 多，不进版本库。
+# 复现方法写在各条线的手册里（joke-video/儿童故事出片方案.md、shuoshu/出片手册.md）
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+
+# ── 生成的图 ──
+# 逐镜静帧和场景图，跑一次 preview / scene 就有，加起来 101M
+**/stills/
+shuoshu/projects/*/scenes/
+out/
+
+# 素材缓存（Pexels 下载的空镜，2.8G）
+assets/cache/
+assets/manual/test_*.mp4
+
+# 字体 162M。Noto Serif CJK 是 OFL 协议可自由下载，见 fonts/README.md
+fonts/
+
+# ── 根级 vidgen 的成片目录 ──
+# **必须带前导斜杠**：不带的话 git 会把 joke-video/projects/ 和
+# shuoshu/projects/ 一起吃掉（那两个目录里的 方案.md、发布文案.md、
+# script.json 是要留的），而且父目录一旦被排除，子目录的 .gitignore
+# 想再放行也放行不了。这个坑实测踩过。
+/projects/
+
+# 旧选题的留档素材（27M），文档留着、素材不留
+/history/**/*.png

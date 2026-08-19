@@ -1,0 +1,526 @@
+{
+  "id": "mouse-cake",
+  "type": "B",
+  "title": "小老鼠做蛋糕",
+  "scene": "hillside",
+  "intro": 2.2,
+  "hold": 2.6,
+  "ambience": "none",
+  "bgm": {
+    "enabled": true,
+    "stopAtPunch": false,
+    "key": "happy",
+    "gain": 0.16
+  },
+  "cues": {
+    "subtitlePop": false,
+    "replyWood": false,
+    "introHiss": false
+  },
+  "characters": [
+    {
+      "id": "旁白",
+      "rig": "none",
+      "side": "left",
+      "cast": "青年女",
+      "rate": "-8%"
+    },
+    {
+      "id": "鼠甲",
+      "rig": "mouse",
+      "side": "left",
+      "cast": "童声",
+      "length": 270,
+      "x": 178,
+      "rate": "-6%"
+    },
+    {
+      "id": "鼠乙",
+      "rig": "mouse",
+      "side": "right",
+      "cast": "童声",
+      "length": 270,
+      "x": 735,
+      "rate": "-6%"
+    },
+    {
+      "id": "小兔",
+      "rig": "still",
+      "art": "rabbit-white",
+      "side": "left",
+      "cast": "女童",
+      "length": 270,
+      "x": 929
+    }
+  ],
+  "lines": [
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙"
+      ],
+      "say": [
+        {
+          "text": "小老鼠们住在一个小山脚下，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "它们每天都到小山坡上去玩。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 5.928,
+      "audio": "out/voice/mouse-cake/1-旁白.wav",
+      "note": "开场空镜之后第一句，两只老鼠先立住形象。此后**形象不再更换**，也不做快闪切镜。"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙"
+      ],
+      "say": [
+        {
+          "text": "那儿有一片碧绿的草地，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "开满了红的、黄的、紫色的花。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 6.266,
+      "audio": "out/voice/mouse-cake/2-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg"
+      ],
+      "say": [
+        {
+          "text": "这一天，它们正在玩着，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "突然看到地上有个蛋。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 4.924,
+      "audio": "out/voice/mouse-cake/3-旁白.wav",
+      "note": "蛋是全篇的核心道具，比老鼠还大——大小关系要一眼看出来，scale 别调小。"
+    },
+    {
+      "who": "鼠甲",
+      "text": "多大的蛋呀，我们可以做个大蛋糕！",
+      "beat": "reply",
+      "delivery": "拔高",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg"
+      ],
+      "dur": 3.248,
+      "audio": "out/voice/mouse-cake/4-鼠甲.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg"
+      ],
+      "say": [
+        {
+          "text": "可是，蛋太大了，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "它们抬得满头大汗，才挪动了几步。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 6.266,
+      "audio": "out/voice/mouse-cake/5-旁白.wav"
+    },
+    {
+      "who": "鼠乙",
+      "text": "我们把它滚回去吧！",
+      "beat": "reply",
+      "delivery": "急",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg"
+      ],
+      "dur": 1.418,
+      "audio": "out/voice/mouse-cake/6-鼠乙.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg2"
+      ],
+      "scene": "hillrocks",
+      "text": "大家刚滚了一会儿，突然看见山坡下全是大石头。",
+      "dur": 4.43,
+      "audio": "out/voice/mouse-cake/7-旁白.wav",
+      "note": "换 hillrocks 俯视镜：要让观众看见\"滚下去会撞碎\"，紧张感全靠这一镜。地面是坡沿绿边，不是画面底部。"
+    },
+    {
+      "who": "鼠乙",
+      "text": "哎呀，不行！碰到石头会撞碎的。",
+      "beat": "reply",
+      "delivery": "急",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg2"
+      ],
+      "scene": "hillrocks",
+      "dur": 3.315,
+      "audio": "out/voice/mouse-cake/8-鼠乙.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg"
+      ],
+      "say": [
+        {
+          "text": "它们在山坡上喘着气，",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "边擦汗边动脑筋。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 4.692,
+      "audio": "out/voice/mouse-cake/9-旁白.wav",
+      "note": "切回 hillside，危机解除，回到平稳的讲述节奏。"
+    },
+    {
+      "who": "鼠甲",
+      "text": "有办法了，我们把锅拿来，就在这儿做蛋糕。",
+      "beat": "reply",
+      "delivery": "拔高",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg"
+      ],
+      "dur": 3.885,
+      "audio": "out/voice/mouse-cake/10-鼠甲.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg",
+        "pot"
+      ],
+      "say": [
+        {
+          "text": "它们回家拿出最大的锅，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "还拿出面粉、牛奶、白糖、饭碗和围裙。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 7.502,
+      "audio": "out/voice/mouse-cake/11-旁白.wav",
+      "note": "锅摞在炉子上（stack），这对重叠是合法的，站位检查会跳过。"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg",
+        "pot"
+      ],
+      "text": "锅太大拉不动，它们就用绳子把锅拖上了山坡。",
+      "dur": 4.286,
+      "audio": "out/voice/mouse-cake/12-旁白.wav"
+    },
+    {
+      "who": "鼠甲",
+      "text": "打蛋了！",
+      "beat": "reply",
+      "delivery": "喊",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg",
+        "pot"
+      ],
+      "dur": 0.884,
+      "audio": "out/voice/mouse-cake/13-鼠甲.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg",
+        "pot"
+      ],
+      "say": [
+        {
+          "text": "没想到，蛋壳真硬，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "竟把手砸疼了，痛得它哇哇直叫。",
+          "delivery": "叙快"
+        }
+      ],
+      "dur": 5.634,
+      "audio": "out/voice/mouse-cake/14-旁白.wav"
+    },
+    {
+      "who": "鼠乙",
+      "text": "还是用石头敲吧！",
+      "beat": "reply",
+      "delivery": "平",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "egg",
+        "pot"
+      ],
+      "dur": 1.515,
+      "audio": "out/voice/mouse-cake/15-鼠乙.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "cracked",
+        "pot",
+        "stove"
+      ],
+      "say": [
+        {
+          "text": "蛋壳砸开了，它们把蛋黄倒在碗里，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "加上白糖、牛奶和面粉，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "又搭起炉子，捡来一堆柴，大家忙得乐呵呵的。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 11.594,
+      "audio": "out/voice/mouse-cake/16-旁白.wav",
+      "note": "做蛋糕的高潮段，旁白最长的一句，用叙平不加速——细节要听清。"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "小兔",
+        "cake"
+      ],
+      "say": [
+        {
+          "text": "蛋糕做好了，香喷喷的味道真好闻。",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "小动物闻到香味都跑来了。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 7.286,
+      "audio": "out/voice/mouse-cake/17-旁白.wav",
+      "note": "小兔登场，第三个角色进画。四样东西横排已经到上限，此后不再加人。"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "小兔",
+        "cake"
+      ],
+      "say": [
+        {
+          "text": "小老鼠们请大家一起吃蛋糕。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "小兔、小松鼠，还有小猫，大家吃得真开心啊！",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 8.476,
+      "audio": "out/voice/mouse-cake/18-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "小兔",
+        "cracked"
+      ],
+      "say": [
+        {
+          "text": "蛋糕吃完了。大家四下望望，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "看到了剩下的大蛋壳。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 6.014,
+      "audio": "out/voice/mouse-cake/19-旁白.wav"
+    },
+    {
+      "who": "小兔",
+      "text": "别扔，用它做辆车。",
+      "beat": "reply",
+      "delivery": "拔高",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "小兔",
+        "cracked"
+      ],
+      "dur": 1.748,
+      "audio": "out/voice/mouse-cake/20-小兔.wav",
+      "note": "小兔唯一一句台词。static 原稿没有嘴，靠轻微点头表示\"这句是它说的\"。"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "小兔",
+        "car"
+      ],
+      "say": [
+        {
+          "text": "大家一块动手，用两个半圆的蛋壳做了两节车厢，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "还装上了轮子。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 6.768,
+      "audio": "out/voice/mouse-cake/21-旁白.wav",
+      "note": "蛋壳车是收尾的题眼，锅拴在车后是原文细节，别删。"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "鼠甲",
+        "鼠乙",
+        "小兔",
+        "car"
+      ],
+      "say": [
+        {
+          "text": "小动物们坐上了车子。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "嘀嘀——开回家去了。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 4.962,
+      "audio": "out/voice/mouse-cake/22-旁白.wav"
+    }
+  ],
+  "hook": "小老鼠做蛋糕",
+  "cover": {
+    "title": "小老鼠做蛋糕",
+    "at": 90,
+    "mark": "none",
+    "tag": "Ellie"
+  },
+  "props": [
+    {
+      "id": "egg",
+      "kind": "egg",
+      "x": 432,
+      "scale": 0.62
+    },
+    {
+      "id": "egg2",
+      "kind": "egg",
+      "x": 437,
+      "scale": 0.55
+    },
+    {
+      "id": "cracked",
+      "kind": "egg-cracked",
+      "x": 426,
+      "scale": 0.6
+    },
+    {
+      "id": "pot",
+      "kind": "pot",
+      "x": 938,
+      "scale": 0.4,
+      "dy": -46,
+      "stack": "stove"
+    },
+    {
+      "id": "stove",
+      "kind": "stove",
+      "x": 938,
+      "scale": 0.46
+    },
+    {
+      "id": "cake",
+      "kind": "cake",
+      "x": 429,
+      "scale": 0.62
+    },
+    {
+      "id": "car",
+      "kind": "egg-car",
+      "x": 423,
+      "scale": 0.4
+    }
+  ],
+  "pace": "bedtime"
+}

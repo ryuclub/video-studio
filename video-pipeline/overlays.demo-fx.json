@@ -1,0 +1,81 @@
+{
+ "fps": 30,
+ "//": "demo.mp4 最后一道：把四个「全幅类」特效叠到底片上。前 52 秒是有实拍质感的素材段，全幅特效放在那儿才看得出效果",
+ "overlays": [
+  {
+   "id": "grain",
+   "//": "19 颗粒漏光。颗粒是 ffmpeg 的 noise 滤镜，漏光是 SVG 层；fadeIn/fadeOut 各取一半时长，合起来是一次「暗→亮→暗」的脉冲。**演示只铺 14 秒**：噪点几乎不可压，铺满 52 秒会把 demo 从 4MB 撑到 36MB。实际出片要整片常驻就直接把 duration 写成全片长",
+   "at": 0,
+   "duration": 14,
+   "fadeIn": 7,
+   "fadeOut": 7,
+   "scene": {
+    "kind": "grain",
+    "strength": 14,
+    "leak": true,
+    "seed": 11
+   }
+  },
+  {
+   "id": "anno",
+   "//": "20 箭头注记。坐标是人给的归一值，本效果不做画面识别",
+   "at": 6,
+   "duration": 3.5,
+   "fadeIn": 0.3,
+   "fadeOut": 0.4,
+   "scene": {
+    "kind": "arrowAnnotate",
+    "circle": {
+     "cx": 0.62,
+     "cy": 0.45,
+     "rx": 0.11,
+     "ry": 0.14
+    },
+    "arrow": {
+     "x1": 0.34,
+     "y1": 0.76,
+     "x2": 0.52,
+     "y2": 0.56
+    },
+    "label": "这一栋",
+    "labelX": 0.24,
+    "labelY": 0.8
+   }
+  },
+  {
+   "id": "spot",
+   "//": "17 聚光引导。光斑在时长里从左移到右",
+   "at": 38,
+   "duration": 3,
+   "fadeIn": 0.3,
+   "fadeOut": 0.5,
+   "scene": {
+    "kind": "spotlight",
+    "path": [
+     {
+      "x": 0.35,
+      "y": 0.5
+     },
+     {
+      "x": 0.68,
+      "y": 0.45
+     }
+    ],
+    "radius": 0.15,
+    "dark": 0.78
+   }
+  },
+  {
+   "id": "flash",
+   "//": "04 闪白打点。180ms，不要更长",
+   "at": 44,
+   "duration": 0.2,
+   "fadeIn": 0,
+   "fadeOut": 0,
+   "scene": {
+    "kind": "flash",
+    "peak": 0.85
+   }
+  }
+ ]
+}

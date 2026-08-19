@@ -1,0 +1,117 @@
+{
+  "id": "turtle-guilai",
+  "type": "A",
+  "title": "龟来",
+  "scene": "shore",
+  "intro": 1.6,
+  "freeze": 1.4,
+  "hold": 1,
+  "ambience": "none",
+  "bgm": {
+    "enabled": true,
+    "stopAtPunch": true,
+    "key": "cheeky"
+  },
+  "cues": {
+    "subtitlePop": false,
+    "replyWood": true,
+    "introHiss": false
+  },
+  "characters": [
+    {
+      "id": "kid",
+      "rig": "turtle",
+      "variant": "kid",
+      "side": "left",
+      "length": 460,
+      "cast": "童声"
+    },
+    {
+      "id": "mom",
+      "rig": "turtle",
+      "variant": "mom",
+      "side": "right",
+      "length": 650,
+      "cast": "老太太"
+    }
+  ],
+  "lines": [
+    {
+      "who": "kid",
+      "text": "妈妈！",
+      "subtitle": "妈——妈！",
+      "beat": "ask",
+      "stage": [
+        "kid"
+      ],
+      "delivery": "喊",
+      "holdHead": 0.35,
+      "padBefore": 0.2,
+      "padAfter": 0.35,
+      "dur": 1.224,
+      "audio": "out/voice/turtle-guilai/1-kid.wav"
+    },
+    {
+      "who": "mom",
+      "text": "龟来",
+      "beat": "reply",
+      "delivery": "延宕",
+      "annotation": "（归来）",
+      "padBefore": 0.5,
+      "padAfter": 0.6,
+      "stage": [
+        "mom"
+      ],
+      "dur": 1.018,
+      "audio": "out/voice/turtle-guilai/2-mom.wav"
+    },
+    {
+      "who": "kid",
+      "beat": "reply",
+      "say": [
+        {
+          "text": "妈妈，",
+          "delivery": "急",
+          "gap": 0.16
+        },
+        {
+          "text": "你什么时候到",
+          "delivery": "压低"
+        }
+      ],
+      "padBefore": 0.35,
+      "padAfter": 0.3,
+      "stage": [
+        "kid"
+      ],
+      "dur": 1.876,
+      "audio": "out/voice/turtle-guilai/3-kid.wav"
+    },
+    {
+      "who": "mom",
+      "text": "龟来",
+      "beat": "punch",
+      "delivery": "延宕",
+      "padBefore": 0.55,
+      "padAfter": 1.5,
+      "stage": [
+        "kid",
+        "mom"
+      ],
+      "enter": "right",
+      "enterFrom": 560,
+      "dur": 1.018,
+      "audio": "out/voice/turtle-guilai/4-mom.wav"
+    }
+  ],
+  "hook": "乌龟的「归来」",
+  "cover": {
+    "title": "龟来",
+    "at": 9.6,
+    "cam": {
+      "zoom": 1,
+      "tx": 0,
+      "ty": -300
+    }
+  }
+}

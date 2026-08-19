@@ -1,0 +1,49 @@
+<svg viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" width="700" height="700">
+  <title>段子角色 - 老鼠（无描边扁平版）</title>
+
+  <defs>
+    <radialGradient id="blush">
+      <stop offset="0%"   stop-color="#F2B4B7" stop-opacity="0.95"/>
+      <stop offset="55%"  stop-color="#F2B4B7" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#F2B4B7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ===== 尾巴 ===== -->
+  <path d="M 268,590 C 230,600 200,620 178,618 C 150,616 138,592 148,572 C 158,554 184,552 192,568 C 199,582 186,596 172,592 C 162,589 158,578 164,570"
+        fill="none" stroke="#C4C4C4" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- ===== 左侧耳 ===== -->
+  <ellipse cx="138" cy="292" rx="95" ry="98" fill="#B8B8B8" transform="rotate(-25 138 292)"/>
+  <path d="M 170,352 C 140,344 106,318 96,286 C 86,254 106,226 138,228 C 172,230 194,262 190,298 C 187,326 180,344 170,352 Z" fill="#F9C7D8"/>
+
+  <!-- ===== 头顶耳 ===== -->
+  <ellipse cx="362" cy="108" rx="100" ry="95" fill="#B8B8B8" transform="rotate(6 362 108)"/>
+  <path d="M 360,178 C 336,166 310,140 306,110 C 302,76 328,54 360,54 C 392,54 418,76 414,110 C 410,140 384,166 360,178 Z" fill="#F9C7D8"/>
+
+  <!-- ===== 手臂（内端深入身体内部，避免肩部断口） ===== -->
+  <rect x="200" y="490" width="150" height="70" rx="35" fill="#B8B8B8" transform="rotate(-20 275 525)"/>
+  <g transform="translate(756,0) scale(-1,1)">
+    <rect x="200" y="490" width="150" height="70" rx="35" fill="#B8B8B8" transform="rotate(-20 275 525)"/>
+  </g>
+
+  <!-- ===== 身体 ===== -->
+  <path d="M 378,440 C 452,440 492,492 492,560 C 492,624 452,656 378,656 C 304,656 264,624 264,560 C 264,492 304,440 378,440 Z" fill="#B8B8B8"/>
+  <!-- 肚皮 -->
+  <ellipse cx="378" cy="556" rx="80" ry="72" fill="#E2E2E2"/>
+
+  <!-- ===== 脚 ===== -->
+  <path d="M 292,614 L 292,652 C 292,672 306,682 322,682 C 338,682 352,672 352,652 L 352,614 Z" fill="#B8B8B8"/>
+  <path d="M 416,614 L 416,652 C 416,672 430,682 446,682 C 462,682 476,672 476,652 L 476,614 Z" fill="#B8B8B8"/>
+
+  <!-- ===== 头 ===== -->
+  <path d="M 370,158 C 470,158 540,196 572,262 C 588,294 592,318 578,340 C 560,412 480,478 372,478 C 258,478 186,410 186,322 C 186,232 262,158 370,158 Z" fill="#B8B8B8"/>
+
+  <!-- ===== 五官 ===== -->
+  <circle cx="374" cy="386" r="52" fill="url(#blush)"/>
+  <ellipse cx="386" cy="302" rx="11" ry="16" fill="#5C3A2A" transform="rotate(20 386 302)"/>
+  <ellipse cx="446" cy="258" rx="11" ry="16" fill="#5C3A2A" transform="rotate(20 446 258)"/>
+  <circle cx="584" cy="314" r="38" fill="#5C3A2A"/>
+  <path d="M 430,414 C 436,432 456,436 466,422" fill="none" stroke="#5C3A2A" stroke-width="5" stroke-linecap="round"/>
+
+</svg>

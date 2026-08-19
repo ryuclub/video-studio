@@ -1,0 +1,28 @@
+{
+  "fps": 30,
+  "overlays": [
+    { "id": "ov1", "at": 3, "duration": 7, "scale": 0.58, "x": "6%", "y": "8%",
+      "scene": { "kind": "barChart", "title": "六大城市商业地价指数",
+        "series": [100, 128, 164, 210, 188, 142],
+        "labels": ["1985","1987","1989","1991","1993","1995"] } },
+    { "id": "ov2", "at": 40, "duration": 8, "scale": 0.6, "x": "center", "y": "10%",
+      "scene": { "kind": "counter", "title": "损失规模",
+        "values": [
+          { "label": "不良债权处理额", "from": 0, "to": 100, "suffix": " 兆円" },
+          { "label": "公的资金注入", "from": 0, "to": 47, "suffix": " 兆円" }
+        ],
+        "subtitle": "相当于当年 GDP 的两成" } },
+    { "id": "ov3", "at": 75, "duration": 9, "scale": 0.62, "x": "center", "y": "6%",
+      "scene": { "kind": "japanMap", "title": "地价跌幅",
+        "cities": [
+          { "name": "東京", "value": "-68%" },
+          { "name": "大阪", "value": "-74%" },
+          { "name": "名古屋", "value": "-52%" },
+          { "name": "福岡", "value": "-45%" }
+        ] } },
+    { "id": "ov4", "at": 110, "duration": 9, "scale": 0.7, "x": "center", "y": "14%",
+      "scene": { "kind": "quote", "typewriter": true,
+        "text": "泡沫破裂之后真正漫长的，不是股价的下跌，而是资产负债表的修复。",
+        "emphasize": ["资产负债表的修复"], "cite": "辜朝明《大衰退》" } }
+  ]
+}

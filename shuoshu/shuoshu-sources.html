@@ -1,0 +1,937 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>说书选目 · 公版书源</title><style>
+:root{
+ --dian:#131b2c; --shi:#1b2640; --jie:#2b3853; --ci:#7d92b2; --xuan:#efe7d6;
+ --zhu:#c4372c; --teng:#d2a044;
+ --song:"Songti SC","STSong","Source Han Serif SC","Noto Serif CJK SC","SimSun",serif;
+ --hei:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+ --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--dian);color:var(--xuan);font-family:var(--hei);
+ -webkit-font-smoothing:antialiased;font-size:15px;line-height:1.6}
+.wrap{max-width:960px;margin:0 auto;padding:32px 18px 80px}
+header{border-bottom:1px solid var(--jie);padding-bottom:20px;margin-bottom:6px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--zhu);text-transform:uppercase}
+h1{font-family:var(--song);font-size:38px;font-weight:400;letter-spacing:.14em;margin:8px 0 10px}
+.lede{color:var(--ci);font-size:13.5px;max-width:62ch;margin:0}
+.tally{display:flex;gap:20px;margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--ci)}
+.tally b{color:var(--xuan);font-size:17px;font-family:var(--song);margin-right:5px}
+
+.rule{border:1px solid var(--jie);border-left:3px solid var(--zhu);background:#18213600;
+ padding:14px 16px;margin:24px 0 10px;font-size:13px;color:var(--ci)}
+.rule h2{font-family:var(--song);font-size:15px;color:var(--xuan);margin:0 0 8px;font-weight:400;letter-spacing:.08em}
+.rule p{margin:0 0 7px} .rule p:last-child{margin:0}
+.rule strong{color:var(--teng);font-weight:600}
+
+.bar{position:sticky;top:0;z-index:5;background:var(--dian);border-bottom:1px solid var(--jie);
+ padding:12px 0 11px;margin-bottom:2px}
+.searchwrap{display:flex;gap:8px;align-items:center}
+input[type=search]{flex:1;background:var(--shi);border:1px solid var(--jie);color:var(--xuan);
+ font-family:var(--hei);font-size:14px;padding:9px 12px;border-radius:2px}
+input[type=search]::placeholder{color:#5d6d8c}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{font-family:var(--hei);font-size:12px;padding:5px 11px;border:1px solid var(--jie);
+ background:transparent;color:var(--ci);cursor:pointer;border-radius:2px;transition:.12s}
+.chip:hover{border-color:#43537a;color:var(--xuan)}
+.chip[aria-pressed=true]{background:var(--zhu);border-color:var(--zhu);color:#fff}
+.chip.g2[aria-pressed=true]{background:var(--teng);border-color:var(--teng);color:#20180a}
+:focus-visible{outline:2px solid var(--teng);outline-offset:2px}
+
+.sec{display:grid;grid-template-columns:46px 1fr;border-top:1px solid var(--jie);margin-top:-1px}
+.gutter{border-right:1px solid var(--jie);display:flex;flex-direction:column;align-items:center;
+ justify-content:flex-start;padding:22px 0 14px;gap:12px}
+.glabel{writing-mode:vertical-rl;font-family:var(--song);font-size:16px;letter-spacing:.34em;
+ color:var(--xuan);opacity:.92}
+.gcount{font-size:10px;color:#4f5d7d}
+.list{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:26px 1fr auto;gap:12px;padding:18px 4px 18px 12px;
+ border-bottom:1px solid #1f2a42}
+.list li:last-child{border-bottom:0}
+.row.hide{display:none}
+.sec.hide{display:none}
+.pick{padding-top:3px;cursor:pointer}
+.pick input{position:absolute;opacity:0;width:0;height:0}
+.pick span{display:block;width:15px;height:15px;border:1px solid var(--jie);border-radius:1px}
+.pick input:checked+span{background:var(--zhu);border-color:var(--zhu);
+ box-shadow:inset 0 0 0 3px var(--dian)}
+.pick input:focus-visible+span{outline:2px solid var(--teng);outline-offset:2px}
+.head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h3{font-family:var(--song);font-size:20px;font-weight:400;margin:0;letter-spacing:.06em}
+.who{font-size:12px;color:var(--ci)}
+.who em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:#5b6a89;margin-left:6px}
+.meta{margin-top:5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.meta .mono{font-family:var(--mono);font-size:10.5px;color:#6d7d9d;letter-spacing:.03em}
+.slot{font-size:10.5px;font-weight:400;color:var(--teng);border:1px solid #4a3f22;
+ padding:1px 6px;border-radius:1px}
+.note{margin:8px 0 0;font-size:13px;color:#a8b6cc;max-width:60ch}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:10px;padding-top:2px}
+.seal{font-family:var(--song);font-size:11.5px;letter-spacing:.2em;padding:4px 7px 4px 9px;
+ border:1.5px solid var(--zhu);color:var(--zhu);transform:rotate(-4deg);white-space:nowrap;
+ box-shadow:inset 0 0 0 2.5px var(--dian),inset 0 0 0 3.5px var(--zhu)}
+.seal.reg{border-color:var(--teng);color:var(--teng);
+ box-shadow:inset 0 0 0 2.5px var(--dian),inset 0 0 0 3.5px var(--teng)}
+.seal.no{border:1.5px dashed #3f4d6c;color:#5c6a89;box-shadow:none;transform:none}
+.fit{display:flex;gap:3px}
+.fit i{width:5px;height:5px;border-radius:50%;background:#2f3c58;display:block}
+.fit i.on{background:var(--teng)}
+.fit .na{font-size:10.5px;color:#4f5d7d;font-family:var(--mono)}
+
+.tray{position:fixed;left:0;right:0;bottom:0;background:var(--shi);border-top:1px solid var(--jie);
+ padding:11px 18px;display:none;align-items:center;gap:14px;justify-content:center;z-index:9}
+.tray.on{display:flex}
+.tray span{font-size:13px;color:var(--ci)}
+.tray b{font-family:var(--song);font-size:19px;color:var(--teng);margin:0 3px}
+.tray button{font-family:var(--hei);font-size:13px;padding:7px 15px;background:var(--zhu);
+ border:0;color:#fff;cursor:pointer;border-radius:2px}
+.tray button.ghost{background:transparent;border:1px solid var(--jie);color:var(--ci)}
+.empty{padding:60px 0;text-align:center;color:#5d6d8c;font-size:14px;display:none}
+.empty.on{display:block}
+@media(max-width:640px){
+ h1{font-size:29px} .row{grid-template-columns:22px 1fr;padding-left:10px}
+ .side{grid-column:2;flex-direction:row;align-items:center;justify-content:flex-start;padding-top:4px}
+ .sec{grid-template-columns:34px 1fr} .glabel{font-size:14px;letter-spacing:.24em}
+}
+</style></head><body><div class="wrap">
+<header>
+ <div class="eyebrow">Public Domain · Source Catalog</div>
+ <h1>说书选目</h1>
+ <p class="lede">纯音频说书频道的公版书源。按可用性和朗读适配度排过，每一条都标了版权判定依据、篇数、语体，以及适合放在哪一档。</p>
+ <div class="tally"><span><b>84</b>全球可用</span><span><b>3</b>地区限定</span><span><b>4</b>不可用</span></div>
+</header>
+
+<div class="rule">
+ <h2>版权怎么判</h2>
+ <p>通行的保守线是 <strong>作者 1955 年前去世</strong>。多数国家是「作者去世后 70 年」，2026 年正好轮到 1955 年去世的人。清代及以前的中国典籍、明治以前的日本典籍，全部无争议。</p>
+ <p>中国是去世后 50 年，日本在 2018 年从 50 年改成 70 年且不溯及既往——所以老舍、江户川乱步这类在中日两国已是公版，但在美国仍受保护。<strong>YouTube 按美国法走</strong>，这条差别决定了「地区限定」那一档只能放在中文平台。</p>
+ <p><strong>译本另有版权。</strong>外文和古日语作品，原著公版不等于中译本公版。要么读原文，要么自己译写——说书本来就是转述，这反而顺手。同理，聊斋的文言原文是公版，市面上的白话译本不是。</p>
+ <p style="color:#6d7d9d">以上是整理，不是法律意见；商用前建议就具体篇目再确认一次。</p>
+</div>
+
+<div class="bar">
+ <div class="searchwrap"><input type="search" id="q" placeholder="搜书名、作者或看点…"></div>
+ <div class="chips" id="f1">
+  <button class="chip" aria-pressed="false" data-k="status" data-v="pub">全球公版</button>
+  <button class="chip" aria-pressed="false" data-k="status" data-v="reg">地区限定</button>
+  <button class="chip" aria-pressed="false" data-k="status" data-v="no">不可用</button>
+  <button class="chip g2" aria-pressed="false" data-k="lang" data-v="白话">白话原文</button>
+  <button class="chip g2" aria-pressed="false" data-k="lang" data-v="文言">文言</button>
+  <button class="chip g2" aria-pressed="false" data-k="lang" data-v="自译">需自译</button>
+ </div>
+ <div class="chips" id="f2">
+  <button class="chip" aria-pressed="false" data-k="slot" data-v="主线">主线</button><button class="chip" aria-pressed="false" data-k="slot" data-v="短篇">短篇</button><button class="chip" aria-pressed="false" data-k="slot" data-v="助眠">助眠</button><button class="chip" aria-pressed="false" data-k="slot" data-v="睡前">睡前</button><button class="chip" aria-pressed="false" data-k="slot" data-v="素材库">素材库</button>
+  <button class="chip" aria-pressed="false" data-k="fit" data-v="5">仅看适配度满格</button>
+ </div>
+</div>
+
+<section class="sec" data-cat="志怪笔记">
+<div class="gutter"><span class="glabel">志怪笔记</span><span class="gcount mono">10</span></div>
+<ul class="list"><li class="row" data-id="1" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="主线|短篇" data-fit="5" data-q="聊斋志异蒲松龄起步首选。单篇独立完结，不怕断章；鬼狐题材是听书刚需，且认知度高。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>聊斋志异</h3><span class="who">蒲松龄<em>1640–1715</em></span></div>
+<div class="meta"><span class="mono">491 篇 · 1000–5000字 · 文言</span><b class="slot">主线</b><b class="slot">短篇</b></div>
+<p class="note">起步首选。单篇独立完结，不怕断章；鬼狐题材是听书刚需，且认知度高。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="2" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="短篇" data-fit="4" data-q="阅微草堂笔记纪昀极短，一集串三五则做成「夜话」合集。纪昀有意写得平实，改口语容易。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>阅微草堂笔记</h3><span class="who">纪昀<em>1724–1805</em></span></div>
+<div class="meta"><span class="mono">1200 篇 · 200–800字 · 文言</span><b class="slot">短篇</b></div>
+<p class="note">极短，一集串三五则做成「夜话」合集。纪昀有意写得平实，改口语容易。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="3" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="短篇" data-fit="4" data-q="子不语袁枚比聊斋更荒诞猎奇，重口味多。适合做「聊斋讲完之后」的续档。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>子不语</h3><span class="who">袁枚<em>1716–1797</em></span></div>
+<div class="meta"><span class="mono">1000 篇 · 300–1500字 · 文言</span><b class="slot">短篇</b></div>
+<p class="note">比聊斋更荒诞猎奇，重口味多。适合做「聊斋讲完之后」的续档。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="4" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="短篇" data-fit="4" data-q="搜神记干宝干将莫邪、宋定伯捉鬼、李寄斩蛇的原型都在这。故事骨架硬，需自己补血肉。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>搜神记</h3><span class="who">干宝<em>东晋</em></span></div>
+<div class="meta"><span class="mono">464 篇 · 200–2000字 · 文言</span><b class="slot">短篇</b></div>
+<p class="note">干将莫邪、宋定伯捉鬼、李寄斩蛇的原型都在这。故事骨架硬，需自己补血肉。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="5" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="短篇" data-fit="3" data-q="幽明录刘义庆残本。刘晨阮肇入天台等名篇出处。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>幽明录</h3><span class="who">刘义庆<em>南朝宋</em></span></div>
+<div class="meta"><span class="mono">265 篇 · 200–1000字 · 文言</span><b class="slot">短篇</b></div>
+<p class="note">残本。刘晨阮肇入天台等名篇出处。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="6" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="短篇" data-fit="3" data-q="酉阳杂俎段成式博物志怪，冷知识极多。可做「唐朝人的世界」这类专题。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>酉阳杂俎</h3><span class="who">段成式<em>唐</em></span></div>
+<div class="meta"><span class="mono">1300 篇 · 100–1500字 · 文言</span><b class="slot">短篇</b></div>
+<p class="note">博物志怪，冷知识极多。可做「唐朝人的世界」这类专题。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="7" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="素材库" data-fit="5" data-q="太平广记李昉等编唐前故事总汇，唐传奇多赖此保存。当选题库翻，不要顺着读。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>太平广记</h3><span class="who">李昉等编<em>宋</em></span></div>
+<div class="meta"><span class="mono">7000 篇 · 不等 · 文言</span><b class="slot">素材库</b></div>
+<p class="note">唐前故事总汇，唐传奇多赖此保存。当选题库翻，不要顺着读。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="8" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="短篇" data-fit="3" data-q="夷坚志洪迈宋代市井怪谈，量大质杂，要挑。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>夷坚志</h3><span class="who">洪迈<em>1123–1202</em></span></div>
+<div class="meta"><span class="mono">2700 篇 · 200–1500字 · 文言</span><b class="slot">短篇</b></div>
+<p class="note">宋代市井怪谈，量大质杂，要挑。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="9" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="助眠|短篇" data-fit="3" data-q="世说新语刘义庆无鬼怪，全是人物轶事。适合闲谈档或助眠。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>世说新语</h3><span class="who">刘义庆<em>南朝宋</em></span></div>
+<div class="meta"><span class="mono">1130 篇 · 50–500字 · 文言</span><b class="slot">助眠</b><b class="slot">短篇</b></div>
+<p class="note">无鬼怪，全是人物轶事。适合闲谈档或助眠。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="10" data-cat="志怪笔记" data-status="pub" data-lang="文言" data-slot="素材库" data-fit="3" data-q="山海经先秦原文本身不成故事，得大量补讲。适合做「解说」而非「说书」。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>山海经</h3><span class="who">先秦<em>—</em></span></div>
+<div class="meta"><span class="mono">极短 · 文言</span><b class="slot">素材库</b></div>
+<p class="note">原文本身不成故事，得大量补讲。适合做「解说」而非「说书」。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="唐传奇">
+<div class="gutter"><span class="glabel">唐传奇</span><span class="gcount mono">1</span></div>
+<ul class="list"><li class="row" data-id="11" data-cat="唐传奇" data-status="pub" data-lang="文言" data-slot="短篇" data-fit="5" data-q="唐传奇选裴铏·李朝威·白行简等聂隐娘、虬髯客传、枕中记、南柯太守传、离魂记、柳毅传、李娃传、霍小玉传、莺莺传、红线传、昆仑奴、杜子春、谢小娥传。篇幅与戏剧强度都刚好，一篇一集。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>唐传奇选</h3><span class="who">裴铏·李朝威·白行简等<em>唐</em></span></div>
+<div class="meta"><span class="mono">30 篇 · 3000–8000字 · 文言</span><b class="slot">短篇</b></div>
+<p class="note">聂隐娘、虬髯客传、枕中记、南柯太守传、离魂记、柳毅传、李娃传、霍小玉传、莺莺传、红线传、昆仑奴、杜子春、谢小娥传。篇幅与戏剧强度都刚好，一篇一集。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li></ul></section><section class="sec" data-cat="话本白话">
+<div class="gutter"><span class="glabel">话本白话</span><span class="gcount mono">6</span></div>
+<ul class="list"><li class="row" data-id="12" data-cat="话本白话" data-status="pub" data-lang="白话" data-slot="主线|短篇" data-fit="5" data-q="喻世明言冯梦龙明代白话原文，几乎不用改写就能读，这是它最大的价值。一篇可拆两集。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>喻世明言</h3><span class="who">冯梦龙<em>1574–1646</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 8000–15000字 · 白话</span><b class="slot">主线</b><b class="slot">短篇</b></div>
+<p class="note">明代白话原文，几乎不用改写就能读，这是它最大的价值。一篇可拆两集。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="13" data-cat="话本白话" data-status="pub" data-lang="白话" data-slot="主线|短篇" data-fit="5" data-q="警世通言冯梦龙杜十娘怒沉百宝箱、白娘子永镇雷峰塔都在这一部。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>警世通言</h3><span class="who">冯梦龙<em>1574–1646</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 8000–15000字 · 白话</span><b class="slot">主线</b><b class="slot">短篇</b></div>
+<p class="note">杜十娘怒沉百宝箱、白娘子永镇雷峰塔都在这一部。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="14" data-cat="话本白话" data-status="pub" data-lang="白话" data-slot="主线|短篇" data-fit="5" data-q="醒世恒言冯梦龙三言里市井味最重的一部，人物对白密，多角色配音有发挥。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>醒世恒言</h3><span class="who">冯梦龙<em>1574–1646</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 8000–15000字 · 白话</span><b class="slot">主线</b><b class="slot">短篇</b></div>
+<p class="note">三言里市井味最重的一部，人物对白密，多角色配音有发挥。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="15" data-cat="话本白话" data-status="pub" data-lang="白话" data-slot="短篇" data-fit="4" data-q="初刻拍案惊奇凌濛初比三言更重情节反转，但部分篇目有色情内容，需筛。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>初刻拍案惊奇</h3><span class="who">凌濛初<em>1580–1644</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 8000–15000字 · 白话</span><b class="slot">短篇</b></div>
+<p class="note">比三言更重情节反转，但部分篇目有色情内容，需筛。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="16" data-cat="话本白话" data-status="pub" data-lang="白话" data-slot="短篇" data-fit="4" data-q="二刻拍案惊奇凌濛初同上，质量略逊初刻。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>二刻拍案惊奇</h3><span class="who">凌濛初<em>1580–1644</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 8000–15000字 · 白话</span><b class="slot">短篇</b></div>
+<p class="note">同上，质量略逊初刻。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="17" data-cat="话本白话" data-status="pub" data-lang="白话" data-slot="主线|短篇" data-fit="5" data-q="今古奇观抱瓮老人 辑三言二拍的精选集。想省选题功夫就直接从这本走。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>今古奇观</h3><span class="who">抱瓮老人 辑<em>明末</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 8000–15000字 · 白话</span><b class="slot">主线</b><b class="slot">短篇</b></div>
+<p class="note">三言二拍的精选集。想省选题功夫就直接从这本走。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li></ul></section><section class="sec" data-cat="侠义公案">
+<div class="gutter"><span class="glabel">侠义公案</span><span class="gcount mono">7</span></div>
+<ul class="list"><li class="row" data-id="18" data-cat="侠义公案" data-status="pub" data-lang="白话" data-slot="主线" data-fit="5" data-q="三侠五义石玉昆传统评书正统书目，回目本身就是现成分集表。开篇狸猫换太子极抓人。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>三侠五义</h3><span class="who">石玉昆<em>清</em></span></div>
+<div class="meta"><span class="mono">120 回 · 每回6000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">传统评书正统书目，回目本身就是现成分集表。开篇狸猫换太子极抓人。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="19" data-cat="侠义公案" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="七侠五义俞樾 改订三侠五义的文人修订本，开篇改动较大，文字更雅。二选一即可。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>七侠五义</h3><span class="who">俞樾 改订<em>1889</em></span></div>
+<div class="meta"><span class="mono">120 回 · 每回6000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">三侠五义的文人修订本，开篇改动较大，文字更雅。二选一即可。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="20" data-cat="侠义公案" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="小五义佚名三侠五义续书，质量下滑，作为长线储备。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>小五义</h3><span class="who">佚名<em>清</em></span></div>
+<div class="meta"><span class="mono">124 回 · 每回5000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">三侠五义续书，质量下滑，作为长线储备。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="21" data-cat="侠义公案" data-status="pub" data-lang="白话" data-slot="短篇" data-fit="4" data-q="包公案佚名又名龙图公案。一案一则，独立完结，适合单元档。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>包公案</h3><span class="who">佚名<em>明</em></span></div>
+<div class="meta"><span class="mono">100 篇 · 1500–4000字 · 白话</span><b class="slot">短篇</b></div>
+<p class="note">又名龙图公案。一案一则，独立完结，适合单元档。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="22" data-cat="侠义公案" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="施公案佚名篇幅巨大，只截取前 100 回即可自成体系。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>施公案</h3><span class="who">佚名<em>清</em></span></div>
+<div class="meta"><span class="mono">528 回 · 每回4000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">篇幅巨大，只截取前 100 回即可自成体系。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="23" data-cat="侠义公案" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="彭公案贪梦道人公案侠义的第三梯队，备用。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>彭公案</h3><span class="who">贪梦道人<em>清</em></span></div>
+<div class="meta"><span class="mono">100 回 · 每回5000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">公案侠义的第三梯队，备用。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="24" data-cat="侠义公案" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="儿女英雄传文康京味儿口语极佳，念出来就是评书腔，十三妹是好角色。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>儿女英雄传</h3><span class="who">文康<em>清</em></span></div>
+<div class="meta"><span class="mono">40 回 · 每回8000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">京味儿口语极佳，念出来就是评书腔，十三妹是好角色。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="长篇章回">
+<div class="gutter"><span class="glabel">长篇章回</span><span class="gcount mono">13</span></div>
+<ul class="list"><li class="row" data-id="25" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="5" data-q="水浒传施耐庵前 70 回人物单元性极强（鲁智深、林冲、武松各自成传），最适合说书的一部。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>水浒传</h3><span class="who">施耐庵<em>元末明初</em></span></div>
+<div class="meta"><span class="mono">120 回 · 每回7000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">前 70 回人物单元性极强（鲁智深、林冲、武松各自成传），最适合说书的一部。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="26" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="西游记吴承恩认知度最高，但同类频道最多，起步做容易淹没。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>西游记</h3><span class="who">吴承恩<em>明</em></span></div>
+<div class="meta"><span class="mono">100 回 · 每回8000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">认知度最高，但同类频道最多，起步做容易淹没。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="27" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="三国演义罗贯中人物名多，纯听容易乱，要靠解说词补位。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>三国演义</h3><span class="who">罗贯中<em>元末明初</em></span></div>
+<div class="meta"><span class="mono">120 回 · 每回7000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">人物名多，纯听容易乱，要靠解说词补位。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="28" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="封神演义许仲琳法术打斗多，画面感强，但重复度高，需删减。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>封神演义</h3><span class="who">许仲琳<em>明</em></span></div>
+<div class="meta"><span class="mono">100 回 · 每回6000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">法术打斗多，画面感强，但重复度高，需删减。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="29" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="说岳全传钱彩传统评书大书目，忠奸对立清晰，听众情绪好带。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>说岳全传</h3><span class="who">钱彩<em>清</em></span></div>
+<div class="meta"><span class="mono">80 回 · 每回6000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">传统评书大书目，忠奸对立清晰，听众情绪好带。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="30" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="隋唐演义褚人获程咬金、秦琼等人物自带梗，评书传统强项。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>隋唐演义</h3><span class="who">褚人获<em>清</em></span></div>
+<div class="meta"><span class="mono">100 回 · 每回6000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">程咬金、秦琼等人物自带梗，评书传统强项。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="31" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="4" data-q="济公全传郭小亭单元式喜剧，一两回一个案子，最适合日更不断更。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>济公全传</h3><span class="who">郭小亭<em>清</em></span></div>
+<div class="meta"><span class="mono">240 回 · 每回4000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">单元式喜剧，一两回一个案子，最适合日更不断更。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="32" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线|助眠" data-fit="4" data-q="老残游记刘鹗文笔在晚清小说里数一数二。第二回「明湖居听书」本身就是写说书的名场面，可当频道开篇彩蛋。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>老残游记</h3><span class="who">刘鹗<em>1857–1909</em></span></div>
+<div class="meta"><span class="mono">20 回 · 每回6000字 · 白话</span><b class="slot">主线</b><b class="slot">助眠</b></div>
+<p class="note">文笔在晚清小说里数一数二。第二回「明湖居听书」本身就是写说书的名场面，可当频道开篇彩蛋。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="33" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="镜花缘李汝珍前 40 回海外奇谈段最好，后半变成炫学，建议只做前半。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>镜花缘</h3><span class="who">李汝珍<em>清</em></span></div>
+<div class="meta"><span class="mono">100 回 · 每回6000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">前 40 回海外奇谈段最好，后半变成炫学，建议只做前半。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="34" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="儒林外史吴敬梓讽刺短剧串烧，单元性强，但无主角，留人难。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>儒林外史</h3><span class="who">吴敬梓<em>清</em></span></div>
+<div class="meta"><span class="mono">56 回 · 每回7000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">讽刺短剧串烧，单元性强，但无主角，留人难。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="35" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="东周列国志冯梦龙·蔡元放史实密度高，人名地名多，纯音频门槛偏高。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>东周列国志</h3><span class="who">冯梦龙·蔡元放<em>明清</em></span></div>
+<div class="meta"><span class="mono">108 回 · 每回6000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">史实密度高，人名地名多，纯音频门槛偏高。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="36" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="杨家将演义佚名故事熟，篇幅短，适合做 50 集的中型连载。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>杨家将演义</h3><span class="who">佚名<em>明</em></span></div>
+<div class="meta"><span class="mono">50 回 · 每回5000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">故事熟，篇幅短，适合做 50 集的中型连载。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="37" data-cat="长篇章回" data-status="pub" data-lang="白话" data-slot="主线" data-fit="3" data-q="红楼梦曹雪芹·高鹗竞品极多且都是名家版本，不建议新频道起步做。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>红楼梦</h3><span class="who">曹雪芹·高鹗<em>清</em></span></div>
+<div class="meta"><span class="mono">120 回 · 每回8000字 · 白话</span><b class="slot">主线</b></div>
+<p class="note">竞品极多且都是名家版本，不建议新频道起步做。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="小品游记">
+<div class="gutter"><span class="glabel">小品游记</span><span class="gcount mono">6</span></div>
+<ul class="list"><li class="row" data-id="38" data-cat="小品游记" data-status="pub" data-lang="文言" data-slot="助眠" data-fit="5" data-q="浮生六记沈复文字温润无高潮，正是助眠档要的。芸娘是中文里最动人的女性形象之一。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>浮生六记</h3><span class="who">沈复<em>1763–1832</em></span></div>
+<div class="meta"><span class="mono">4 篇 · 约8000字/记 · 文言</span><b class="slot">助眠</b></div>
+<p class="note">文字温润无高潮，正是助眠档要的。芸娘是中文里最动人的女性形象之一。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="39" data-cat="小品游记" data-status="pub" data-lang="文言" data-slot="助眠" data-fit="5" data-q="陶庵梦忆张岱极短，一集串八到十则。湖心亭看雪三分钟能讲完，气质绝佳。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>陶庵梦忆</h3><span class="who">张岱<em>1597–1689</em></span></div>
+<div class="meta"><span class="mono">123 篇 · 200–1200字 · 文言</span><b class="slot">助眠</b></div>
+<p class="note">极短，一集串八到十则。湖心亭看雪三分钟能讲完，气质绝佳。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="40" data-cat="小品游记" data-status="pub" data-lang="文言" data-slot="助眠" data-fit="4" data-q="西湖梦寻张岱按地点编排，可做「一夜一景」的固定栏目。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>西湖梦寻</h3><span class="who">张岱<em>1597–1689</em></span></div>
+<div class="meta"><span class="mono">72 篇 · 300–1500字 · 文言</span><b class="slot">助眠</b></div>
+<p class="note">按地点编排，可做「一夜一景」的固定栏目。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="41" data-cat="小品游记" data-status="pub" data-lang="文言" data-slot="助眠" data-fit="4" data-q="徐霞客游记徐弘祖长而无高潮、地名绵密——这些在别处是缺点，在助眠档全是优点。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>徐霞客游记</h3><span class="who">徐弘祖<em>1587–1641</em></span></div>
+<div class="meta"><span class="mono">极长 · 文言</span><b class="slot">助眠</b></div>
+<p class="note">长而无高潮、地名绵密——这些在别处是缺点，在助眠档全是优点。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="42" data-cat="小品游记" data-status="pub" data-lang="文言" data-slot="助眠" data-fit="3" data-q="幽梦影张潮格言体，太碎，需大量串讲。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>幽梦影</h3><span class="who">张潮<em>清</em></span></div>
+<div class="meta"><span class="mono">219 篇 · 30–150字 · 文言</span><b class="slot">助眠</b></div>
+<p class="note">格言体，太碎，需大量串讲。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="43" data-cat="小品游记" data-status="pub" data-lang="文言" data-slot="助眠" data-fit="3" data-q="菜根谭洪应明同上，更适合做「一日一则」的短栏目。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>菜根谭</h3><span class="who">洪应明<em>明</em></span></div>
+<div class="meta"><span class="mono">360 篇 · 30–100字 · 文言</span><b class="slot">助眠</b></div>
+<p class="note">同上，更适合做「一日一则」的短栏目。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="中国近现代">
+<div class="gutter"><span class="glabel">中国近现代</span><span class="gcount mono">6</span></div>
+<ul class="list"><li class="row" data-id="44" data-cat="中国近现代" data-status="pub" data-lang="白话" data-slot="短篇" data-fit="4" data-q="故事新编鲁迅用现代口吻重写神话（补天、奔月、铸剑、非攻）。铸剑就是干将莫邪，可与搜神记做对照专题。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>故事新编</h3><span class="who">鲁迅<em>1881–1936</em></span></div>
+<div class="meta"><span class="mono">8 篇 · 5000–10000字 · 白话</span><b class="slot">短篇</b></div>
+<p class="note">用现代口吻重写神话（补天、奔月、铸剑、非攻）。铸剑就是干将莫邪，可与搜神记做对照专题。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="45" data-cat="中国近现代" data-status="pub" data-lang="白话" data-slot="短篇" data-fit="4" data-q="呐喊 · 彷徨鲁迅孔乙己、祝福、伤逝。文字本身已是口语，直接可读。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>呐喊 · 彷徨</h3><span class="who">鲁迅<em>1881–1936</em></span></div>
+<div class="meta"><span class="mono">39 篇 · 3000–10000字 · 白话</span><b class="slot">短篇</b></div>
+<p class="note">孔乙己、祝福、伤逝。文字本身已是口语，直接可读。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="46" data-cat="中国近现代" data-status="pub" data-lang="白话" data-slot="助眠" data-fit="4" data-q="呼兰河传萧红散文化长篇，无强情节，节奏慢，助眠档上品。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>呼兰河传</h3><span class="who">萧红<em>1911–1942</em></span></div>
+<div class="meta"><span class="mono">7 回 · 每章1万字 · 白话</span><b class="slot">助眠</b></div>
+<p class="note">散文化长篇，无强情节，节奏慢，助眠档上品。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="47" data-cat="中国近现代" data-status="pub" data-lang="白话" data-slot="短篇" data-fit="3" data-q="缀网劳蛛许地山落花生的短篇，宗教与南洋气息，题材少见。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>缀网劳蛛</h3><span class="who">许地山<em>1893–1941</em></span></div>
+<div class="meta"><span class="mono">12 篇 · 5000字 · 白话</span><b class="slot">短篇</b></div>
+<p class="note">落花生的短篇，宗教与南洋气息，题材少见。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="48" data-cat="中国近现代" data-status="pub" data-lang="白话" data-slot="短篇" data-fit="3" data-q="郁达夫小说选郁达夫沉沦等，情绪浓，但题材偏私密，选篇要谨慎。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>郁达夫小说选</h3><span class="who">郁达夫<em>1896–1945</em></span></div>
+<div class="meta"><span class="mono">20 篇 · 6000–15000字 · 白话</span><b class="slot">短篇</b></div>
+<p class="note">沉沦等，情绪浓，但题材偏私密，选篇要谨慎。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="49" data-cat="中国近现代" data-status="pub" data-lang="白话" data-slot="助眠" data-fit="3" data-q="朱自清散文朱自清背影、荷塘月色。认知度高但太耳熟，新鲜感弱。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>朱自清散文</h3><span class="who">朱自清<em>1898–1948</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 1500–4000字 · 白话</span><b class="slot">助眠</b></div>
+<p class="note">背影、荷塘月色。认知度高但太耳熟，新鲜感弱。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="地区限定">
+<div class="gutter"><span class="glabel">地区限定</span><span class="gcount mono">3</span></div>
+<ul class="list"><li class="row" data-id="50" data-cat="地区限定" data-status="reg" data-lang="白话" data-slot="主线" data-fit="5" data-q="骆驼祥子 · 四世同堂老舍中国、日本均已过保护期，但 life+70 地区（含 YouTube 所在的美国）未到。只在中文平台做可以，上 YouTube 有风险。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>骆驼祥子 · 四世同堂</h3><span class="who">老舍<em>1899–1966</em></span></div>
+<div class="meta"><span class="mono">白话</span><b class="slot">主线</b></div>
+<p class="note">中国、日本均已过保护期，但 life+70 地区（含 YouTube 所在的美国）未到。只在中文平台做可以，上 YouTube 有风险。</p>
+</div>
+<div class="side"><span class="seal reg">地区公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="51" data-cat="地区限定" data-status="reg" data-lang="白话" data-slot="主线" data-fit="5" data-q="啼笑因缘 · 金粉世家张恨水章回体白话，本来就是连载给市民读的，极适合说书。版权同老舍，仅限中文平台。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>啼笑因缘 · 金粉世家</h3><span class="who">张恨水<em>1895–1967</em></span></div>
+<div class="meta"><span class="mono">白话</span><b class="slot">主线</b></div>
+<p class="note">章回体白话，本来就是连载给市民读的，极适合说书。版权同老舍，仅限中文平台。</p>
+</div>
+<div class="side"><span class="seal reg">地区公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="52" data-cat="地区限定" data-status="reg" data-lang="自译" data-slot="短篇" data-fit="4" data-q="江户川乱步作品江户川乱步日本因 2018 年延长不溯及既往已公版，中国亦已公版；life+70 地区要等到 2036。很多人误以为能随便用。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>江户川乱步作品</h3><span class="who">江户川乱步<em>1894–1965</em></span></div>
+<div class="meta"><span class="mono">自译</span><b class="slot">短篇</b></div>
+<p class="note">日本因 2018 年延长不溯及既往已公版，中国亦已公版；life+70 地区要等到 2036。很多人误以为能随便用。</p>
+</div>
+<div class="side"><span class="seal reg">地区公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="未公版">
+<div class="gutter"><span class="glabel">未公版</span><span class="gcount mono">4</span></div>
+<ul class="list"><li class="row" data-id="53" data-cat="未公版" data-status="no" data-lang="自译" data-slot="" data-fit="0" data-q="远野物语柳田国男日本民间怪谈的源头，做日式怪谈的人第一个想到它——但要到 2033 年才在 life+70 地区公版。绕开。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>远野物语</h3><span class="who">柳田国男<em>1875–1962</em></span></div>
+<div class="meta"><span class="mono">119 篇 · 自译</span></div>
+<p class="note">日本民间怪谈的源头，做日式怪谈的人第一个想到它——但要到 2033 年才在 life+70 地区公版。绕开。</p>
+</div>
+<div class="side"><span class="seal no">未公版</span><span class="fit" title="朗读适配度"><span class="na">不可用</span></span></div>
+</li><li class="row" data-id="54" data-cat="未公版" data-status="no" data-lang="白话" data-slot="" data-fit="0" data-q="金庸武侠金庸说书频道最想做的题材，也是最危险的。全部在版权内，且金庸方维权积极。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>金庸武侠</h3><span class="who">金庸<em>1924–2018</em></span></div>
+<div class="meta"><span class="mono">白话</span></div>
+<p class="note">说书频道最想做的题材，也是最危险的。全部在版权内，且金庸方维权积极。</p>
+</div>
+<div class="side"><span class="seal no">未公版</span><span class="fit" title="朗读适配度"><span class="na">不可用</span></span></div>
+</li><li class="row" data-id="55" data-cat="未公版" data-status="no" data-lang="白话" data-slot="" data-fit="0" data-q="名家评书录音单田芳·袁阔成等录音、改编脚本、演出版本都各自有权利人。不要拿来重剪或洗稿。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>名家评书录音</h3><span class="who">单田芳·袁阔成等<em>—</em></span></div>
+<div class="meta"><span class="mono">白话</span></div>
+<p class="note">录音、改编脚本、演出版本都各自有权利人。不要拿来重剪或洗稿。</p>
+</div>
+<div class="side"><span class="seal no">未公版</span><span class="fit" title="朗读适配度"><span class="na">不可用</span></span></div>
+</li><li class="row" data-id="91" data-cat="未公版" data-status="no" data-lang="自译" data-slot="" data-fit="0" data-q="阿加莎·克里斯蒂作品阿加莎·克里斯蒂要到 2047 年。推理类想做只能走福尔摩斯。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>阿加莎·克里斯蒂作品</h3><span class="who">阿加莎·克里斯蒂<em>1890–1976</em></span></div>
+<div class="meta"><span class="mono">自译</span></div>
+<p class="note">要到 2047 年。推理类想做只能走福尔摩斯。</p>
+</div>
+<div class="side"><span class="seal no">未公版</span><span class="fit" title="朗读适配度"><span class="na">不可用</span></span></div>
+</li></ul></section><section class="sec" data-cat="日本古典">
+<div class="gutter"><span class="glabel">日本古典</span><span class="gcount mono">9</span></div>
+<ul class="list"><li class="row" data-id="56" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="5" data-q="今昔物语集佚名最看好的差异化方向。芥川的罗生门、鼻子都取材于此。中文说书做这个的几乎没有。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>今昔物语集</h3><span class="who">佚名<em>12世纪</em></span></div>
+<div class="meta"><span class="mono">1000 篇 · 200–2000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">最看好的差异化方向。芥川的罗生门、鼻子都取材于此。中文说书做这个的几乎没有。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="57" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="宇治拾遗物语佚名含瘤取爷爷、芋粥等，比今昔更诙谐好懂。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>宇治拾遗物语</h3><span class="who">佚名<em>13世纪</em></span></div>
+<div class="meta"><span class="mono">197 篇 · 300–2000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">含瘤取爷爷、芋粥等，比今昔更诙谐好懂。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="58" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="日本灵异记景戒日本最早的说话集，因果报应故事，与中国志怪同源可做对照。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>日本灵异记</h3><span class="who">景戒<em>9世纪</em></span></div>
+<div class="meta"><span class="mono">116 篇 · 300–1500字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">日本最早的说话集，因果报应故事，与中国志怪同源可做对照。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="59" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="5" data-q="雨月物语上田秋成篇篇精品且长度正好。菊花之约、蛇性之淫、吉备津之釜都是一集一篇的理想素材。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>雨月物语</h3><span class="who">上田秋成<em>1734–1809</em></span></div>
+<div class="meta"><span class="mono">9 篇 · 4000–8000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">篇篇精品且长度正好。菊花之约、蛇性之淫、吉备津之釜都是一集一篇的理想素材。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="60" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="3" data-q="春雨物语上田秋成雨月的续作，知名度低但质量不差。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>春雨物语</h3><span class="who">上田秋成<em>1734–1809</em></span></div>
+<div class="meta"><span class="mono">10 篇 · 3000–8000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">雨月的续作，知名度低但质量不差。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="61" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="睡前|短篇" data-fit="4" data-q="御伽草子佚名一寸法师、浦岛太郎、酒吞童子。适合睡前档，也可做日本童话专题。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>御伽草子</h3><span class="who">佚名<em>室町</em></span></div>
+<div class="meta"><span class="mono">23 篇 · 1000–4000字 · 自译</span><b class="slot">睡前</b><b class="slot">短篇</b></div>
+<p class="note">一寸法师、浦岛太郎、酒吞童子。适合睡前档，也可做日本童话专题。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="62" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="主线" data-fit="4" data-q="平家物语佚名本身就是琵琶法师口头传讲的底本——等于现成的日本版说书脚本，这一点很少有人注意到。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>平家物语</h3><span class="who">佚名<em>13世纪</em></span></div>
+<div class="meta"><span class="mono">12 回 · 每卷长 · 自译</span><b class="slot">主线</b></div>
+<p class="note">本身就是琵琶法师口头传讲的底本——等于现成的日本版说书脚本，这一点很少有人注意到。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="63" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="睡前" data-fit="3" data-q="竹取物语佚名日本最早的物语，可拆三到四集。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>竹取物语</h3><span class="who">佚名<em>平安</em></span></div>
+<div class="meta"><span class="mono">1 篇 · 约1.5万字 · 自译</span><b class="slot">睡前</b></div>
+<p class="note">日本最早的物语，可拆三到四集。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="64" data-cat="日本古典" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="3" data-q="耳囊根岸镇卫江户町奉行记录的市井奇闻，真实感强。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>耳囊</h3><span class="who">根岸镇卫<em>江户</em></span></div>
+<div class="meta"><span class="mono">1000 篇 · 200–800字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">江户町奉行记录的市井奇闻，真实感强。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="日本近代">
+<div class="gutter"><span class="glabel">日本近代</span><span class="gcount mono">12</span></div>
+<ul class="list"><li class="row" data-id="65" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="5" data-q="怪谈 Kwaidan小泉八云英文原著已公版。无耳芳一、雪女、貉、辘轳首、茶碗之中。本来就是写给西方读者听的，结构极清晰。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>怪谈 Kwaidan</h3><span class="who">小泉八云<em>1850–1904</em></span></div>
+<div class="meta"><span class="mono">17 篇 · 1000–4000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">英文原著已公版。无耳芳一、雪女、貉、辘轳首、茶碗之中。本来就是写给西方读者听的，结构极清晰。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="66" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="骨董 · 影 · 日本杂录小泉八云怪谈之外的其余怪异集，篇目冷门，做完怪谈可无缝续上。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>骨董 · 影 · 日本杂录</h3><span class="who">小泉八云<em>1850–1904</em></span></div>
+<div class="meta"><span class="mono">50 篇 · 1000–4000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">怪谈之外的其余怪异集，篇目冷门，做完怪谈可无缝续上。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="67" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="5" data-q="芥川龙之介全集芥川龙之介罗生门、竹林中、地狱变、蜘蛛之丝、鼻子、杜子春、河童。短篇密度和质量在近代作家里最高。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>芥川龙之介全集</h3><span class="who">芥川龙之介<em>1892–1927</em></span></div>
+<div class="meta"><span class="mono">150 篇 · 2000–15000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">罗生门、竹林中、地狱变、蜘蛛之丝、鼻子、杜子春、河童。短篇密度和质量在近代作家里最高。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="68" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇|助眠" data-fit="5" data-q="梦十夜夏目漱石十个怪梦，每篇几分钟，气氛诡谲又不惊悚，助眠与怪谈两档通吃。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>梦十夜</h3><span class="who">夏目漱石<em>1867–1916</em></span></div>
+<div class="meta"><span class="mono">10 篇 · 1000–2000字 · 自译</span><b class="slot">短篇</b><b class="slot">助眠</b></div>
+<p class="note">十个怪梦，每篇几分钟，气氛诡谲又不惊悚，助眠与怪谈两档通吃。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="69" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="5" data-q="山月记 · 李陵中岛敦取材中国典故（人虎传、史记），中文听众天然亲近，文字又是日本近代最讲究的之一。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>山月记 · 李陵</h3><span class="who">中岛敦<em>1909–1942</em></span></div>
+<div class="meta"><span class="mono">10 篇 · 5000–15000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">取材中国典故（人虎传、史记），中文听众天然亲近，文字又是日本近代最讲究的之一。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="70" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="高野圣僧 · 外科室泉镜花妖异唯美一路，山中魔女题材，气质独特但文字难译。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>高野圣僧 · 外科室</h3><span class="who">泉镜花<em>1873–1939</em></span></div>
+<div class="meta"><span class="mono">30 篇 · 5000–20000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">妖异唯美一路，山中魔女题材，气质独特但文字难译。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="71" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="睡前" data-fit="5" data-q="银河铁道之夜宫泽贤治儿童睡前档的最优解之一。要求太多的餐馆、猫的事务所都短小可爱。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>银河铁道之夜</h3><span class="who">宫泽贤治<em>1896–1933</em></span></div>
+<div class="meta"><span class="mono">90 篇 · 2000–15000字 · 自译</span><b class="slot">睡前</b></div>
+<p class="note">儿童睡前档的最优解之一。要求太多的餐馆、猫的事务所都短小可爱。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="72" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="御伽草纸 · 人间失格太宰治御伽草纸是他重写日本童话的作品，反讽味重，适合成人向睡前档。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>御伽草纸 · 人间失格</h3><span class="who">太宰治<em>1909–1948</em></span></div>
+<div class="meta"><span class="mono">30 篇 · 3000–3万字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">御伽草纸是他重写日本童话的作品，反讽味重，适合成人向睡前档。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="73" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="高濑舟 · 舞姬森鸥外高濑舟只有几千字却是伦理难题，讲完能引出评论区讨论。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>高濑舟 · 舞姬</h3><span class="who">森鸥外<em>1862–1922</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 3000–15000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">高濑舟只有几千字却是伦理难题，讲完能引出评论区讨论。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="74" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="盛开的樱花林下坂口安吾2026 年 1 月刚进入 life+70 地区的公版，目前几乎没人做，抢先做有窗口期。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>盛开的樱花林下</h3><span class="who">坂口安吾<em>1906–1955</em></span></div>
+<div class="meta"><span class="mono">30 篇 · 5000–15000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">2026 年 1 月刚进入 life+70 地区的公版，目前几乎没人做，抢先做有窗口期。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="75" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="助眠" data-fit="3" data-q="柠檬梶井基次郎情节极淡，全是感觉，助眠向。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>柠檬</h3><span class="who">梶井基次郎<em>1901–1932</em></span></div>
+<div class="meta"><span class="mono">20 篇 · 1500–5000字 · 自译</span><b class="slot">助眠</b></div>
+<p class="note">情节极淡，全是感觉，助眠向。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li><li class="row" data-id="76" data-cat="日本近代" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="3" data-q="青梅竹马樋口一叶明治口语，译写难度高。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>青梅竹马</h3><span class="who">樋口一叶<em>1872–1896</em></span></div>
+<div class="meta"><span class="mono">10 篇 · 5000–20000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">明治口语，译写难度高。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li></ul></section><section class="sec" data-cat="西方">
+<div class="gutter"><span class="glabel">西方</span><span class="gcount mono">14</span></div>
+<ul class="list"><li class="row" data-id="77" data-cat="西方" data-status="pub" data-lang="自译" data-slot="主线|短篇" data-fit="5" data-q="福尔摩斯全集柯南·道尔56 短篇 + 4 长篇，一集一案，日更最省心的一部。全球已全部公版。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>福尔摩斯全集</h3><span class="who">柯南·道尔<em>1859–1930</em></span></div>
+<div class="meta"><span class="mono">60 篇 · 6000–12000字 · 自译</span><b class="slot">主线</b><b class="slot">短篇</b></div>
+<p class="note">56 短篇 + 4 长篇，一集一案，日更最省心的一部。全球已全部公版。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="78" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="5" data-q="爱伦·坡小说全集爱伦·坡黑猫、厄舍府的倒塌、泄密的心、莫格街谋杀案、金甲虫、红死病的假面。悬疑与恐怖两条线的源头。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>爱伦·坡小说全集</h3><span class="who">爱伦·坡<em>1809–1849</em></span></div>
+<div class="meta"><span class="mono">70 篇 · 3000–12000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">黑猫、厄舍府的倒塌、泄密的心、莫格街谋杀案、金甲虫、红死病的假面。悬疑与恐怖两条线的源头。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="79" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="5" data-q="M.R.James 鬼故事集蒙塔古·罗兹·詹姆斯英国古典鬼故事之王，作品本来就是写来在圣诞夜口头讲的——天生的说书素材，中文版本极少。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>M.R.James 鬼故事集</h3><span class="who">蒙塔古·罗兹·詹姆斯<em>1862–1936</em></span></div>
+<div class="meta"><span class="mono">33 篇 · 5000–10000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">英国古典鬼故事之王，作品本来就是写来在圣诞夜口头讲的——天生的说书素材，中文版本极少。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="80" data-cat="西方" data-status="pub" data-lang="自译" data-slot="主线" data-fit="5" data-q="一千零一夜民间套盒结构自带「且听下回分解」，是全世界最早的连载说书。适合做超长线主线。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>一千零一夜</h3><span class="who">民间<em>—</em></span></div>
+<div class="meta"><span class="mono">1000 回 · 1000–8000字 · 自译</span><b class="slot">主线</b></div>
+<p class="note">套盒结构自带「且听下回分解」，是全世界最早的连载说书。适合做超长线主线。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="81" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="欧·亨利短篇集欧·亨利结尾反转，八到十分钟一集，节奏最接近短视频爽感。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>欧·亨利短篇集</h3><span class="who">欧·亨利<em>1862–1910</em></span></div>
+<div class="meta"><span class="mono">300 篇 · 2000–5000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">结尾反转，八到十分钟一集，节奏最接近短视频爽感。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="82" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="莫泊桑短篇集莫泊桑项链、羊脂球、我的叔叔于勒。另有一批被忽视的怪谈短篇（奥尔拉）。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>莫泊桑短篇集</h3><span class="who">莫泊桑<em>1850–1893</em></span></div>
+<div class="meta"><span class="mono">300 篇 · 2000–8000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">项链、羊脂球、我的叔叔于勒。另有一批被忽视的怪谈短篇（奥尔拉）。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="83" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="契诃夫短篇集契诃夫变色龙、套中人、万卡。幽默与悲凉并存，适合成人向单元档。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>契诃夫短篇集</h3><span class="who">契诃夫<em>1860–1904</em></span></div>
+<div class="meta"><span class="mono">500 篇 · 1500–6000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">变色龙、套中人、万卡。幽默与悲凉并存，适合成人向单元档。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="84" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="狄康卡近乡夜话果戈里乌克兰民间怪谈，「维」是斯拉夫版聊斋，气氛极佳。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>狄康卡近乡夜话</h3><span class="who">果戈里<em>1809–1852</em></span></div>
+<div class="meta"><span class="mono">8 篇 · 6000–20000字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">乌克兰民间怪谈，「维」是斯拉夫版聊斋，气氛极佳。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="85" data-cat="西方" data-status="pub" data-lang="自译" data-slot="主线" data-fit="4" data-q="德古拉布拉姆·斯托克书信与日记体，天然多视角——正好用你的多音色派生方案，一个角色一种声音。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>德古拉</h3><span class="who">布拉姆·斯托克<em>1847–1912</em></span></div>
+<div class="meta"><span class="mono">27 回 · 每章8000字 · 自译</span><b class="slot">主线</b></div>
+<p class="note">书信与日记体，天然多视角——正好用你的多音色派生方案，一个角色一种声音。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="86" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="4" data-q="洛夫克拉夫特作品集H.P.洛夫克拉夫特克苏鲁源头。美国版权状况历史上有争议，但普遍按公版处理；life+70 已过期。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>洛夫克拉夫特作品集</h3><span class="who">H.P.洛夫克拉夫特<em>1890–1937</em></span></div>
+<div class="meta"><span class="mono">60 篇 · 5000–3万字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">克苏鲁源头。美国版权状况历史上有争议，但普遍按公版处理；life+70 已过期。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="87" data-cat="西方" data-status="pub" data-lang="自译" data-slot="睡前" data-fit="5" data-q="安徒生童话安徒生睡前档的基本盘，认知度与安全性都最高。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>安徒生童话</h3><span class="who">安徒生<em>1805–1875</em></span></div>
+<div class="meta"><span class="mono">168 篇 · 1000–6000字 · 自译</span><b class="slot">睡前</b></div>
+<p class="note">睡前档的基本盘，认知度与安全性都最高。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="88" data-cat="西方" data-status="pub" data-lang="自译" data-slot="睡前" data-fit="5" data-q="格林童话格林兄弟初版比通行版黑暗得多，可做「原版格林」专题，差异化明显。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>格林童话</h3><span class="who">格林兄弟<em>1785–1863</em></span></div>
+<div class="meta"><span class="mono">200 篇 · 500–4000字 · 自译</span><b class="slot">睡前</b></div>
+<p class="note">初版比通行版黑暗得多，可做「原版格林」专题，差异化明显。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</li><li class="row" data-id="89" data-cat="西方" data-status="pub" data-lang="自译" data-slot="睡前|主线" data-fit="4" data-q="快乐王子 · 道林·格雷王尔德童话集适合睡前，道林·格雷可做中型连载。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>快乐王子 · 道林·格雷</h3><span class="who">王尔德<em>1854–1900</em></span></div>
+<div class="meta"><span class="mono">9 篇 · 3000–6万字 · 自译</span><b class="slot">睡前</b><b class="slot">主线</b></div>
+<p class="note">童话集适合睡前，道林·格雷可做中型连载。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</li><li class="row" data-id="90" data-cat="西方" data-status="pub" data-lang="自译" data-slot="短篇" data-fit="3" data-q="变形记卡夫卡抽象，纯听理解成本高，需要解说词托底。">
+<label class="pick"><input type="checkbox" aria-label="选入片单"><span></span></label>
+<div class="main">
+<div class="head"><h3>变形记</h3><span class="who">卡夫卡<em>1883–1924</em></span></div>
+<div class="meta"><span class="mono">40 篇 · 2000–2万字 · 自译</span><b class="slot">短篇</b></div>
+<p class="note">抽象，纯听理解成本高，需要解说词托底。</p>
+</div>
+<div class="side"><span class="seal pub">全球公版</span><span class="fit" title="朗读适配度"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</li></ul></section>
+<div class="empty" id="empty">没有符合这些条件的书。去掉几个筛选再看。</div>
+</div>
+
+<div class="tray" id="tray"><span>已选<b id="cnt">0</b>部</span>
+ <button id="exp">导出片单 JSON</button><button class="ghost" id="clr">清空</button></div>
+
+<script>
+const rows=[...document.querySelectorAll('.row')], secs=[...document.querySelectorAll('.sec')];
+const active={status:new Set(),lang:new Set(),slot:new Set(),fit:new Set()};
+const q=document.getElementById('q');
+
+function apply(){
+ const t=q.value.trim().toLowerCase();
+ let n=0;
+ rows.forEach(r=>{
+  let ok=true;
+  if(t && !r.dataset.q.toLowerCase().includes(t)) ok=false;
+  if(ok && active.status.size && !active.status.has(r.dataset.status)) ok=false;
+  if(ok && active.lang.size && !active.lang.has(r.dataset.lang)) ok=false;
+  if(ok && active.slot.size){
+   const s=r.dataset.slot.split('|');
+   if(![...active.slot].some(v=>s.includes(v))) ok=false;
+  }
+  if(ok && active.fit.size && r.dataset.fit!=='5') ok=false;
+  r.classList.toggle('hide',!ok); if(ok) n++;
+ });
+ secs.forEach(s=>s.classList.toggle('hide',![...s.querySelectorAll('.row')].some(r=>!r.classList.contains('hide'))));
+ document.getElementById('empty').classList.toggle('on',n===0);
+}
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+ const on=c.getAttribute('aria-pressed')==='true';
+ c.setAttribute('aria-pressed',!on);
+ active[c.dataset.k][on?'delete':'add'](c.dataset.v);
+ apply();
+});
+q.oninput=apply;
+
+const picked=new Set();
+document.querySelectorAll('.pick input').forEach(cb=>cb.onchange=e=>{
+ const id=e.target.closest('.row').dataset.id;
+ e.target.checked?picked.add(id):picked.delete(id);
+ document.getElementById('cnt').textContent=picked.size;
+ document.getElementById('tray').classList.toggle('on',picked.size>0);
+});
+document.getElementById('clr').onclick=()=>{
+ picked.clear(); document.querySelectorAll('.pick input').forEach(c=>c.checked=false);
+ document.getElementById('tray').classList.remove('on');
+};
+const DATA=[{"title": "聊斋志异", "author": "蒲松龄", "dates": "1640–1715", "cat": "志怪笔记", "form": "篇集", "pieces": 491, "len": "1000–5000字", "lang": "文言", "status": "pub", "fit": 5, "slot": ["主线", "短篇"], "note": "起步首选。单篇独立完结，不怕断章；鬼狐题材是听书刚需，且认知度高。", "id": 1}, {"title": "阅微草堂笔记", "author": "纪昀", "dates": "1724–1805", "cat": "志怪笔记", "form": "篇集", "pieces": 1200, "len": "200–800字", "lang": "文言", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "极短，一集串三五则做成「夜话」合集。纪昀有意写得平实，改口语容易。", "id": 2}, {"title": "子不语", "author": "袁枚", "dates": "1716–1797", "cat": "志怪笔记", "form": "篇集", "pieces": 1000, "len": "300–1500字", "lang": "文言", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "比聊斋更荒诞猎奇，重口味多。适合做「聊斋讲完之后」的续档。", "id": 3}, {"title": "搜神记", "author": "干宝", "dates": "东晋", "cat": "志怪笔记", "form": "篇集", "pieces": 464, "len": "200–2000字", "lang": "文言", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "干将莫邪、宋定伯捉鬼、李寄斩蛇的原型都在这。故事骨架硬，需自己补血肉。", "id": 4}, {"title": "幽明录", "author": "刘义庆", "dates": "南朝宋", "cat": "志怪笔记", "form": "篇集", "pieces": 265, "len": "200–1000字", "lang": "文言", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "残本。刘晨阮肇入天台等名篇出处。", "id": 5}, {"title": "酉阳杂俎", "author": "段成式", "dates": "唐", "cat": "志怪笔记", "form": "篇集", "pieces": 1300, "len": "100–1500字", "lang": "文言", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "博物志怪，冷知识极多。可做「唐朝人的世界」这类专题。", "id": 6}, {"title": "太平广记", "author": "李昉等编", "dates": "宋", "cat": "志怪笔记", "form": "素材库", "pieces": 7000, "len": "不等", "lang": "文言", "status": "pub", "fit": 5, "slot": ["素材库"], "note": "唐前故事总汇，唐传奇多赖此保存。当选题库翻，不要顺着读。", "id": 7}, {"title": "夷坚志", "author": "洪迈", "dates": "1123–1202", "cat": "志怪笔记", "form": "篇集", "pieces": 2700, "len": "200–1500字", "lang": "文言", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "宋代市井怪谈，量大质杂，要挑。", "id": 8}, {"title": "世说新语", "author": "刘义庆", "dates": "南朝宋", "cat": "志怪笔记", "form": "篇集", "pieces": 1130, "len": "50–500字", "lang": "文言", "status": "pub", "fit": 3, "slot": ["助眠", "短篇"], "note": "无鬼怪，全是人物轶事。适合闲谈档或助眠。", "id": 9}, {"title": "山海经", "author": "先秦", "dates": "—", "cat": "志怪笔记", "form": "篇集", "pieces": 0, "len": "极短", "lang": "文言", "status": "pub", "fit": 3, "slot": ["素材库"], "note": "原文本身不成故事，得大量补讲。适合做「解说」而非「说书」。", "id": 10}, {"title": "唐传奇选", "author": "裴铏·李朝威·白行简等", "dates": "唐", "cat": "唐传奇", "form": "篇集", "pieces": 30, "len": "3000–8000字", "lang": "文言", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "聂隐娘、虬髯客传、枕中记、南柯太守传、离魂记、柳毅传、李娃传、霍小玉传、莺莺传、红线传、昆仑奴、杜子春、谢小娥传。篇幅与戏剧强度都刚好，一篇一集。", "id": 11}, {"title": "喻世明言", "author": "冯梦龙", "dates": "1574–1646", "cat": "话本白话", "form": "篇集", "pieces": 40, "len": "8000–15000字", "lang": "白话", "status": "pub", "fit": 5, "slot": ["主线", "短篇"], "note": "明代白话原文，几乎不用改写就能读，这是它最大的价值。一篇可拆两集。", "id": 12}, {"title": "警世通言", "author": "冯梦龙", "dates": "1574–1646", "cat": "话本白话", "form": "篇集", "pieces": 40, "len": "8000–15000字", "lang": "白话", "status": "pub", "fit": 5, "slot": ["主线", "短篇"], "note": "杜十娘怒沉百宝箱、白娘子永镇雷峰塔都在这一部。", "id": 13}, {"title": "醒世恒言", "author": "冯梦龙", "dates": "1574–1646", "cat": "话本白话", "form": "篇集", "pieces": 40, "len": "8000–15000字", "lang": "白话", "status": "pub", "fit": 5, "slot": ["主线", "短篇"], "note": "三言里市井味最重的一部，人物对白密，多角色配音有发挥。", "id": 14}, {"title": "初刻拍案惊奇", "author": "凌濛初", "dates": "1580–1644", "cat": "话本白话", "form": "篇集", "pieces": 40, "len": "8000–15000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "比三言更重情节反转，但部分篇目有色情内容，需筛。", "id": 15}, {"title": "二刻拍案惊奇", "author": "凌濛初", "dates": "1580–1644", "cat": "话本白话", "form": "篇集", "pieces": 40, "len": "8000–15000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "同上，质量略逊初刻。", "id": 16}, {"title": "今古奇观", "author": "抱瓮老人 辑", "dates": "明末", "cat": "话本白话", "form": "篇集", "pieces": 40, "len": "8000–15000字", "lang": "白话", "status": "pub", "fit": 5, "slot": ["主线", "短篇"], "note": "三言二拍的精选集。想省选题功夫就直接从这本走。", "id": 17}, {"title": "三侠五义", "author": "石玉昆", "dates": "清", "cat": "侠义公案", "form": "长篇", "pieces": 120, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 5, "slot": ["主线"], "note": "传统评书正统书目，回目本身就是现成分集表。开篇狸猫换太子极抓人。", "id": 18}, {"title": "七侠五义", "author": "俞樾 改订", "dates": "1889", "cat": "侠义公案", "form": "长篇", "pieces": 120, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "三侠五义的文人修订本，开篇改动较大，文字更雅。二选一即可。", "id": 19}, {"title": "小五义", "author": "佚名", "dates": "清", "cat": "侠义公案", "form": "长篇", "pieces": 124, "len": "每回5000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "三侠五义续书，质量下滑，作为长线储备。", "id": 20}, {"title": "包公案", "author": "佚名", "dates": "明", "cat": "侠义公案", "form": "篇集", "pieces": 100, "len": "1500–4000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "又名龙图公案。一案一则，独立完结，适合单元档。", "id": 21}, {"title": "施公案", "author": "佚名", "dates": "清", "cat": "侠义公案", "form": "长篇", "pieces": 528, "len": "每回4000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "篇幅巨大，只截取前 100 回即可自成体系。", "id": 22}, {"title": "彭公案", "author": "贪梦道人", "dates": "清", "cat": "侠义公案", "form": "长篇", "pieces": 100, "len": "每回5000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "公案侠义的第三梯队，备用。", "id": 23}, {"title": "儿女英雄传", "author": "文康", "dates": "清", "cat": "侠义公案", "form": "长篇", "pieces": 40, "len": "每回8000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "京味儿口语极佳，念出来就是评书腔，十三妹是好角色。", "id": 24}, {"title": "水浒传", "author": "施耐庵", "dates": "元末明初", "cat": "长篇章回", "form": "长篇", "pieces": 120, "len": "每回7000字", "lang": "白话", "status": "pub", "fit": 5, "slot": ["主线"], "note": "前 70 回人物单元性极强（鲁智深、林冲、武松各自成传），最适合说书的一部。", "id": 25}, {"title": "西游记", "author": "吴承恩", "dates": "明", "cat": "长篇章回", "form": "长篇", "pieces": 100, "len": "每回8000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "认知度最高，但同类频道最多，起步做容易淹没。", "id": 26}, {"title": "三国演义", "author": "罗贯中", "dates": "元末明初", "cat": "长篇章回", "form": "长篇", "pieces": 120, "len": "每回7000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "人物名多，纯听容易乱，要靠解说词补位。", "id": 27}, {"title": "封神演义", "author": "许仲琳", "dates": "明", "cat": "长篇章回", "form": "长篇", "pieces": 100, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "法术打斗多，画面感强，但重复度高，需删减。", "id": 28}, {"title": "说岳全传", "author": "钱彩", "dates": "清", "cat": "长篇章回", "form": "长篇", "pieces": 80, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "传统评书大书目，忠奸对立清晰，听众情绪好带。", "id": 29}, {"title": "隋唐演义", "author": "褚人获", "dates": "清", "cat": "长篇章回", "form": "长篇", "pieces": 100, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "程咬金、秦琼等人物自带梗，评书传统强项。", "id": 30}, {"title": "济公全传", "author": "郭小亭", "dates": "清", "cat": "长篇章回", "form": "长篇", "pieces": 240, "len": "每回4000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线"], "note": "单元式喜剧，一两回一个案子，最适合日更不断更。", "id": 31}, {"title": "老残游记", "author": "刘鹗", "dates": "1857–1909", "cat": "长篇章回", "form": "长篇", "pieces": 20, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["主线", "助眠"], "note": "文笔在晚清小说里数一数二。第二回「明湖居听书」本身就是写说书的名场面，可当频道开篇彩蛋。", "id": 32}, {"title": "镜花缘", "author": "李汝珍", "dates": "清", "cat": "长篇章回", "form": "长篇", "pieces": 100, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "前 40 回海外奇谈段最好，后半变成炫学，建议只做前半。", "id": 33}, {"title": "儒林外史", "author": "吴敬梓", "dates": "清", "cat": "长篇章回", "form": "长篇", "pieces": 56, "len": "每回7000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "讽刺短剧串烧，单元性强，但无主角，留人难。", "id": 34}, {"title": "东周列国志", "author": "冯梦龙·蔡元放", "dates": "明清", "cat": "长篇章回", "form": "长篇", "pieces": 108, "len": "每回6000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "史实密度高，人名地名多，纯音频门槛偏高。", "id": 35}, {"title": "杨家将演义", "author": "佚名", "dates": "明", "cat": "长篇章回", "form": "长篇", "pieces": 50, "len": "每回5000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "故事熟，篇幅短，适合做 50 集的中型连载。", "id": 36}, {"title": "红楼梦", "author": "曹雪芹·高鹗", "dates": "清", "cat": "长篇章回", "form": "长篇", "pieces": 120, "len": "每回8000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["主线"], "note": "竞品极多且都是名家版本，不建议新频道起步做。", "id": 37}, {"title": "浮生六记", "author": "沈复", "dates": "1763–1832", "cat": "小品游记", "form": "篇集", "pieces": 4, "len": "约8000字/记", "lang": "文言", "status": "pub", "fit": 5, "slot": ["助眠"], "note": "文字温润无高潮，正是助眠档要的。芸娘是中文里最动人的女性形象之一。", "id": 38}, {"title": "陶庵梦忆", "author": "张岱", "dates": "1597–1689", "cat": "小品游记", "form": "篇集", "pieces": 123, "len": "200–1200字", "lang": "文言", "status": "pub", "fit": 5, "slot": ["助眠"], "note": "极短，一集串八到十则。湖心亭看雪三分钟能讲完，气质绝佳。", "id": 39}, {"title": "西湖梦寻", "author": "张岱", "dates": "1597–1689", "cat": "小品游记", "form": "篇集", "pieces": 72, "len": "300–1500字", "lang": "文言", "status": "pub", "fit": 4, "slot": ["助眠"], "note": "按地点编排，可做「一夜一景」的固定栏目。", "id": 40}, {"title": "徐霞客游记", "author": "徐弘祖", "dates": "1587–1641", "cat": "小品游记", "form": "长篇", "pieces": 0, "len": "极长", "lang": "文言", "status": "pub", "fit": 4, "slot": ["助眠"], "note": "长而无高潮、地名绵密——这些在别处是缺点，在助眠档全是优点。", "id": 41}, {"title": "幽梦影", "author": "张潮", "dates": "清", "cat": "小品游记", "form": "篇集", "pieces": 219, "len": "30–150字", "lang": "文言", "status": "pub", "fit": 3, "slot": ["助眠"], "note": "格言体，太碎，需大量串讲。", "id": 42}, {"title": "菜根谭", "author": "洪应明", "dates": "明", "cat": "小品游记", "form": "篇集", "pieces": 360, "len": "30–100字", "lang": "文言", "status": "pub", "fit": 3, "slot": ["助眠"], "note": "同上，更适合做「一日一则」的短栏目。", "id": 43}, {"title": "故事新编", "author": "鲁迅", "dates": "1881–1936", "cat": "中国近现代", "form": "篇集", "pieces": 8, "len": "5000–10000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "用现代口吻重写神话（补天、奔月、铸剑、非攻）。铸剑就是干将莫邪，可与搜神记做对照专题。", "id": 44}, {"title": "呐喊 · 彷徨", "author": "鲁迅", "dates": "1881–1936", "cat": "中国近现代", "form": "篇集", "pieces": 39, "len": "3000–10000字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "孔乙己、祝福、伤逝。文字本身已是口语，直接可读。", "id": 45}, {"title": "呼兰河传", "author": "萧红", "dates": "1911–1942", "cat": "中国近现代", "form": "长篇", "pieces": 7, "len": "每章1万字", "lang": "白话", "status": "pub", "fit": 4, "slot": ["助眠"], "note": "散文化长篇，无强情节，节奏慢，助眠档上品。", "id": 46}, {"title": "缀网劳蛛", "author": "许地山", "dates": "1893–1941", "cat": "中国近现代", "form": "篇集", "pieces": 12, "len": "5000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "落花生的短篇，宗教与南洋气息，题材少见。", "id": 47}, {"title": "郁达夫小说选", "author": "郁达夫", "dates": "1896–1945", "cat": "中国近现代", "form": "篇集", "pieces": 20, "len": "6000–15000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "沉沦等，情绪浓，但题材偏私密，选篇要谨慎。", "id": 48}, {"title": "朱自清散文", "author": "朱自清", "dates": "1898–1948", "cat": "中国近现代", "form": "篇集", "pieces": 40, "len": "1500–4000字", "lang": "白话", "status": "pub", "fit": 3, "slot": ["助眠"], "note": "背影、荷塘月色。认知度高但太耳熟，新鲜感弱。", "id": 49}, {"title": "骆驼祥子 · 四世同堂", "author": "老舍", "dates": "1899–1966", "cat": "地区限定", "form": "长篇", "pieces": 0, "len": "—", "lang": "白话", "status": "reg", "fit": 5, "slot": ["主线"], "note": "中国、日本均已过保护期，但 life+70 地区（含 YouTube 所在的美国）未到。只在中文平台做可以，上 YouTube 有风险。", "id": 50}, {"title": "啼笑因缘 · 金粉世家", "author": "张恨水", "dates": "1895–1967", "cat": "地区限定", "form": "长篇", "pieces": 0, "len": "—", "lang": "白话", "status": "reg", "fit": 5, "slot": ["主线"], "note": "章回体白话，本来就是连载给市民读的，极适合说书。版权同老舍，仅限中文平台。", "id": 51}, {"title": "江户川乱步作品", "author": "江户川乱步", "dates": "1894–1965", "cat": "地区限定", "form": "篇集", "pieces": 0, "len": "—", "lang": "自译", "status": "reg", "fit": 4, "slot": ["短篇"], "note": "日本因 2018 年延长不溯及既往已公版，中国亦已公版；life+70 地区要等到 2036。很多人误以为能随便用。", "id": 52}, {"title": "远野物语", "author": "柳田国男", "dates": "1875–1962", "cat": "未公版", "form": "篇集", "pieces": 119, "len": "—", "lang": "自译", "status": "no", "fit": 0, "slot": [], "note": "日本民间怪谈的源头，做日式怪谈的人第一个想到它——但要到 2033 年才在 life+70 地区公版。绕开。", "id": 53}, {"title": "金庸武侠", "author": "金庸", "dates": "1924–2018", "cat": "未公版", "form": "长篇", "pieces": 0, "len": "—", "lang": "白话", "status": "no", "fit": 0, "slot": [], "note": "说书频道最想做的题材，也是最危险的。全部在版权内，且金庸方维权积极。", "id": 54}, {"title": "名家评书录音", "author": "单田芳·袁阔成等", "dates": "—", "cat": "未公版", "form": "长篇", "pieces": 0, "len": "—", "lang": "白话", "status": "no", "fit": 0, "slot": [], "note": "录音、改编脚本、演出版本都各自有权利人。不要拿来重剪或洗稿。", "id": 55}, {"title": "今昔物语集", "author": "佚名", "dates": "12世纪", "cat": "日本古典", "form": "篇集", "pieces": 1000, "len": "200–2000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "最看好的差异化方向。芥川的罗生门、鼻子都取材于此。中文说书做这个的几乎没有。", "id": 56}, {"title": "宇治拾遗物语", "author": "佚名", "dates": "13世纪", "cat": "日本古典", "form": "篇集", "pieces": 197, "len": "300–2000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "含瘤取爷爷、芋粥等，比今昔更诙谐好懂。", "id": 57}, {"title": "日本灵异记", "author": "景戒", "dates": "9世纪", "cat": "日本古典", "form": "篇集", "pieces": 116, "len": "300–1500字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "日本最早的说话集，因果报应故事，与中国志怪同源可做对照。", "id": 58}, {"title": "雨月物语", "author": "上田秋成", "dates": "1734–1809", "cat": "日本古典", "form": "篇集", "pieces": 9, "len": "4000–8000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "篇篇精品且长度正好。菊花之约、蛇性之淫、吉备津之釜都是一集一篇的理想素材。", "id": 59}, {"title": "春雨物语", "author": "上田秋成", "dates": "1734–1809", "cat": "日本古典", "form": "篇集", "pieces": 10, "len": "3000–8000字", "lang": "自译", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "雨月的续作，知名度低但质量不差。", "id": 60}, {"title": "御伽草子", "author": "佚名", "dates": "室町", "cat": "日本古典", "form": "篇集", "pieces": 23, "len": "1000–4000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["睡前", "短篇"], "note": "一寸法师、浦岛太郎、酒吞童子。适合睡前档，也可做日本童话专题。", "id": 61}, {"title": "平家物语", "author": "佚名", "dates": "13世纪", "cat": "日本古典", "form": "长篇", "pieces": 12, "len": "每卷长", "lang": "自译", "status": "pub", "fit": 4, "slot": ["主线"], "note": "本身就是琵琶法师口头传讲的底本——等于现成的日本版说书脚本，这一点很少有人注意到。", "id": 62}, {"title": "竹取物语", "author": "佚名", "dates": "平安", "cat": "日本古典", "form": "篇集", "pieces": 1, "len": "约1.5万字", "lang": "自译", "status": "pub", "fit": 3, "slot": ["睡前"], "note": "日本最早的物语，可拆三到四集。", "id": 63}, {"title": "耳囊", "author": "根岸镇卫", "dates": "江户", "cat": "日本古典", "form": "篇集", "pieces": 1000, "len": "200–800字", "lang": "自译", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "江户町奉行记录的市井奇闻，真实感强。", "id": 64}, {"title": "怪谈 Kwaidan", "author": "小泉八云", "dates": "1850–1904", "cat": "日本近代", "form": "篇集", "pieces": 17, "len": "1000–4000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "英文原著已公版。无耳芳一、雪女、貉、辘轳首、茶碗之中。本来就是写给西方读者听的，结构极清晰。", "id": 65}, {"title": "骨董 · 影 · 日本杂录", "author": "小泉八云", "dates": "1850–1904", "cat": "日本近代", "form": "篇集", "pieces": 50, "len": "1000–4000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "怪谈之外的其余怪异集，篇目冷门，做完怪谈可无缝续上。", "id": 66}, {"title": "芥川龙之介全集", "author": "芥川龙之介", "dates": "1892–1927", "cat": "日本近代", "form": "篇集", "pieces": 150, "len": "2000–15000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "罗生门、竹林中、地狱变、蜘蛛之丝、鼻子、杜子春、河童。短篇密度和质量在近代作家里最高。", "id": 67}, {"title": "梦十夜", "author": "夏目漱石", "dates": "1867–1916", "cat": "日本近代", "form": "篇集", "pieces": 10, "len": "1000–2000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇", "助眠"], "note": "十个怪梦，每篇几分钟，气氛诡谲又不惊悚，助眠与怪谈两档通吃。", "id": 68}, {"title": "山月记 · 李陵", "author": "中岛敦", "dates": "1909–1942", "cat": "日本近代", "form": "篇集", "pieces": 10, "len": "5000–15000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "取材中国典故（人虎传、史记），中文听众天然亲近，文字又是日本近代最讲究的之一。", "id": 69}, {"title": "高野圣僧 · 外科室", "author": "泉镜花", "dates": "1873–1939", "cat": "日本近代", "form": "篇集", "pieces": 30, "len": "5000–20000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "妖异唯美一路，山中魔女题材，气质独特但文字难译。", "id": 70}, {"title": "银河铁道之夜", "author": "宫泽贤治", "dates": "1896–1933", "cat": "日本近代", "form": "篇集", "pieces": 90, "len": "2000–15000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["睡前"], "note": "儿童睡前档的最优解之一。要求太多的餐馆、猫的事务所都短小可爱。", "id": 71}, {"title": "御伽草纸 · 人间失格", "author": "太宰治", "dates": "1909–1948", "cat": "日本近代", "form": "篇集", "pieces": 30, "len": "3000–3万字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "御伽草纸是他重写日本童话的作品，反讽味重，适合成人向睡前档。", "id": 72}, {"title": "高濑舟 · 舞姬", "author": "森鸥外", "dates": "1862–1922", "cat": "日本近代", "form": "篇集", "pieces": 40, "len": "3000–15000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "高濑舟只有几千字却是伦理难题，讲完能引出评论区讨论。", "id": 73}, {"title": "盛开的樱花林下", "author": "坂口安吾", "dates": "1906–1955", "cat": "日本近代", "form": "篇集", "pieces": 30, "len": "5000–15000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "2026 年 1 月刚进入 life+70 地区的公版，目前几乎没人做，抢先做有窗口期。", "id": 74}, {"title": "柠檬", "author": "梶井基次郎", "dates": "1901–1932", "cat": "日本近代", "form": "篇集", "pieces": 20, "len": "1500–5000字", "lang": "自译", "status": "pub", "fit": 3, "slot": ["助眠"], "note": "情节极淡，全是感觉，助眠向。", "id": 75}, {"title": "青梅竹马", "author": "樋口一叶", "dates": "1872–1896", "cat": "日本近代", "form": "篇集", "pieces": 10, "len": "5000–20000字", "lang": "自译", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "明治口语，译写难度高。", "id": 76}, {"title": "福尔摩斯全集", "author": "柯南·道尔", "dates": "1859–1930", "cat": "西方", "form": "篇集", "pieces": 60, "len": "6000–12000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["主线", "短篇"], "note": "56 短篇 + 4 长篇，一集一案，日更最省心的一部。全球已全部公版。", "id": 77}, {"title": "爱伦·坡小说全集", "author": "爱伦·坡", "dates": "1809–1849", "cat": "西方", "form": "篇集", "pieces": 70, "len": "3000–12000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "黑猫、厄舍府的倒塌、泄密的心、莫格街谋杀案、金甲虫、红死病的假面。悬疑与恐怖两条线的源头。", "id": 78}, {"title": "M.R.James 鬼故事集", "author": "蒙塔古·罗兹·詹姆斯", "dates": "1862–1936", "cat": "西方", "form": "篇集", "pieces": 33, "len": "5000–10000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["短篇"], "note": "英国古典鬼故事之王，作品本来就是写来在圣诞夜口头讲的——天生的说书素材，中文版本极少。", "id": 79}, {"title": "一千零一夜", "author": "民间", "dates": "—", "cat": "西方", "form": "长篇", "pieces": 1000, "len": "1000–8000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["主线"], "note": "套盒结构自带「且听下回分解」，是全世界最早的连载说书。适合做超长线主线。", "id": 80}, {"title": "欧·亨利短篇集", "author": "欧·亨利", "dates": "1862–1910", "cat": "西方", "form": "篇集", "pieces": 300, "len": "2000–5000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "结尾反转，八到十分钟一集，节奏最接近短视频爽感。", "id": 81}, {"title": "莫泊桑短篇集", "author": "莫泊桑", "dates": "1850–1893", "cat": "西方", "form": "篇集", "pieces": 300, "len": "2000–8000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "项链、羊脂球、我的叔叔于勒。另有一批被忽视的怪谈短篇（奥尔拉）。", "id": 82}, {"title": "契诃夫短篇集", "author": "契诃夫", "dates": "1860–1904", "cat": "西方", "form": "篇集", "pieces": 500, "len": "1500–6000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "变色龙、套中人、万卡。幽默与悲凉并存，适合成人向单元档。", "id": 83}, {"title": "狄康卡近乡夜话", "author": "果戈里", "dates": "1809–1852", "cat": "西方", "form": "篇集", "pieces": 8, "len": "6000–20000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "乌克兰民间怪谈，「维」是斯拉夫版聊斋，气氛极佳。", "id": 84}, {"title": "德古拉", "author": "布拉姆·斯托克", "dates": "1847–1912", "cat": "西方", "form": "长篇", "pieces": 27, "len": "每章8000字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["主线"], "note": "书信与日记体，天然多视角——正好用你的多音色派生方案，一个角色一种声音。", "id": 85}, {"title": "洛夫克拉夫特作品集", "author": "H.P.洛夫克拉夫特", "dates": "1890–1937", "cat": "西方", "form": "篇集", "pieces": 60, "len": "5000–3万字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["短篇"], "note": "克苏鲁源头。美国版权状况历史上有争议，但普遍按公版处理；life+70 已过期。", "id": 86}, {"title": "安徒生童话", "author": "安徒生", "dates": "1805–1875", "cat": "西方", "form": "篇集", "pieces": 168, "len": "1000–6000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["睡前"], "note": "睡前档的基本盘，认知度与安全性都最高。", "id": 87}, {"title": "格林童话", "author": "格林兄弟", "dates": "1785–1863", "cat": "西方", "form": "篇集", "pieces": 200, "len": "500–4000字", "lang": "自译", "status": "pub", "fit": 5, "slot": ["睡前"], "note": "初版比通行版黑暗得多，可做「原版格林」专题，差异化明显。", "id": 88}, {"title": "快乐王子 · 道林·格雷", "author": "王尔德", "dates": "1854–1900", "cat": "西方", "form": "篇集", "pieces": 9, "len": "3000–6万字", "lang": "自译", "status": "pub", "fit": 4, "slot": ["睡前", "主线"], "note": "童话集适合睡前，道林·格雷可做中型连载。", "id": 89}, {"title": "变形记", "author": "卡夫卡", "dates": "1883–1924", "cat": "西方", "form": "篇集", "pieces": 40, "len": "2000–2万字", "lang": "自译", "status": "pub", "fit": 3, "slot": ["短篇"], "note": "抽象，纯听理解成本高，需要解说词托底。", "id": 90}, {"title": "阿加莎·克里斯蒂作品", "author": "阿加莎·克里斯蒂", "dates": "1890–1976", "cat": "未公版", "form": "长篇", "pieces": 0, "len": "—", "lang": "自译", "status": "no", "fit": 0, "slot": [], "note": "要到 2047 年。推理类想做只能走福尔摩斯。", "id": 91}];
+document.getElementById('exp').onclick=()=>{
+ const out=DATA.filter(d=>picked.has(String(d.id)));
+ const blob=new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob); a.download='shuoshu-shortlist.json'; a.click();
+ URL.revokeObjectURL(a.href);
+};
+</script></body></html>

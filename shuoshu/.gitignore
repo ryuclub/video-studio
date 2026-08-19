@@ -1,0 +1,6 @@
+# 说书线的产物规则跟着根 .gitignore 走（成片/音轨/场景图都在那边排除了）。
+# 这里只留一条：ab-test 和 voice-samples 是调音色时的一次性试听件，
+# 不是交付物，连目录一起不要。
+projects/*/ab-test/
+projects/*/voice-samples/
+projects/*/narrator-ab/

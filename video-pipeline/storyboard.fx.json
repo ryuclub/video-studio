@@ -1,0 +1,120 @@
+{
+ "title": "fx-kit 移植段 — 演示片",
+ "//": "demo.mp4 的第三段。前两段（A/C 层素材 + steps 序号卡）的源素材不在仓库里，只有这一段能整段重建",
+ "width": 1920,
+ "height": 1080,
+ "fps": 30,
+ "defaultTransition": null,
+ "shots": [
+  {
+   "id": "f01",
+   "start": 0,
+   "duration": 3.2,
+   "tier": "B",
+   "pseudo": "render",
+   "scene": {
+    "kind": "glitchTitle",
+    "text": "失控的二十三天",
+    "subtitle": "1997.11.03 — 11.26",
+    "slices": 4,
+    "amp": 14,
+    "seed": 7
+   },
+   "transition": "flash",
+   "note": "fx-kit 10 故障标题。出点用 04 闪白当转场。选词要笔画方向混杂——全横笔画的词（如「二十三天」）横向错位只在笔画两端露方块，读不出彩色鬼影"
+  },
+  {
+   "id": "f02",
+   "start": 3.2,
+   "duration": 5,
+   "tier": "B",
+   "pseudo": "render",
+   "scene": {
+    "kind": "compareBars",
+    "title": "配偶者特例 改定案",
+    "leftLabel": "现行",
+    "rightLabel": "改定案",
+    "rows": [
+     {
+      "label": "婚姻",
+      "l": 3,
+      "r": 5
+     },
+     {
+      "label": "在留",
+      "l": 1,
+      "r": 3
+     }
+    ]
+   },
+   "transition": "whip",
+   "note": "fx-kit 16 左右对照。出点用 03 横扫切换"
+  },
+  {
+   "id": "f03",
+   "start": 8.2,
+   "duration": 6,
+   "tier": "B",
+   "pseudo": "render",
+   "scene": {
+    "kind": "japanMap",
+    "title": "地价跌幅",
+    "cities": [
+     {
+      "name": "東京",
+      "value": "-68%"
+     },
+     {
+      "name": "名古屋",
+      "value": "-52%"
+     },
+     {
+      "name": "大阪",
+      "value": "-74%"
+     },
+     {
+      "name": "福岡",
+      "value": "-45%"
+     }
+    ],
+    "highlight": [
+     "北海道"
+    ]
+   },
+   "transition": "crossfade",
+   "note": "fx-kit 15 地图亮点。真都道府県轮廓，红点与所属县同刻亮。出点用 02 交叉溶解"
+  },
+  {
+   "id": "f04",
+   "start": 14.2,
+   "duration": 4.5,
+   "tier": "B",
+   "pseudo": "render",
+   "scene": {
+    "kind": "subtitleStack",
+    "lines": [
+     "访日客五年来首次减少",
+     "上半年 2108 万人，同比 -2.0%",
+     "日本政府观光局 · 2026-08 速报值"
+    ]
+   },
+   "transition": "whip",
+   "note": "fx-kit 08 三级字幕"
+  },
+  {
+   "id": "f05",
+   "start": 18.7,
+   "duration": 4.5,
+   "tier": "B",
+   "pseudo": "render",
+   "scene": {
+    "kind": "maskTitle",
+    "lines": [
+     "制度在收紧",
+     "但收紧不等于关门"
+    ]
+   },
+   "note": "fx-kit 09 遮罩上滑"
+  }
+ ]
+}

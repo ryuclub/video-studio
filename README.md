@@ -52,40 +52,55 @@ ffmpeg -hide_banner -filters | grep -E "rubberband|aexciter"
 
 ### 3. 字体
 
-**四条线用的不是同一套字体**，而且都是 fallback 链 —— 链上哪个存在就用哪个，
-所以**换机器画面就会变，而且不报错**。
+**四条线用的不是同一套字体**，前三条是 fallback 链——链上哪个存在就用哪个，
+这是**设计好的行为**（`joke-video/src/config.ts` 的注释就写着「Windows 建议：
+Microsoft YaHei」）。代价是**换机器画面会变，而且不报错**。
 
-| 用在哪 | fallback 链（从左到右） | 环境变量 |
+| 用在哪 | 字体 | 环境变量 |
 |---|---|---|
-| 段子 / 儿童故事<br>字幕 · 封面 · 片头卡 | `Noto Sans CJK SC` → `Noto Sans CJK JP` → `Source Han Sans SC` → `Microsoft YaHei` → `Yu Gothic UI` → `PingFang SC` | `JOKE_FONT` |
-| 说书 · 水墨题字 | `Noto Serif SC` → `Source Han Serif SC` → `SimSun` → `STSong` → `Songti SC` → `Microsoft YaHei` | `SHUOSHU_FONT` |
-| 说书 · 烧进画面的字幕（libass） | `Noto Serif SC`（写死，没有 fallback） | 改 `shuoshu-video.ts` |
-| 说书 · 封面 | 仓库 `fonts/` 下的 **7 个静态字重 OTF**，不看系统装了什么 | `SHUOSHU_COVER_FONT` |
-| 解说 · ass 字幕 | `Noto Sans CJK SC`（单个，没有 fallback） | `VG_FONT` |
+| 段子 / 儿童故事<br>字幕 · 封面 · 片头卡 | fallback 链：`Noto Sans CJK SC` → `Noto Sans CJK JP` → `Source Han Sans SC` → `Microsoft YaHei` → `Yu Gothic UI` → `PingFang SC` | `JOKE_FONT` |
+| 说书 · 水墨题字 | fallback 链：`Noto Serif SC` → `Source Han Serif SC` → `SimSun` → `STSong` → `Songti SC` → `Microsoft YaHei` | `SHUOSHU_FONT` |
+| 解说 · ass 字幕 | 单个族名，没有 fallback。**`.env` 里已经指定 `VG_FONT=Microsoft YaHei`** | `VG_FONT` |
+| 说书 · 封面 | **不走系统字体**：直接加载仓库 `fonts/` 下的 7 个静态字重 OTF（`loadSystemFonts: false` + `fontFiles`），族名 `Noto Serif CJK SC` 就是这批文件自身的 typographic family | `SHUOSHU_COVER_FONT` |
 
-**实测过的两台情形**（`npm run doctor` 自己会告诉你这台是哪种）：
+**开发机（Windows）实测落到哪**（`npm run doctor` 会替你测这台）：
 
-- **开发机（Windows）**：`Noto Sans CJK SC` 这个族名**根本不存在**（装的是 `Noto Sans SC`，
-  思源新旧命名不同），一路 fallback 落到 **Microsoft YaHei**；解说线那条没有 fallback，
-  直接静默回退到 libass 默认字体
-- **典型 macOS**：`Noto*` / `YaHei` / `SimSun` 全都没有 → 段子线落到 **PingFang SC**、
-  说书题字落到 **Songti SC**，跟 Windows 出来的**不是一个字形，字宽也不同**
+```
+✓ 段子 / 儿童故事：Microsoft YaHei（链上第 4 个）
+✓ 说书 水墨题字：Noto Serif SC（链上第 1 个）
+✓ 解说 ass 字幕：Microsoft YaHei（.env 已指定）
+✓ 说书 封面字重：fonts/ 下 7 个静态 OTF 齐全
+```
+
+**macOS 上会落到哪**——`Noto Sans CJK SC` / `Noto Sans CJK JP` / `Source Han Sans SC` /
+`Microsoft YaHei` / `Yu Gothic UI` / `SimSun` 这些 macOS 默认都没有，
+段子线大概率落到 `PingFang SC`、说书题字落到 `Songti SC`。
+**这一条没有在 Mac 上实测过**，到了机器上跑一次 `npm run doctor` 就知道。
 
 字幕纸片的尺寸是按字数估的（中文按字号全宽），跟真实字体无关，
 所以**纸片大小不变、字的实际占宽会变**，可能溢出或两边留白不匀。
 
-**想让两台机器出一样的画面，装这两个就够**（都是免费的 OFL）：
+**想让两台机器出一模一样的画面**，两条路：
 
-| 字体 | 下载 | 装完谁会用到 |
-|---|---|---|
-| **Noto Sans SC** | <https://fonts.google.com/noto/specimen/Noto+Sans+SC> | 段子 / 儿童故事 / 解说 —— 但要配 `JOKE_FONT="Noto Sans SC"` 和 `VG_FONT="Noto Sans SC"`，因为代码里写的是旧族名 `Noto Sans CJK SC` |
-| **Noto Serif SC** | <https://fonts.google.com/noto/specimen/Noto+Serif+SC> | 说书的水墨题字和烧录字幕 |
+1. **用环境变量锁死**：`JOKE_FONT` / `SHUOSHU_FONT` / `VG_FONT` 都指向同一个
+   两台机器都装了的族名。选哪个字体是美术决定，不是技术决定——
+   现在 Windows 上出的片子用的是微软雅黑，Mac 上没有它，要保持一致就得
+   两边都装同一个第三方字体（比如 Google Fonts 的
+   [Noto Sans SC](https://fonts.google.com/noto/specimen/Noto+Sans+SC)）并锁过去，
+   **代价是已出的片子字形会变，要重渲**
+2. **接受两边不同**：只在一台机器上出片，另一台只写稿和审片
 
-说书**封面**另外还要 `fonts/NotoSerifCJKsc/OTF/SimplifiedChinese/` 下的七个静态字重
-（Black / Bold / SemiBold / Medium / Regular / Light / ExtraLight）。
-这 162M **不在版本库里**，从 <https://github.com/notofonts/noto-cjk/releases> 下
-Noto Serif CJK 的 OTF 包，解压到那个路径。没有的话封面不崩，但字重会退化
-（resvg 对可变字体的 weight 轴支持有限，`font-weight="900"` 会渲成 Regular）。
+说书**封面**那条不受影响，它本来就不看系统字体。但 `fonts/`（162M）**不在版本库里**，
+Mac 上克隆后要自己补：从 <https://github.com/notofonts/noto-cjk/releases> 下
+Noto Serif CJK 的 OTF 包，把这七个文件放到
+`fonts/NotoSerifCJKsc/OTF/SimplifiedChinese/`：
+
+```
+NotoSerifCJKsc-{Black,Bold,SemiBold,Medium,Regular,Light,ExtraLight}.otf
+```
+
+缺了不崩，会退回系统衬线字体，但字重会塌——resvg 对可变字体的 weight 轴支持有限，
+只有 `NotoSerifSC-VF.ttf` 时 `font-weight="900"` 渲出来其实是 Regular。
 
 ### 4. .env
 

@@ -1,6 +1,6 @@
 # vidgen
 
-> ⚠ **这个文件只讲四条线里的一条**（空镜解说风）。
+> ⚠ **这个文件只讲五条线里的一条**（空镜解说风）。
 > 仓库全貌和「改了什么要重跑哪一步」看 **[RUNBOOK.md](RUNBOOK.md)**。
 >
 > | 内容线 | 目录 | 手册 |
@@ -9,8 +9,9 @@
 > | 段子（对话反转） | `joke-video/` | [joke-video/README.md](joke-video/README.md) |
 > | 儿童故事（旁白叙述） | `joke-video/` | [儿童故事出片方案.md](joke-video/儿童故事出片方案.md) |
 > | 说书（聊斋） | `shuoshu/` | [shuoshu/出片手册.md](shuoshu/出片手册.md) |
+> | 治愈系旁白（助眠档） | `zhiyu/` | [zhiyu/治愈系出片方案.md](zhiyu/治愈系出片方案.md) |
 >
-> 后三条线的画面**全部用代码画（SVG）**，不依赖 AI 出图。
+> 后四条线的画面**全部用代码画（SVG）**，不依赖 AI 出图。
 
 **首次克隆后**：`npm i`；`cp .env.example .env` 填 key；字体和成片不在库里，
 完整的环境要求见下一节。

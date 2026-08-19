@@ -12,6 +12,20 @@ export interface VoiceMetrics {
   f0: number;
   /** 基频 10–90 分位跨度 Hz，越大语调起伏越丰富 */
   f0Range: number;
+  /**
+   * 基频的**半音标准差**。语调起伏的标准判据，比 f0Range 更该看这个。
+   *
+   * 为什么用半音不用 Hz：人耳听音程是**比值**不是差值。180→200Hz 和
+   * 400→420Hz 都是 20Hz，前者听着明显在抬、后者几乎听不出来。
+   * 换成半音（12·log2(f/中位)）之后，不同基频的人才能横向比。
+   *
+   * 治愈系助眠档的判据（见 zhiyu/治愈系旁白书目_选题稿件.md）：
+   *   < 1.0    发死，会被听成非人声，警觉度反而抬升
+   *   1.5–2.5  目标区间
+   *   > 3.5    "有感情"了，抢注意力
+   * 常规叙述在 3–4，情绪朗读 5 以上。
+   */
+  f0Sd: number;
   /** 低频(<600Hz) 与 高频(>2kHz) 的 RMS 差，dB。越大越"厚" */
   band: number;
   /** 去首尾静音后的净时长（秒） */
@@ -115,7 +129,8 @@ function voicedRmsDb(x: Float32Array, gate: Float32Array, floorRms = 0.012, sr =
 }
 
 export function measure(x: Float32Array, sr: number): VoiceMetrics {
-  const f = f0Contour(x, sr).sort((a, b) => a - b);
+  const raw = f0Contour(x, sr);
+  const f = raw.slice().sort((a, b) => a - b);
   const lowB = voicedRmsDb(filt(x, sr, 600, false), x, 0.012, sr);
   const highB = voicedRmsDb(filt(x, sr, 2000, true), x, 0.012, sr);
 
@@ -139,9 +154,20 @@ export function measure(x: Float32Array, sr: number): VoiceMetrics {
       break;
     }
 
+  // 半音标准差：先换算到以中位数为 0 的半音刻度，再求标准差。
+  // 用中位数而不是均值做基准，避免个别倍频误判把整条曲线拽偏
+  const med = pct(f, 0.5);
+  let sd = 0;
+  if (med > 0 && raw.length > 1) {
+    const st = raw.filter((v) => v > 0).map((v) => 12 * Math.log2(v / med));
+    const mean = st.reduce((a, b) => a + b, 0) / st.length;
+    sd = Math.sqrt(st.reduce((a, b) => a + (b - mean) ** 2, 0) / st.length);
+  }
+
   return {
     f0: Math.round(pct(f, 0.5)),
     f0Range: Math.round(pct(f, 0.9) - pct(f, 0.1)),
+    f0Sd: Number(sd.toFixed(2)),
     band: Number((lowB - highB).toFixed(1)),
     dur: Number(((b - a) / sr).toFixed(2)),
   };

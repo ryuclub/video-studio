@@ -6,11 +6,13 @@
 README 讲的是「这套东西怎么用」，这份讲的是「今天这条片子是怎么出的、下次怎么更快」。
 
 > **这份只管空镜解说风那条线**（`src/` + `projects/`）。
-> 另外两条线各有各的手册，管线完全不同，别串着看：
+> 另外四条线各有各的手册，管线完全不同，别串着看：
 > · **说书线**（`shuoshu/` + `joke-video/src/shuoshu-*.ts`）→ [`shuoshu/出片手册.md`](shuoshu/出片手册.md)
 > · **段子线**（`joke-video/`）→ [`joke-video/README.md`](joke-video/README.md)
 > · **儿童故事线**（`joke-video/`，旁白叙述型）→ [`joke-video/儿童故事出片方案.md`](joke-video/儿童故事出片方案.md)
 >   一条命令：`npm run ship -- jokes/<稿件>.json`
+> · **治愈系旁白线**（`zhiyu/` + `joke-video/src/zhiyu-*.ts`）→ [`zhiyu/治愈系出片方案.md`](zhiyu/治愈系出片方案.md)
+>   单人女主讲、清新画风、45–60 分钟助眠档。**第一期《方丈记》进行中**
 >
 > **换机器或新人上手**：先 `npm run doctor` 自检环境，要求见 [README 的「运行环境」](README.md#运行环境)。
 

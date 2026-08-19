@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
+    "doctor": "tsx src/doctor.ts",
     "vg": "tsx src/cli.ts"
   },
   "dependencies": {

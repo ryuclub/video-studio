@@ -13,7 +13,104 @@
 > 后三条线的画面**全部用代码画（SVG）**，不依赖 AI 出图。
 
 **首次克隆后**：`npm i`；`cp .env.example .env` 填 key；字体和成片不在库里，
-按各条线手册重新生成（`fonts/` 是 Noto Serif CJK，OFL 协议自行下载）。
+完整的环境要求见下一节。
+
+---
+
+## 运行环境
+
+装完先跑 **`npm run doctor`**，它会实测这台机器能不能出片（ffmpeg 滤镜、每条线的字体、
+.env）。**别只照着这份表核对** —— 字体这类东西看配置读不出真相，代码里首选的族名
+在开发机上其实一个都没匹配上。
+
+### 1. Node ≥ 20
+
+```bash
+npm i          # 根目录一次装完（joke-video / voice-clone 是 workspace）
+```
+
+### 2. ffmpeg（两个可选滤镜是硬要求）
+
+```bash
+# macOS
+brew install ffmpeg
+# Windows：用 gyan.dev 的 full build，https://www.gyan.dev/ffmpeg/builds/
+```
+
+装完必须确认这两个滤镜在：
+
+| 滤镜 | 少了会怎样 |
+|---|---|
+| **`rubberband`** | 变声退化成单级重采样，**formant 被忽略** —— 女童（1.14/1.16）、精灵（1.5/1.38）、童声（1.18/1.14）、反派（0.84/0.9）这些靠 formant 立起来的音色会变成**另一个人**。这是编译期可选滤镜，很多发行版没带 |
+| `aexciter` | 「沙哑老头」这一档会报错 |
+
+```bash
+ffmpeg -hide_banner -filters | grep -E "rubberband|aexciter"
+```
+
+`rubberband` 缺失时 preflight 会拦住出片；`aexciter` 只在用到那一档时才会炸。
+
+### 3. 字体
+
+**四条线用的不是同一套字体**，而且都是 fallback 链 —— 链上哪个存在就用哪个，
+所以**换机器画面就会变，而且不报错**。
+
+| 用在哪 | fallback 链（从左到右） | 环境变量 |
+|---|---|---|
+| 段子 / 儿童故事<br>字幕 · 封面 · 片头卡 | `Noto Sans CJK SC` → `Noto Sans CJK JP` → `Source Han Sans SC` → `Microsoft YaHei` → `Yu Gothic UI` → `PingFang SC` | `JOKE_FONT` |
+| 说书 · 水墨题字 | `Noto Serif SC` → `Source Han Serif SC` → `SimSun` → `STSong` → `Songti SC` → `Microsoft YaHei` | `SHUOSHU_FONT` |
+| 说书 · 烧进画面的字幕（libass） | `Noto Serif SC`（写死，没有 fallback） | 改 `shuoshu-video.ts` |
+| 说书 · 封面 | 仓库 `fonts/` 下的 **7 个静态字重 OTF**，不看系统装了什么 | `SHUOSHU_COVER_FONT` |
+| 解说 · ass 字幕 | `Noto Sans CJK SC`（单个，没有 fallback） | `VG_FONT` |
+
+**实测过的两台情形**（`npm run doctor` 自己会告诉你这台是哪种）：
+
+- **开发机（Windows）**：`Noto Sans CJK SC` 这个族名**根本不存在**（装的是 `Noto Sans SC`，
+  思源新旧命名不同），一路 fallback 落到 **Microsoft YaHei**；解说线那条没有 fallback，
+  直接静默回退到 libass 默认字体
+- **典型 macOS**：`Noto*` / `YaHei` / `SimSun` 全都没有 → 段子线落到 **PingFang SC**、
+  说书题字落到 **Songti SC**，跟 Windows 出来的**不是一个字形，字宽也不同**
+
+字幕纸片的尺寸是按字数估的（中文按字号全宽），跟真实字体无关，
+所以**纸片大小不变、字的实际占宽会变**，可能溢出或两边留白不匀。
+
+**想让两台机器出一样的画面，装这两个就够**（都是免费的 OFL）：
+
+| 字体 | 下载 | 装完谁会用到 |
+|---|---|---|
+| **Noto Sans SC** | <https://fonts.google.com/noto/specimen/Noto+Sans+SC> | 段子 / 儿童故事 / 解说 —— 但要配 `JOKE_FONT="Noto Sans SC"` 和 `VG_FONT="Noto Sans SC"`，因为代码里写的是旧族名 `Noto Sans CJK SC` |
+| **Noto Serif SC** | <https://fonts.google.com/noto/specimen/Noto+Serif+SC> | 说书的水墨题字和烧录字幕 |
+
+说书**封面**另外还要 `fonts/NotoSerifCJKsc/OTF/SimplifiedChinese/` 下的七个静态字重
+（Black / Bold / SemiBold / Medium / Regular / Light / ExtraLight）。
+这 162M **不在版本库里**，从 <https://github.com/notofonts/noto-cjk/releases> 下
+Noto Serif CJK 的 OTF 包，解压到那个路径。没有的话封面不崩，但字重会退化
+（resvg 对可变字体的 weight 轴支持有限，`font-weight="900"` 会渲成 Regular）。
+
+### 4. .env
+
+```bash
+cp .env.example .env
+```
+
+| 键 | 谁要用 | 不填会怎样 |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | 解说线的 `npm run vg -- script` 自动写稿 | 该命令跑不了，稿件得手写 |
+| `PEXELS_API_KEY` | 解说线的 `footage` 步骤下载空镜 | 该步骤失败 |
+
+**段子 / 儿童故事 / 说书三条线一个 key 都不需要** —— 画面是代码画的，
+配音走 Edge TTS（免费、不要 key）。
+
+### 5. 不在版本库里、要自己生成的
+
+| 东西 | 体积 | 怎么来 |
+|---|---|---|
+| 成片、音轨、配音分句 | 16G | 按各条线手册重跑 |
+| Pexels 素材缓存 | 2.8G | 解说线的 `footage` 步骤自动下 |
+| 字体 | 162M | 见上 |
+| 逐镜静帧 / 场景图 | 101M | `npm run preview` / `npm run scene` |
+
+
 
 文案驱动的解说视频自动化管线。输入一个选题或一个网址，输出横版 + 竖版成片。
 
@@ -32,7 +129,7 @@
 
 ## 一、安装
 
-需要 Node 20+ 和 ffmpeg。
+完整环境（ffmpeg 滤镜、字体、.env）见上面的[运行环境](#运行环境)，装完先跑 `npm run doctor`。
 
 ```bash
 npm install

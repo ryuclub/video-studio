@@ -9,6 +9,7 @@ import { CASTS, DELIVERIES } from './cast.js';
 import { PROP_KINDS } from './props/index.js';
 import { lineText, type JokeCfg } from './types.js';
 import { check as layoutCheck } from './layout.js';
+import { hasRubberband } from './audio/morph.js';
 
 export interface Issue {
   level: 'error' | 'warn';
@@ -21,6 +22,24 @@ export function preflight(cfg: JokeCfg): Issue[] {
   const out: Issue[] = [];
   const err = (msg: string) => out.push({ level: 'error', msg });
   const warn = (msg: string) => out.push({ level: 'warn', msg });
+
+  // ── 环境能力：换机器最容易栽的一条 ──
+  //
+  // rubberband 是 ffmpeg 的**编译期可选**滤镜，很多发行版没带（Windows 的
+  // gyan.dev full build 带，别的构建不一定）。没有它，morph 会退化成单级重采样：
+  // **pitch 和 formant 锁死，formant 被直接忽略**。
+  //
+  // 这不是"音质差一点"，是**换了个人在说话**——靠 formant 立起来的音色全废：
+  // 女童（pitch 1.14 / formant 1.16，就是靠 formant 抬得比 pitch 多才像小女孩）、
+  // 精灵（1.5 / 1.38）、童声（1.18 / 1.14）、反派（0.84 / 0.9）。
+  //
+  // 而 morph 只是把 degraded 返回出来、没人接，于是整件事**静默发生**。
+  // 换机器（比如 Windows → Mac）后配音听着"怪但说不上哪怪"，多半就是这个。
+  if (cfg.characters.some((c) => c.cast) && !hasRubberband()) {
+    err('ffmpeg 没有 rubberband 滤镜，变声会退化：formant 被忽略，音色跟调好的不是一个人');
+    err('  验证：ffmpeg -hide_banner -filters | grep rubberband —— 换一个带 librubberband 的构建再出片');
+  }
+
 
   // ── 场景与角色资产：这一环最容易漏，漏了就是整片画面不对 ──
   if (!SCENE_NAMES.includes(cfg.scene)) {

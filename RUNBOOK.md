@@ -11,6 +11,8 @@ README 讲的是「这套东西怎么用」，这份讲的是「今天这条片�
 > · **段子线**（`joke-video/`）→ [`joke-video/README.md`](joke-video/README.md)
 > · **儿童故事线**（`joke-video/`，旁白叙述型）→ [`joke-video/儿童故事出片方案.md`](joke-video/儿童故事出片方案.md)
 >   一条命令：`npm run ship -- jokes/<稿件>.json`
+>
+> **换机器或新人上手**：先 `npm run doctor` 自检环境，要求见 [README 的「运行环境」](README.md#运行环境)。
 
 ---
 

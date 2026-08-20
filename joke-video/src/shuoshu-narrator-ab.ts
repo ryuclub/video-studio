@@ -281,7 +281,7 @@ V1/V2/V3 都开了 ±3% 的语速微抖（按段号定，不是随机数——�
 `
   );
 
-  console.log(`\n→ shuoshu/projects/${EP}/narrator-ab/`);
+  console.log(`\n→ projects/说书/${EP}/narrator-ab/`);
 }
 
 main();

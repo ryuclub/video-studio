@@ -6,13 +6,14 @@
 // 现在统一从这里取。**不给默认值、不猜**：说不清是哪一期就报错，
 // 把可选项列出来让人选。写错目录的代价（覆盖掉一期成品）远大于多敲一个参数。
 //
-// 期号目录长这样：`shuoshu/projects/<日期>_liaozhai-E01/`
+// 期号目录长这样：`projects/说书/<日期>_liaozhai-E01/`
 // 简写匹配：`--ep E01` 认得出上面那个目录，不用敲全名。
 
+import { OUT_SHUOSHU } from './paths.js';
 import { readdirSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { basename } from 'node:path';
 
-const ROOT = '../shuoshu/projects';
+const ROOT = OUT_SHUOSHU;
 
 export interface Ep {
   /** 目录名，如 2026-08-18_liaozhai-E01 */

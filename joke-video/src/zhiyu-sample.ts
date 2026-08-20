@@ -12,6 +12,7 @@
 // **候选池只有两个发音人**：Edge 的普通话女声就 Xiaoxiao 和 Xiaoyi，
 // 凑不出稿件要求的"三个候选发音人"，所以做成 2 发音人 × 2 档音高。
 
+import { OUT_ZHIYU } from './paths.js';
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { synthesizeJoke } from './tts.js';
@@ -21,7 +22,7 @@ import { measure } from './audio/measure.js';
 import { SR } from './config.js';
 
 const EP = '2026-08-19_hojoki';
-const PROJ = `../zhiyu/projects/${EP}`;
+const PROJ = `${OUT_ZHIYU}/${EP}`;
 const OUT = `${PROJ}/voice-samples`;
 
 /** 候选。四条都用同一段稿子，只有音色不同 —— 变量只留一个 */

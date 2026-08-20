@@ -15,6 +15,7 @@
 //
 // 所以：短样本（前八句，约 20 秒），一次只换一个变量。
 
+import { OUT_ZHIYU } from './paths.js';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { synthesizeJoke } from './tts.js';
@@ -22,7 +23,7 @@ import { readWav, writeWav } from './audio/wav.js';
 import { measure } from './audio/measure.js';
 import { SR } from './config.js';
 
-const PROJ = '../zhiyu/projects/2026-08-19_hojoki';
+const PROJ = `${OUT_ZHIYU}/2026-08-19_hojoki`;
 const OUT = `${PROJ}/ab-方丈记202`;
 
 interface Variant {

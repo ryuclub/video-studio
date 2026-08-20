@@ -10,7 +10,16 @@ export const ROOT = path.resolve(here, '..');
 
 export const CONFIG = {
   root: ROOT,
-  projectsDir: path.join(ROOT, 'projects'),
+  /**
+   * 这条线（记者读稿）的成品目录。
+   *
+   * **仓库里代码和成品是分开的**：代码在各条线自己的目录（`src/`、`joke-video/src/`），
+   * 成品全部落在根级 `projects/<类型>/`。四条线各占一个子目录，
+   * 别再往 `projects/` 根上直接写 —— 那儿现在只放类型文件夹和一份 README。
+   *
+   * joke-video 那三条线的出口在 `joke-video/src/paths.ts`，改路径要两边一起改。
+   */
+  projectsDir: path.join(ROOT, 'projects', '记者读稿'),
   assetsDir: path.join(ROOT, 'assets'),
   /** 素材缓存：同一个关键词只下载一次，跨项目复用 */
   cacheDir: path.join(ROOT, 'assets', 'cache'),

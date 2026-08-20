@@ -10,6 +10,7 @@
 // 下面每句的注释里标了「预设」还是「手工」，手工的占三成左右，
 // 这个比例乘以 165 段才落在报的工时区间里。
 
+import { OUT_SHUOSHU } from './paths.js';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { synthesizeJoke } from './tts.js';
 import { readWav, resample, writeWav } from './audio/wav.js';
@@ -18,7 +19,7 @@ import { normalize, softClip } from './audio/dsp.js';
 import { SR, PEAK_DBFS } from './config.js';
 import { getBeat } from './shuoshu-beat.js';
 
-const OUT_DIR = '../shuoshu/projects/2026-08-18_liaozhai-E01/ab-test';
+const OUT_DIR = `${OUT_SHUOSHU}/2026-08-18_liaozhai-E01/ab-test`;
 
 interface Beat {
   text: string;
@@ -167,7 +168,7 @@ Edge 的中文只有一种"念稿"腔，这三样是它自己生成的，我们�
 
   console.log(`A-默认节奏.wav　${a.toFixed(1)}s`);
   console.log(`C-紧凑版.wav　${b.toFixed(1)}s`);
-  console.log(`\n→ shuoshu/projects/2026-08-18_liaozhai-E01/ab-test/`);
+  console.log(`\n→ projects/说书/2026-08-18_liaozhai-E01/ab-test/`);
 }
 
 main();

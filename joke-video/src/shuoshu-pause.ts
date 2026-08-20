@@ -11,6 +11,7 @@
 // 所以最后一版在停顿里垫了极低的房间底噪（−48dB 的粉噪），长度不变，
 // 听听是不是就不"空"了。
 
+import { OUT_SHUOSHU } from './paths.js';
 import { mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { synthesizeJoke } from './tts.js';
 import { readWav, resample, writeWav } from './audio/wav.js';
@@ -18,7 +19,7 @@ import { trimSilence } from './audio/align.js';
 import { normalize, softClip } from './audio/dsp.js';
 import { SR, PEAK_DBFS } from './config.js';
 
-const OUT_DIR = '../shuoshu/projects/2026-08-18_liaozhai-E01/ab-test';
+const OUT_DIR = `${OUT_SHUOSHU}/2026-08-18_liaozhai-E01/ab-test`;
 
 /** 幕二那段的后半，直接切到关键处，不用每次听前面 20 秒 */
 const BEATS = [
@@ -149,7 +150,7 @@ TTS 的停顿是**绝对静音**（实测 −227dB，现实里不存在的东西
 全片跟着变。
 `
   );
-  console.log(`\n→ shuoshu/projects/2026-08-18_liaozhai-E01/ab-test/`);
+  console.log(`\n→ projects/说书/2026-08-18_liaozhai-E01/ab-test/`);
 }
 
 main();

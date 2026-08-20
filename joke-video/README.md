@@ -260,11 +260,11 @@ npm run align -- jokes/snake-poison.json     # 去首尾静音 → 回填真实�
 npm run build -- jokes/snake-poison.json     # 正式出片，一次搞定
 ```
 
-成片和音轨直接落到 `projects/<日期>_<id>/`，不在 `out/`：
+成片和音轨直接落到 `../projects/段子与儿童故事/<日期>_<id>/`，不在 `out/`：
 
 ```
-projects/2026-08-18_snake-poison/snake-poison.mp4         成片
-projects/2026-08-18_snake-poison/snake-poison-audio.wav   混好的音轨
+../projects/段子与儿童故事/2026-08-18_snake-poison/snake-poison.mp4      成片
+../projects/段子与儿童故事/2026-08-18_snake-poison/snake-poison-audio.wav 混好的音轨
 ```
 
 渲染速度参考（1080×1920 / crf 19 / preset medium）：
@@ -291,7 +291,7 @@ npm run preview -- jokes/snake-poison.json    # 单条
 npm run preview                               # 汇总所有稿件到一页
 ```
 
-产物落在 `projects/<日期>_<id>/`，和主线 vidgen 的项目目录同一个约定。
+产物落在 `../projects/段子与儿童故事/<日期>_<id>/`。四条线的成品都收在根级 `projects/<类型>/`，见 [projects/README.md](../projects/README.md)。
 **一条片子的东西全在一个目录里**——成片、音轨、场景图、分析、留档配置：
 
 ```

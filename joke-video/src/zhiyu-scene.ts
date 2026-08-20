@@ -88,6 +88,8 @@ const C = {
   sealInk: '#F6F2E8',
   track: '#E6DFCD',
   fill: '#9CC3BF',
+  /** 进度线上的蜗牛。比标题浅一档 —— 它是会动的那个，不能比不动的东西更抢眼 */
+  snail: '#8A9184',
 };
 
 /** 版式。1920×1080 */
@@ -101,7 +103,55 @@ const L = {
   subCx: 268, subGap: 46, subSize: 34, subWeight: 500,
   sealX: 226, sealY: 852, sealS: 84, sealR: 7,
   bar: { x: 226, y: 1006, w: 1468, h: 3 },
+  /** 蜗牛露在线上方多高（px）。宽度按素材比例跟着走，约 1.3 倍 */
+  snail: { h: 34 },
 };
+
+// ── 进度线上的蜗牛 ────────────────────────────────────────────────────
+//
+// 它同时是标记和装饰：想知道还剩多久，低头看它爬到哪儿了。
+//
+// **素材里的蜗牛头朝左，这儿镜像过来。** 进度是往右走的，
+// 让它背对着走的方向看着别扭。镜像只在这一处做，素材本身不动。
+//
+// **var() 必须在这儿换成真值。** 素材写的是 var(--mark, #7B8C7E)，
+// 而 resvg 不支持 CSS 自定义属性 —— 直接喂进去那两处颜色会丢，
+// 渲出来是黑蜗牛，而且不报错。
+
+const SNAIL_FILE = fileURLToPath(new URL('../../zhiyu/pictures/snail.svg', import.meta.url));
+
+/** 素材坐标系里的三个数：脚底 y、壳顶 y、脚的前端 x */
+const SNAIL_FOOT = 88;
+const SNAIL_TOP = 37;
+const SNAIL_NOSE = 10;
+
+const SNAIL = loadSnail();
+
+function loadSnail(): string {
+  if (!existsSync(SNAIL_FILE))
+    throw new Error(
+      `缺蜗牛素材：${SNAIL_FILE}\n` +
+        '它是进度线上的标记，不是可选装饰。少了直接炸 —— ' +
+        '静默跳过会出一版没有标记的片子，而这种片子看起来一切正常。'
+    );
+  const raw = readFileSync(SNAIL_FILE, 'utf8');
+  const inner = raw.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+  return inner
+    .replace(/var\(--mark,\s*[^)]*\)/g, C.snail)
+    .replace(/var\(--paper,\s*[^)]*\)/g, C.paper);
+}
+
+/** 蜗牛踩在填充的前沿上，身子压在已经走过的那一段 */
+function snail(p: number): string {
+  const k = L.snail.h / (SNAIL_FOOT - SNAIL_TOP);
+  // 整只不越过轨道左端：第一张图的 p 已经有 2-3%，但别指望它永远是
+  const tail = (SNAIL_FOOT - SNAIL_NOSE) * k;
+  const nose = Math.max(L.bar.x + L.bar.w * p, L.bar.x + tail);
+  // 镜像后 x 是反的：素材里 x 越大，画面上越靠左
+  const tx = nose + SNAIL_NOSE * k;
+  const ty = L.bar.y + L.bar.h - SNAIL_FOOT * k;
+  return `<g transform="translate(${n(tx)},${n(ty)}) scale(${n(-k)},${n(k)})">${SNAIL}</g>`;
+}
 
 // ── 三种镜位 ──────────────────────────────────────────────────────────
 //
@@ -247,6 +297,7 @@ export function sceneSvg(s: SceneSpec): string {
         font-size="46" fill="${C.sealInk}" text-anchor="middle">醒</text>
   <rect x="${L.bar.x}" y="${L.bar.y}" width="${L.bar.w}" height="${L.bar.h}" rx="1.5" fill="${C.track}"/>
   <rect x="${L.bar.x}" y="${L.bar.y}" width="${n(L.bar.w * p)}" height="${L.bar.h}" rx="1.5" fill="${C.fill}"/>
+  ${snail(p)}
 </svg>`;
 }
 

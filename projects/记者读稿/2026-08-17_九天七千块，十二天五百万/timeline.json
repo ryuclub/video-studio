@@ -1,0 +1,271 @@
+{
+  "audioFile": "E:\\ryu\\project\\vidgen\\projects\\2026-08-17_九天七千块，十二天五百万\\voice.mp3",
+  "totalMs": 295403,
+  "lines": [
+    {
+      "index": 0,
+      "startMs": 0,
+      "endMs": 5415
+    },
+    {
+      "index": 1,
+      "startMs": 5655,
+      "endMs": 11265
+    },
+    {
+      "index": 2,
+      "startMs": 11525,
+      "endMs": 16113
+    },
+    {
+      "index": 3,
+      "startMs": 16563,
+      "endMs": 16763
+    },
+    {
+      "index": 4,
+      "startMs": 16763,
+      "endMs": 20877
+    },
+    {
+      "index": 5,
+      "startMs": 21327,
+      "endMs": 24049
+    },
+    {
+      "index": 6,
+      "startMs": 24269,
+      "endMs": 30864
+    },
+    {
+      "index": 7,
+      "startMs": 31104,
+      "endMs": 38492
+    },
+    {
+      "index": 8,
+      "startMs": 38752,
+      "endMs": 45022
+    },
+    {
+      "index": 9,
+      "startMs": 45282,
+      "endMs": 51779
+    },
+    {
+      "index": 10,
+      "startMs": 52229,
+      "endMs": 57443
+    },
+    {
+      "index": 11,
+      "startMs": 57663,
+      "endMs": 64386
+    },
+    {
+      "index": 12,
+      "startMs": 64666,
+      "endMs": 68103
+    },
+    {
+      "index": 13,
+      "startMs": 68303,
+      "endMs": 72998
+    },
+    {
+      "index": 14,
+      "startMs": 73498,
+      "endMs": 78056
+    },
+    {
+      "index": 15,
+      "startMs": 78276,
+      "endMs": 85190
+    },
+    {
+      "index": 16,
+      "startMs": 85470,
+      "endMs": 91040
+    },
+    {
+      "index": 17,
+      "startMs": 91490,
+      "endMs": 97236
+    },
+    {
+      "index": 18,
+      "startMs": 97476,
+      "endMs": 100652
+    },
+    {
+      "index": 19,
+      "startMs": 100912,
+      "endMs": 109170
+    },
+    {
+      "index": 20,
+      "startMs": 109430,
+      "endMs": 115904
+    },
+    {
+      "index": 21,
+      "startMs": 116184,
+      "endMs": 123530
+    },
+    {
+      "index": 22,
+      "startMs": 124030,
+      "endMs": 124030
+    },
+    {
+      "index": 23,
+      "startMs": 124030,
+      "endMs": 127810
+    },
+    {
+      "index": 24,
+      "startMs": 127810,
+      "endMs": 131597
+    },
+    {
+      "index": 25,
+      "startMs": 132117,
+      "endMs": 134984
+    },
+    {
+      "index": 26,
+      "startMs": 135224,
+      "endMs": 140926
+    },
+    {
+      "index": 27,
+      "startMs": 141186,
+      "endMs": 147746
+    },
+    {
+      "index": 28,
+      "startMs": 148196,
+      "endMs": 153120
+    },
+    {
+      "index": 29,
+      "startMs": 153380,
+      "endMs": 159872
+    },
+    {
+      "index": 30,
+      "startMs": 160132,
+      "endMs": 164500
+    },
+    {
+      "index": 31,
+      "startMs": 164780,
+      "endMs": 170807
+    },
+    {
+      "index": 32,
+      "startMs": 171067,
+      "endMs": 176546
+    },
+    {
+      "index": 33,
+      "startMs": 176826,
+      "endMs": 181494
+    },
+    {
+      "index": 34,
+      "startMs": 181994,
+      "endMs": 189104
+    },
+    {
+      "index": 35,
+      "startMs": 189344,
+      "endMs": 193320
+    },
+    {
+      "index": 36,
+      "startMs": 193540,
+      "endMs": 199735
+    },
+    {
+      "index": 37,
+      "startMs": 200185,
+      "endMs": 206045
+    },
+    {
+      "index": 38,
+      "startMs": 206285,
+      "endMs": 210906
+    },
+    {
+      "index": 39,
+      "startMs": 211186,
+      "endMs": 222194
+    },
+    {
+      "index": 40,
+      "startMs": 222474,
+      "endMs": 228291
+    },
+    {
+      "index": 41,
+      "startMs": 228791,
+      "endMs": 235448
+    },
+    {
+      "index": 42,
+      "startMs": 235708,
+      "endMs": 240859
+    },
+    {
+      "index": 43,
+      "startMs": 241139,
+      "endMs": 245338
+    },
+    {
+      "index": 44,
+      "startMs": 245858,
+      "endMs": 248315
+    },
+    {
+      "index": 45,
+      "startMs": 248535,
+      "endMs": 252960
+    },
+    {
+      "index": 46,
+      "startMs": 253220,
+      "endMs": 258554
+    },
+    {
+      "index": 47,
+      "startMs": 258814,
+      "endMs": 268147
+    },
+    {
+      "index": 48,
+      "startMs": 268427,
+      "endMs": 274447
+    },
+    {
+      "index": 49,
+      "startMs": 274727,
+      "endMs": 280020
+    },
+    {
+      "index": 50,
+      "startMs": 280280,
+      "endMs": 285670
+    },
+    {
+      "index": 51,
+      "startMs": 286170,
+      "endMs": 290418
+    },
+    {
+      "index": 52,
+      "startMs": 290678,
+      "endMs": 294803
+    }
+  ]
+}

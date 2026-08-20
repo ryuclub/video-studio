@@ -22,7 +22,7 @@ build/
 # ── 生成的图 ──
 # 逐镜静帧和场景图，跑一次 preview / scene 就有，加起来 101M
 **/stills/
-shuoshu/projects/*/scenes/
+
 out/
 
 # 素材缓存（Pexels 下载的空镜，2.8G）
@@ -32,12 +32,37 @@ assets/manual/test_*.mp4
 # 字体 162M。Noto Serif CJK 是 OFL 协议可自由下载，见 fonts/README.md
 fonts/
 
-# ── 根级 vidgen 的成片目录 ──
-# **必须带前导斜杠**：不带的话 git 会把 joke-video/projects/ 和
-# shuoshu/projects/ 一起吃掉（那两个目录里的 方案.md、发布文案.md、
-# script.json 是要留的），而且父目录一旦被排除，子目录的 .gitignore
-# 想再放行也放行不了。这个坑实测踩过。
-/projects/
+# ── 成品目录 projects/ ──
+#
+# 2026-08-20 重整：四条线的成品从各自目录（joke-video/projects、shuoshu/projects、
+# zhiyu/projects、根 projects）收拢到 `projects/<类型>/`，代码留在原地。
+#
+# **绝对不要在这儿写 `/projects/` 把整棵树排除掉。** 那是重整前的写法，
+# 当时根 projects/ 只有记者读稿那一条线。现在四条线都在里面，一刀切会连
+# 方案.md、发布文案.md、script.json、幕*.md 一起吃掉 ——
+# 而且**父目录一旦被排除，子目录的 .gitignore 想再放行也放行不了**，这个坑实测踩过。
+#
+# 大件靠上面的媒体后缀规则挡（*.mp4 *.wav *.png 之类），
+# 下面只列各线特有的、后缀挡不住的中间产物。
+
+# 记者读稿：逐帧素材和渲染中间件，12G，全部可重跑
+projects/记者读稿/*/stills/
+projects/记者读稿/*/out/
+# 渲染的中间件（ffmpeg 的 concat 清单、分段片），跟成片一起重跑就有
+projects/记者读稿/*/voice/
+projects/记者读稿/*/work_landscape/
+projects/记者读稿/*/work_portrait/
+
+# 段子与儿童故事：预览页的公用素材（角色图/场景图）。
+# **这些是入库的** —— 重整前就在版本库里，别顺手加规则把它们排除掉：
+# 画廊页直接引用它们，没有的话 index.html 是一堆裂图。
+
+# 说书：场景图
+projects/说书/*/scenes/
+
+# 治愈：片内画面（一景不换、每 30 秒一张，两期 81 张 15M）+ concat 清单
+projects/治愈/*/成片/*/scenes/
+projects/治愈/*/成片/*/_concat.txt
 
 # 旧选题的留档素材（27M），文档留着、素材不留
 /history/**/*.png

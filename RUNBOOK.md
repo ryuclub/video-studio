@@ -1,11 +1,12 @@
 # 出片手册
 
 一条片子从选题到成片的完整流程、每一步要人看什么、以及踩过的坑。
-最后一次更新：2026-08-16（`projects/2026-08-16_访日客五年首降，经营管理签证还稳吗`）。
+最后一次更新：2026-08-16（`projects/记者读稿/2026-08-16_访日客五年首降，经营管理签证还稳吗`）。
 
 README 讲的是「这套东西怎么用」，这份讲的是「今天这条片子是怎么出的、下次怎么更快」。
 
-> **这份只管空镜解说风那条线**（`src/` + `projects/`）。
+> **这份只管空镜解说风那条线**（代码 `src/`，成品 `projects/记者读稿/`）。
+> 四条线的成品都收在根级 `projects/<类型>/` 下，见 [projects/README.md](projects/README.md)。
 > 另外四条线各有各的手册，管线完全不同，别串着看：
 > · **说书线**（`shuoshu/` + `joke-video/src/shuoshu-*.ts`）→ [`shuoshu/出片手册.md`](shuoshu/出片手册.md)
 > · **段子线**（`joke-video/`）→ [`joke-video/README.md`](joke-video/README.md)
@@ -390,7 +391,7 @@ ffmpeg -ss 1.0 -i x.mp4 -frames:v 1 \
 # 1. 写稿
 npm run vg -- script --topic "选题" --note "记者读稿风格，一句一行 20-31 字，全片 1 个 chip、1 组 stack"
 
-# 2. 人工审稿：改 projects/<日期_标题>/script.json
+# 2. 人工审稿：改 projects/记者读稿/<日期_标题>/script.json
 #    重点看：标题（=封面文案）、chip 有没有带数字、数字对不对
 
 # 3. 先只做配音，听一遍

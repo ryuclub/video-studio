@@ -5,7 +5,7 @@
 // **试听句必须用剧本里真实会用到的台词。** 「测试测试」听不出差别，
 // 音色的区分度体现在长句的语调起伏里——这是 voice-clone 那轮反复试出来的。
 //
-// 产物落到 shuoshu/projects/<日期>_<期号>/voice-samples/，
+// 产物落到 projects/说书/<日期>_<期号>/voice-samples/，
 // 跟 joke-video 的项目目录约定一致：一条片子的东西全在一个目录里。
 
 import { mkdirSync, copyFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -202,7 +202,7 @@ ${rows.join('\n')}
 改完重跑 \`npx tsx src/shuoshu-sample.ts\`（有缓存，只有改过的重新合成）。
 `
   );
-  console.log(`\n${SAMPLES.length} 条 → shuoshu/projects/${EP}/voice-samples/`);
+  console.log(`\n${SAMPLES.length} 条 → projects/说书/${EP}/voice-samples/`);
 }
 
 main();

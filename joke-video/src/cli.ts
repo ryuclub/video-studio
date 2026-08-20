@@ -78,7 +78,7 @@ function loadVoices(cfg: JokeCfg): { raw: Map<number, Float32Array>; tracks: Map
   return { raw, tracks };
 }
 
-/** 给花名册每个角色出一句试听，塞进 projects/_assets/ */
+/** 给花名册每个角色出一句试听，塞进 projects/段子与儿童故事/_assets/ */
 async function sampleVoices() {
   await buildVoiceSamples(async (id, cast, text) => {
     await synthesizeJoke({
@@ -212,7 +212,7 @@ async function main() {
     await sampleVoices();
     const n = syncProjects((c) => loadVoices(c).tracks);
     console.log(`
-${n} 条稿件，汇总页：projects/index.html`);
+${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     return;
   }
 
@@ -274,7 +274,7 @@ ${n} 条稿件，汇总页：projects/index.html`);
     return;
   }
 
-  // ── 单条稿件预览：场景图 + 对话 + 分析，落到 projects/<日期>_<id>/ ──
+  // ── 单条稿件预览：场景图 + 对话 + 分析，落到 projects/段子与儿童故事/<日期>_<id>/ ──
   if (cmd === 'preview') {
     const dir = findProjectDir(cfg) ?? projectDir(cfg);
     mkdirSync(dir, { recursive: true });
@@ -291,7 +291,7 @@ ${n} 条稿件，汇总页：projects/index.html`);
     console.log(`  ${dir}/方案.md      ← 分析写这里，重跑不会覆盖`);
     for (const u of unfilled(dir)) console.log(`      ⚠ 「${u.section}」还有 ${u.count} 处没填`);
     console.log(`  ${dir}/index.html   ← 双击打开`);
-    console.log('  projects/index.html   ← 汇总页也同步了');
+    console.log('  projects/段子与儿童故事/index.html   ← 汇总页也同步了');
     return;
   }
 
@@ -527,7 +527,7 @@ ${n} 条稿件，汇总页：projects/index.html`);
       console.log('\n同步预览页…');
       syncProjects((c) => loadVoices(c).tracks, { renderFor: cfg.id });
       console.log(`  ${dir}/index.html   单条`);
-      console.log('  projects/index.html   汇总');
+      console.log('  projects/段子与儿童故事/index.html   汇总');
     }
     return;
   }

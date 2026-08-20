@@ -1,16 +1,17 @@
 // ── 稿件预览页：场景图 + 对话内容 + 分析，按稿件分组 ──────────────────
 //
 // 拿到新稿件后跑 `npm run preview -- jokes/<id>.json`，会在
-// projects/<日期>_<id>/ 下生成：
+// projects/段子与儿童故事/<日期>_<id>/ 下生成：
 //
 //   stills/            每句台词一张场景图，外加开场/定格/钩子
 //   方案.md            落地方案：分镜表 / 场景角色 / 发布文案
 //                      带 AUTO 标记的区块每次重写，其余部分人写的原样保留
 //   index.html         把上面两样和对话内容拼成一页
 //
-// 跑 `npm run preview` 不带参数则汇总所有稿件到 projects/index.html。
+// 跑 `npm run preview` 不带参数则汇总所有稿件到 projects/段子与儿童故事/index.html。
 // 页面是纯静态的，直接双击打开，不依赖任何外部资源。
 
+import { OUT_JOKE } from './paths.js';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { basename } from 'node:path';
 import { FPS } from './config.js';
@@ -40,19 +41,19 @@ export interface PreviewShot {
   lineIndex: number | null;
 }
 
-/** projects/<日期>_<id> */
+/** projects/段子与儿童故事/<日期>_<id> */
 export function projectDir(cfg: JokeCfg, date?: string): string {
   const d = date ?? new Date().toISOString().slice(0, 10);
-  return `projects/${d}_${cfg.id}`;
+  return `${OUT_JOKE}/${d}_${cfg.id}`;
 }
 
 /** 已经建过的项目目录（同一条段子不重复建新日期的目录） */
 export function findProjectDir(cfg: JokeCfg): string | null {
-  if (!existsSync('projects')) return null;
-  const hit = readdirSync('projects')
+  if (!existsSync(OUT_JOKE)) return null;
+  const hit = readdirSync(OUT_JOKE)
     .filter((f) => f.endsWith(`_${cfg.id}`))
     .sort();
-  return hit.length ? `projects/${hit[hit.length - 1]}` : null;
+  return hit.length ? `${OUT_JOKE}/${hit[hit.length - 1]}` : null;
 }
 
 /**
@@ -293,7 +294,7 @@ export function navEntry(cfg: JokeCfg, shots: PreviewShot[], assetPrefix = '', i
   // 标题优先用发布标题，其次片尾钩子，最后才回退到 id。
   // id 是文件名（mouse-cake），扫目录时认不出是哪条片子。
   const title = cfg.title ?? cfg.hook ?? cfg.id;
-  // 日期从项目目录名取（projects/2026-08-18_mouse-cake/），那是出片日期的唯一真相。
+  // 日期从项目目录名取（projects/段子与儿童故事/2026-08-18_mouse-cake/），那是出片日期的唯一真相。
   const date = /^(\d{4}-\d{2}-\d{2})_/.exec(assetPrefix)?.[1] ?? '';
   return `<a class="nav-item" href="#${esc(cfg.id)}" data-target="${esc(cfg.id)}">
   ${thumb ? `<img class="nav-thumb" src="${assetPrefix}${thumb.file}" alt="" loading="lazy">` : '<span class="nav-thumb ph"></span>'}
@@ -344,7 +345,7 @@ function writeProjectPage(cfg: JokeCfg, dir: string, shots: PreviewShot[], analy
  * 不给就全部重渲。出片流程末尾会自动调这个，所以成片和预览页永远是同一版。
  */
 /**
- * 公用素材区：角色形象 + 场景，渲到 projects/_assets/ 摆在汇总页最上面。
+ * 公用素材区：角色形象 + 场景，渲到 projects/段子与儿童故事/_assets/ 摆在汇总页最上面。
  *
  * 写新稿件前先在这儿看一眼有什么现成的——**有就别新做**。
  * 形象原稿在 assets/characters/，那是唯一真源；这里渲的是代码参数化后的样子，
@@ -361,10 +362,10 @@ export const VOICE_SAMPLE = '你好呀，今天天气真不错。';
 export async function buildVoiceSamples(
   synth: (id: string, cast: string, text: string) => Promise<string | null>
 ): Promise<void> {
-  mkdirSync('projects/_assets', { recursive: true });
+  mkdirSync(`${OUT_JOKE}/_assets`, { recursive: true });
   for (const r of ROSTER) {
     if (!r.voice) continue;
-    const dst = `projects/_assets/voice-${r.key}.wav`;
+    const dst = `${OUT_JOKE}/_assets/voice-${r.key}.wav`;
     if (existsSync(dst)) continue; // 已经有了就不重跑，改音色时删掉重生成
     const src = await synth(`_sample/${r.key}`, r.voice, VOICE_SAMPLE);
     if (src && existsSync(src)) writeFileSync(dst, readFileSync(src));
@@ -372,7 +373,7 @@ export async function buildVoiceSamples(
 }
 
 function assetGallery(): string {
-  const dir = 'projects/_assets';
+  const dir = `${OUT_JOKE}/_assets`;
   mkdirSync(dir, { recursive: true });
   const ink = makeInk(0);
   const page1 = (inner: string, bg: string) =>
@@ -380,13 +381,13 @@ function assetGallery(): string {
 
   const chars = ROSTER.map((r) => {
     const f = `_assets/cast-${r.key}.png`;
-    if (!existsSync(`projects/${f}`)) writeFileSync(`projects/${f}`, svgToPng(page1(r.draw(ink), '#EFE9DC')));
+    if (!existsSync(`${OUT_JOKE}/${f}`)) writeFileSync(`${OUT_JOKE}/${f}`, svgToPng(page1(r.draw(ink), '#EFE9DC')));
     return `<figure class="asset${r.rigged ? '' : ' unrigged'}">
   <img src="${f}" alt="${esc(r.label)}" loading="lazy">
   <figcaption><b>${esc(r.label)}${r.rigged ? '' : ' <span class="badge">未做骨架</span>'}</b>${
       r.voice
         ? `<span class="voice-row"><span class="vpill">${esc(r.voice)}</span>${
-            existsSync(`projects/_assets/voice-${r.key}.wav`)
+            existsSync(`${OUT_JOKE}/_assets/voice-${r.key}.wav`)
               ? `<audio controls preload="none" src="_assets/voice-${r.key}.wav"></audio>`
               : ''
           }</span>`
@@ -399,9 +400,9 @@ function assetGallery(): string {
 
   const scenes = SCENE_NAMES.map((n) => {
     const f = `_assets/scene-${n}.png`;
-    if (!existsSync(`projects/${f}`)) {
+    if (!existsSync(`${OUT_JOKE}/${f}`)) {
       const L = getScene(n)(ink, 41);
-      writeFileSync(`projects/${f}`, svgToPng(page1(L.far + L.mid + L.near, '#F4EDE2')));
+      writeFileSync(`${OUT_JOKE}/${f}`, svgToPng(page1(L.far + L.mid + L.near, '#F4EDE2')));
     }
     return `<figure class="asset">
   <img src="${f}" alt="${esc(n)}" loading="lazy">
@@ -445,7 +446,7 @@ export function syncProjects(
     if (!opts.quiet) console.log(`  ${cfg.id}${reuse ? '（复用已有场景图）' : ` ${shots.length} 张场景图`}`);
   }
 
-  mkdirSync('projects', { recursive: true });
+  mkdirSync(OUT_JOKE, { recursive: true });
   // 公用素材区摆在所有稿件前面：写新稿件先看这里有什么现成的
   const gallery = assetGallery();
   const body = `<h1>段子稿件预览</h1>
@@ -456,7 +457,7 @@ ${sections.join('\n')}`;
   <span class="nav-thumb ph"></span>
   <span class="nav-body"><span class="nav-title">公用素材</span><span class="nav-meta">${ROSTER.length} 角色 · ${SCENE_NAMES.length} 场景</span></span>
 </a>`;
-  writeFileSync('projects/index.html', page('段子稿件预览', body, navPanel([galleryNav, ...navItems])));
+  writeFileSync(`${OUT_JOKE}/index.html`, page('段子稿件预览', body, navPanel([galleryNav, ...navItems])));
   return files.length;
 }
 

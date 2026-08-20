@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#F6F2E8"/>
+  
+  <defs>
+    <clipPath id="clip-sq"><rect x="400" y="0" width="680" height="1080"/></clipPath>
+    <linearGradient id="sky-sq" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F7F3EA"/>
+      <stop offset="0.55" stop-color="#EFEADB"/>
+      <stop offset="1" stop-color="#E6E3D2"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#clip-sq)">
+    <rect x="400" y="0" width="680" height="1080" fill="url(#sky-sq)"/>
+    <circle cx="876" cy="324" r="145.8" fill="#F2E4C6" opacity="0.75"/>
+    <path d="M 366 712.8 Q 536 648 712.8 696.6
+             T 1114 669.6 L 1114 1134 L 366 1134 Z"
+          fill="#CBD4C7"/>
+    <path d="M 366 793.8 Q 604 756 821.6 804.6
+             T 1114 777.6 L 1114 1134 L 366 1134 Z"
+          fill="#AEBFB0"/>
+    <path d="M 366 928.8 Q 672 885.6 1114 918
+             L 1114 1134 L 366 1134 Z"
+          fill="#92A697"/>
+    <g>
+      <path d="M 550.96 712.8
+               L 631.2 653.4
+               L 711.44 712.8 Z"
+            fill="#4C6157"/>
+      <rect x="563.2" y="712.8"
+            width="136" height="108" fill="#6E8074"/>
+      <rect x="609.44" y="753.84"
+            width="43.52" height="66.96" fill="#3F534A"/>
+    </g>
+    <path d="M 481.6 858.6 q 5.44 -48.6 14.96 -66.96"
+                 stroke="#7E9184" stroke-width="6.48" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 529.2 858.6 q 5.44 -48.6 14.96 -66.96"
+                 stroke="#7E9184" stroke-width="6.48" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 774 858.6 q 5.44 -48.6 14.96 -66.96"
+                 stroke="#7E9184" stroke-width="6.48" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 821.6 858.6 q 5.44 -48.6 14.96 -66.96"
+                 stroke="#7E9184" stroke-width="6.48" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 862.4 858.6 q 5.44 -48.6 14.96 -66.96"
+                 stroke="#7E9184" stroke-width="6.48" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 984.8 858.6 q 5.44 -48.6 14.96 -66.96"
+                 stroke="#7E9184" stroke-width="6.48" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </g>
+  <rect x="0" y="0" width="400" height="1080" fill="#F6F2E8"/>
+  <rect x="400" y="0" width="2" height="1080" fill="#E0D9C6"/>
+    <text x="200" y="334.8" font-family="Noto Serif CJK SC" font-weight="500" font-size="108" fill="#365550" text-anchor="middle">三</text>
+    <text x="200" y="464.4" font-family="Noto Serif CJK SC" font-weight="500" font-size="108" fill="#365550" text-anchor="middle">米</text>
+    <text x="200" y="594" font-family="Noto Serif CJK SC" font-weight="500" font-size="108" fill="#365550" text-anchor="middle">见</text>
+    <text x="200" y="723.6" font-family="Noto Serif CJK SC" font-weight="500" font-size="108" fill="#365550" text-anchor="middle">方</text>
+    <g opacity="0.74"><text x="332" y="150" font-family="Noto Serif CJK SC" font-weight="500" font-size="58" fill="#365550" text-anchor="middle">方</text>
+    <text x="332" y="220" font-family="Noto Serif CJK SC" font-weight="500" font-size="58" fill="#365550" text-anchor="middle">丈</text>
+    <text x="332" y="290" font-family="Noto Serif CJK SC" font-weight="500" font-size="58" fill="#365550" text-anchor="middle">记</text></g>
+    <text x="332" y="400" font-family="Noto Serif CJK SC" font-weight="400" font-size="28" fill="#A8A294" text-anchor="middle">两</text>
+    <text x="332" y="438" font-family="Noto Serif CJK SC" font-weight="400" font-size="28" fill="#A8A294" text-anchor="middle">辆</text>
+    <text x="332" y="476" font-family="Noto Serif CJK SC" font-weight="400" font-size="28" fill="#A8A294" text-anchor="middle">车</text>
+    <text x="332" y="514" font-family="Noto Serif CJK SC" font-weight="400" font-size="28" fill="#A8A294" text-anchor="middle">就</text>
+    <text x="332" y="552" font-family="Noto Serif CJK SC" font-weight="400" font-size="28" fill="#A8A294" text-anchor="middle">能</text>
+    <text x="332" y="590" font-family="Noto Serif CJK SC" font-weight="400" font-size="28" fill="#A8A294" text-anchor="middle">装</text>
+    <text x="332" y="628" font-family="Noto Serif CJK SC" font-weight="400" font-size="28" fill="#A8A294" text-anchor="middle">走</text>
+  <rect x="56" y="928" width="84" height="84" rx="7" fill="#C0503C"/>
+  <text x="98" y="986" font-family="Noto Serif CJK SC" font-weight="500" font-size="47"
+        fill="#FDF6EC" text-anchor="middle">醒</text>
+  <text x="168" y="964" font-family="Noto Serif CJK SC" font-weight="400" font-size="27" fill="#9AA294">深夜档</text>
+  <text x="168" y="998" font-family="Noto Serif CJK SC" font-weight="400" font-size="27" fill="#9AA294">上篇</text>
+  <rect x="0" y="1066" width="1080" height="14" fill="#7FB8B4"/>
+</svg>

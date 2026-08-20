@@ -1,0 +1,109 @@
+{
+ "fps": 30,
+ "//": "时间点取自 timeline.json。封面盖在 ASS 蒙版上（script.json 的 hookLayout:-1 让出了标题字）",
+ "overlays": [
+  {
+   "id": "cover",
+   "//": "封面：三层故障标题。fadeIn 必须是 0，各平台拿第 0 帧当封面图",
+   "at": 0,
+   "duration": 2.6,
+   "scale": 1,
+   "x": "center",
+   "y": "38%",
+   "fadeIn": 0,
+   "fadeOut": 0.3,
+   "scrim": false,
+   "scene": {
+    "kind": "glitchTitle",
+    "lines": [
+     "票房涨了七百倍",
+     "两人五年手搓的动画，十二天里经历了什么",
+     "牛市来了 · 绊倒体 · 下架罗生门"
+    ],
+    "slices": 4,
+    "amp": 14,
+    "seed": 7,
+    "dur": 1
+   }
+  },
+  {
+   "id": "ov1-screens",
+   "//": "第 21 行 116.2-123.5：排片从最低谷 6 场涨到 11959 场。避开 124.0 起的 stack 组",
+   "at": 116.2,
+   "duration": 7.2,
+   "scale": 0.9,
+   "x": "center",
+   "y": "10%",
+   "fadeIn": 0.5,
+   "fadeOut": 0.5,
+   "scene": {
+    "kind": "counter",
+    "title": "排片场次",
+    "values": [
+     {
+      "label": "最低谷 单日",
+      "from": 0,
+      "to": 6,
+      "suffix": " 场"
+     },
+     {
+      "label": "8月16日",
+      "from": 0,
+      "to": 11959,
+      "suffix": " 场"
+     }
+    ],
+    "subtitle": "部分平台统计超过 13000 场 · 速报值"
+   }
+  },
+  {
+   "id": "ov2-forecast",
+   "//": "第 47 行 258.8-268.1：两个平台的最终票房预测差三倍多",
+   "at": 258.8,
+   "duration": 7,
+   "scale": 0.9,
+   "x": "center",
+   "y": "10%",
+   "fadeIn": 0.5,
+   "fadeOut": 0.5,
+   "scene": {
+    "kind": "counter",
+    "title": "最终票房预测",
+    "values": [
+     {
+      "label": "灯塔专业版",
+      "from": 0,
+      "to": 598.3,
+      "suffix": " 万元"
+     },
+     {
+      "label": "猫眼专业版",
+      "from": 0,
+      "to": 1837.6,
+      "suffix": " 万元"
+     }
+    ],
+    "subtitle": "相差三倍多 · 均为早期速报，以官方面板为准"
+   }
+  },
+  {
+   "id": "ov3-quote",
+   "//": "第 52 行 290.7-294.8，全片落点",
+   "at": 290.7,
+   "duration": 4.1,
+   "scale": 1.035,
+   "x": "center",
+   "y": "10%",
+   "fadeIn": 0.5,
+   "fadeOut": 0.4,
+   "scene": {
+    "kind": "quote",
+    "typewriter": true,
+    "text": "靠的不是完美，是把一件事做完，也做真。",
+    "emphasize": [
+     "做完，也做真"
+    ]
+   }
+  }
+ ]
+}

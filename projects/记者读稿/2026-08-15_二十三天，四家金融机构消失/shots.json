@@ -1,0 +1,938 @@
+[
+  {
+    "keyword": "tokyo skyline dusk",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-29472039-landscape.mp4",
+          "durationMs": 28333,
+          "credit": {
+            "id": 29472039,
+            "photographer": "Rin Gakusho",
+            "photographerUrl": "https://www.pexels.com/@rin-gakusho-280714394",
+            "url": "https://www.pexels.com/video/stunning-urban-skyline-at-sunset-29472039/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-36883388-portrait.mp4",
+          "durationMs": 10133,
+          "credit": {
+            "id": 36883388,
+            "photographer": "Atifa Mawdoodi",
+            "photographerUrl": "https://www.pexels.com/@atifa-mawdoodi-2156361391",
+            "url": "https://www.pexels.com/video/aerial-view-of-tokyo-city-at-dusk-36883388/"
+          }
+        }
+      ]
+    },
+    "startMs": 0,
+    "endMs": 2200
+  },
+  {
+    "keyword": "newspaper printing press",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-29906414-landscape.mp4",
+          "durationMs": 43293,
+          "credit": {
+            "id": 29906414,
+            "photographer": "Everett Bumstead",
+            "photographerUrl": "https://www.pexels.com/@whateverett-takes",
+            "url": "https://www.pexels.com/video/industrial-printing-press-operating-in-slow-motion-29906414/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-38071228-portrait.mp4",
+          "durationMs": 7932,
+          "credit": {
+            "id": 38071228,
+            "photographer": "Tawseef Ahmad",
+            "photographerUrl": "https://www.pexels.com/@tawseef-ahmad-2148347998",
+            "url": "https://www.pexels.com/video/newspaper-layout-with-various-headlines-38071228/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-10449873-portrait.mp4",
+          "durationMs": 4650,
+          "credit": {
+            "id": 10449873,
+            "photographer": "Deepa Godiawala",
+            "photographerUrl": "https://www.pexels.com/@deepa-godiawala-1037387",
+            "url": "https://www.pexels.com/video/person-opening-newspaper-10449873/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-36570946-portrait.mp4",
+          "durationMs": 15662,
+          "credit": {
+            "id": 36570946,
+            "photographer": "Aero Drone",
+            "photographerUrl": "https://www.pexels.com/@aerodronmx",
+            "url": "https://www.pexels.com/video/high-speed-industrial-printer-in-operation-36570946/"
+          }
+        }
+      ]
+    },
+    "startMs": 2200,
+    "endMs": 18580
+  },
+  {
+    "keyword": "empty office night",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-16657004-landscape.mp4",
+          "durationMs": 10112,
+          "credit": {
+            "id": 16657004,
+            "photographer": "Erik Mclean",
+            "photographerUrl": "https://www.pexels.com/@introspectivedsgn",
+            "url": "https://www.pexels.com/video/a-black-and-white-photo-of-a-street-at-night-16657004/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-18184655-portrait.mp4",
+          "durationMs": 15828,
+          "credit": {
+            "id": 18184655,
+            "photographer": "Will Buildastock",
+            "photographerUrl": "https://www.pexels.com/@will-buildastock-426030911",
+            "url": "https://www.pexels.com/video/a-view-of-a-city-at-night-from-a-balcony-18184655/"
+          }
+        }
+      ]
+    },
+    "startMs": 18580,
+    "endMs": 26604
+  },
+  {
+    "keyword": "steel vault door closed",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-4183797-landscape.mp4",
+          "durationMs": 6480,
+          "credit": {
+            "id": 4183797,
+            "photographer": "Waqas Ahmad Wicky",
+            "photographerUrl": "https://www.pexels.com/@wiki",
+            "url": "https://www.pexels.com/video/light-and-shadows-time-lapse-4183797/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-3999371-landscape.mp4",
+          "durationMs": 13930,
+          "credit": {
+            "id": 3999371,
+            "photographer": "K",
+            "photographerUrl": "https://www.pexels.com/@kelly",
+            "url": "https://www.pexels.com/video/a-closed-gate-with-a-chain-and-a-padlock-3999371/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7830154-portrait.mp4",
+          "durationMs": 16033,
+          "credit": {
+            "id": 7830154,
+            "photographer": "Monstera Production",
+            "photographerUrl": "https://www.pexels.com/@gabby-k",
+            "url": "https://www.pexels.com/video/a-hinge-attached-on-the-door-7830154/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-35099110-portrait.mp4",
+          "durationMs": 16333,
+          "credit": {
+            "id": 35099110,
+            "photographer": "Videas",
+            "photographerUrl": "https://www.pexels.com/@videas-1380992400",
+            "url": "https://www.pexels.com/video/luxury-car-parked-in-indoor-garage-35099110/"
+          }
+        }
+      ]
+    },
+    "startMs": 26604,
+    "endMs": 44392
+  },
+  {
+    "keyword": "clock face close up",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-9160920-landscape.mp4",
+          "durationMs": 31828,
+          "credit": {
+            "id": 9160920,
+            "photographer": "emirkhan bal",
+            "photographerUrl": "https://www.pexels.com/@mootlak",
+            "url": "https://www.pexels.com/video/close-up-of-a-clock-9160920/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7034335-portrait.mp4",
+          "durationMs": 15120,
+          "credit": {
+            "id": 7034335,
+            "photographer": "Tima Miroshnichenko",
+            "photographerUrl": "https://www.pexels.com/@tima-miroshnichenko",
+            "url": "https://www.pexels.com/video/close-up-of-clock-hands-7034335/"
+          }
+        }
+      ]
+    },
+    "startMs": 44392,
+    "endMs": 56756
+  },
+  {
+    "keyword": "tokyo street 1990s",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-30488069-landscape.mp4",
+          "durationMs": 6680,
+          "credit": {
+            "id": 30488069,
+            "photographer": "Bobby Brown",
+            "photographerUrl": "https://www.pexels.com/@bobby-brown-255077068",
+            "url": "https://www.pexels.com/video/bustling-nightlife-in-shinjuku-s-kabukicho-district-30488069/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-3360907-landscape.mp4",
+          "durationMs": 40148,
+          "credit": {
+            "id": 3360907,
+            "photographer": "Tianwang Xiao",
+            "photographerUrl": "https://www.pexels.com/@xiaotianwang",
+            "url": "https://www.pexels.com/video/taxi-cars-used-for-public-transportation-in-japan-3360907/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-28869249-portrait.mp4",
+          "durationMs": 21355,
+          "credit": {
+            "id": 28869249,
+            "photographer": "Bezaleel Fajar Luista",
+            "photographerUrl": "https://www.pexels.com/@bezaleel-fajar-luista-1940416158",
+            "url": "https://www.pexels.com/video/bustling-streets-of-tokyo-s-shopping-district-28869249/"
+          }
+        }
+      ]
+    },
+    "startMs": 56756,
+    "endMs": 66340
+  },
+  {
+    "keyword": "unfinished concrete building",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-14059234-landscape.mp4",
+          "durationMs": 19007,
+          "credit": {
+            "id": 14059234,
+            "photographer": "utopia 36",
+            "photographerUrl": "https://www.pexels.com/@utopia36",
+            "url": "https://www.pexels.com/video/drone-video-of-a-building-under-construction-14059234/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-28253267-portrait.mp4",
+          "durationMs": 9900,
+          "credit": {
+            "id": 28253267,
+            "photographer": "Alejandro De Roa",
+            "photographerUrl": "https://www.pexels.com/@alejandro-de-roa-649065356",
+            "url": "https://www.pexels.com/video/the-house-is-built-on-a-hillside-with-a-view-of-the-mountains-28253267/"
+          }
+        }
+      ]
+    },
+    "startMs": 66340,
+    "endMs": 74772
+  },
+  {
+    "keyword": "government building exterior",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-28454582-landscape.mp4",
+          "durationMs": 10080,
+          "credit": {
+            "id": 28454582,
+            "photographer": "LayG Traveller",
+            "photographerUrl": "https://www.pexels.com/@layg-traveller-593127578",
+            "url": "https://www.pexels.com/video/a-large-building-with-a-flag-on-top-of-it-28454582/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-36506766-portrait.mp4",
+          "durationMs": 10811,
+          "credit": {
+            "id": 36506766,
+            "photographer": "Paul Bredt",
+            "photographerUrl": "https://www.pexels.com/@paul-bredt-901364072",
+            "url": "https://www.pexels.com/video/costa-rican-flag-flies-over-modern-building-36506766/"
+          }
+        }
+      ]
+    },
+    "startMs": 74772,
+    "endMs": 83668
+  },
+  {
+    "keyword": "snow city street winter",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-3830514-landscape.mp4",
+          "durationMs": 32966,
+          "credit": {
+            "id": 3830514,
+            "photographer": "Egor Kunovsky",
+            "photographerUrl": "https://www.pexels.com/@egor-kunovsky-1199972",
+            "url": "https://www.pexels.com/video/a-drone-footage-of-moving-cars-in-a-snowy-season-3830514/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-10225518-portrait.mp4",
+          "durationMs": 6890,
+          "credit": {
+            "id": 10225518,
+            "photographer": "Nikita Nikitin",
+            "photographerUrl": "https://www.pexels.com/@nikitaxnikitin",
+            "url": "https://www.pexels.com/video/snow-falling-down-in-city-at-night-10225518/"
+          }
+        }
+      ]
+    },
+    "startMs": 83668,
+    "endMs": 86068
+  },
+  {
+    "keyword": "window blinds shadow light",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-5710732-landscape.mp4",
+          "durationMs": 47957,
+          "credit": {
+            "id": 5710732,
+            "photographer": "Nelson Axigoth",
+            "photographerUrl": "https://www.pexels.com/@themightynelson",
+            "url": "https://www.pexels.com/video/window-blinds-5710732/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-8055999-portrait.mp4",
+          "durationMs": 10600,
+          "credit": {
+            "id": 8055999,
+            "photographer": "Hanna Pad",
+            "photographerUrl": "https://www.pexels.com/@anna-nekrashevich",
+            "url": "https://www.pexels.com/video/close-up-video-of-a-shoulder-8055999/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-34826022-portrait.mp4",
+          "durationMs": 17100,
+          "credit": {
+            "id": 34826022,
+            "photographer": "Elaine Albuquerque",
+            "photographerUrl": "https://www.pexels.com/@elaine-albuquerque-72544620",
+            "url": "https://www.pexels.com/video/sunlit-room-with-window-blinds-light-effect-34826022/"
+          }
+        }
+      ]
+    },
+    "startMs": 86068,
+    "endMs": 98052
+  },
+  {
+    "keyword": "empty conference table chairs",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-6951298-landscape.mp4",
+          "durationMs": 11160,
+          "credit": {
+            "id": 6951298,
+            "photographer": "Werner Pfennig",
+            "photographerUrl": "https://www.pexels.com/@werner-pfennig",
+            "url": "https://www.pexels.com/video/monitors-and-microphones-in-a-conference-room-6951298/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7223719-portrait.mp4",
+          "durationMs": 17000,
+          "credit": {
+            "id": 7223719,
+            "photographer": "MART  PRODUCTION",
+            "photographerUrl": "https://www.pexels.com/@mart-production",
+            "url": "https://www.pexels.com/video/a-female-boss-waiting-in-the-office-7223719/"
+          }
+        }
+      ]
+    },
+    "startMs": 98052,
+    "endMs": 106940
+  },
+  {
+    "keyword": "blurred crowd walking motion",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-853946-landscape.mp4",
+          "durationMs": 14160,
+          "credit": {
+            "id": 853946,
+            "photographer": "Coverr",
+            "photographerUrl": "https://www.pexels.com/@coverr",
+            "url": "https://www.pexels.com/video/black-and-white-video-of-a-busy-street-853946/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-36337219-portrait.mp4",
+          "durationMs": 25025,
+          "credit": {
+            "id": 36337219,
+            "photographer": "SHOX ART",
+            "photographerUrl": "https://www.pexels.com/@shox",
+            "url": "https://www.pexels.com/video/blurry-cityscape-with-passing-pedestrians-36337219/"
+          }
+        }
+      ]
+    },
+    "startMs": 106940,
+    "endMs": 114820
+  },
+  {
+    "keyword": "rain on window glass",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-36408448-landscape.mp4",
+          "durationMs": 12012,
+          "credit": {
+            "id": 36408448,
+            "photographer": "정규송 Nui MALAMA",
+            "photographerUrl": "https://www.pexels.com/@nui-malama-169330637",
+            "url": "https://www.pexels.com/video/abstract-water-drops-on-glass-window-36408448/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-12742709-portrait.mp4",
+          "durationMs": 5140,
+          "credit": {
+            "id": 12742709,
+            "photographer": "Binil  Babu",
+            "photographerUrl": "https://www.pexels.com/@binil-babu-900109",
+            "url": "https://www.pexels.com/video/close-up-of-raindrops-on-glass-12742709/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-30133842-portrait.mp4",
+          "durationMs": 35167,
+          "credit": {
+            "id": 30133842,
+            "photographer": "Lentes  Bella",
+            "photographerUrl": "https://www.pexels.com/@lentes-bella-155318786",
+            "url": "https://www.pexels.com/video/raindrops-on-glass-with-scenic-background-30133842/"
+          }
+        }
+      ]
+    },
+    "startMs": 114820,
+    "endMs": 124712
+  },
+  {
+    "keyword": "empty bank counter interior",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-8346903-landscape.mp4",
+          "durationMs": 11690,
+          "credit": {
+            "id": 8346903,
+            "photographer": "Kampus Production",
+            "photographerUrl": "https://www.pexels.com/@kampus",
+            "url": "https://www.pexels.com/video/computer-monitors-on-the-table-8346903/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-28316767-portrait.mp4",
+          "durationMs": 29863,
+          "credit": {
+            "id": 28316767,
+            "photographer": "Kuiyibo Campos",
+            "photographerUrl": "https://www.pexels.com/@kuiyibo",
+            "url": "https://www.pexels.com/video/a-kitchen-with-a-sink-and-a-counter-top-28316767/"
+          }
+        }
+      ]
+    },
+    "startMs": 124712,
+    "endMs": 132240
+  },
+  {
+    "keyword": "tokyo office building night",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-18248058-landscape.mp4",
+          "durationMs": 25033,
+          "credit": {
+            "id": 18248058,
+            "photographer": "Rin Gakusho",
+            "photographerUrl": "https://www.pexels.com/@rin-gakusho-280714394",
+            "url": "https://www.pexels.com/video/a-city-at-night-with-lights-and-buildings-18248058/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-18830028-portrait.mp4",
+          "durationMs": 13100,
+          "credit": {
+            "id": 18830028,
+            "photographer": "Cheng",
+            "photographerUrl": "https://www.pexels.com/@cheng-9280137",
+            "url": "https://www.pexels.com/video/the-city-of-tokyo-at-night-with-lights-18830028/"
+          }
+        }
+      ]
+    },
+    "startMs": 132240,
+    "endMs": 134640
+  },
+  {
+    "keyword": "empty podium microphone",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-6951393-landscape.mp4",
+          "durationMs": 14040,
+          "credit": {
+            "id": 6951393,
+            "photographer": "Werner Pfennig",
+            "photographerUrl": "https://www.pexels.com/@werner-pfennig",
+            "url": "https://www.pexels.com/video/an-empty-conference-room-6951393/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7945823-portrait.mp4",
+          "durationMs": 14000,
+          "credit": {
+            "id": 7945823,
+            "photographer": "Pavel Danilyuk",
+            "photographerUrl": "https://www.pexels.com/@pavel-danilyuk",
+            "url": "https://www.pexels.com/video/the-director-and-teacher-delivering-speech-during-graduation-ceremony-7945823/"
+          }
+        }
+      ]
+    },
+    "startMs": 134640,
+    "endMs": 147484
+  },
+  {
+    "keyword": "stack of documents desk",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7054942-landscape.mp4",
+          "durationMs": 8255,
+          "credit": {
+            "id": 7054942,
+            "photographer": "Kindel Media",
+            "photographerUrl": "https://www.pexels.com/@kindelmedia",
+            "url": "https://www.pexels.com/video/stack-of-paperwork-on-the-desk-7054942/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-30117913-landscape.mp4",
+          "durationMs": 21840,
+          "credit": {
+            "id": 30117913,
+            "photographer": "utopia 36",
+            "photographerUrl": "https://www.pexels.com/@utopia36",
+            "url": "https://www.pexels.com/video/person-writing-in-dimly-lit-room-with-papers-30117913/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-6177763-portrait.mp4",
+          "durationMs": 7850,
+          "credit": {
+            "id": 6177763,
+            "photographer": "Cup of  Couple",
+            "photographerUrl": "https://www.pexels.com/@cup-of-couple",
+            "url": "https://www.pexels.com/video/hanging-intant-pictures-on-the-wall-6177763/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-8731553-portrait.mp4",
+          "durationMs": 16760,
+          "credit": {
+            "id": 8731553,
+            "photographer": "Mikhail Nilov",
+            "photographerUrl": "https://www.pexels.com/@mikhail-nilov",
+            "url": "https://www.pexels.com/video/a-woman-signing-documents-8731553/"
+          }
+        }
+      ]
+    },
+    "startMs": 147484,
+    "endMs": 162788
+  },
+  {
+    "keyword": "empty executive office",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-5716999-landscape.mp4",
+          "durationMs": 20560,
+          "credit": {
+            "id": 5716999,
+            "photographer": "Tima Miroshnichenko",
+            "photographerUrl": "https://www.pexels.com/@tima-miroshnichenko",
+            "url": "https://www.pexels.com/video/modern-office-interior-5716999/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-8061672-portrait.mp4",
+          "durationMs": 24880,
+          "credit": {
+            "id": 8061672,
+            "photographer": "Pavel Danilyuk",
+            "photographerUrl": "https://www.pexels.com/@pavel-danilyuk",
+            "url": "https://www.pexels.com/video/a-woman-talking-on-a-cellphone-in-her-office-8061672/"
+          }
+        }
+      ]
+    },
+    "startMs": 162788,
+    "endMs": 167556
+  },
+  {
+    "keyword": "camera flashes press conference",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-30048693-landscape.mp4",
+          "durationMs": 7200,
+          "credit": {
+            "id": 30048693,
+            "photographer": "Andrey Kirievskiy",
+            "photographerUrl": "https://www.pexels.com/@andrey-kirievskiy-1404180",
+            "url": "https://www.pexels.com/video/tv-cameramen-filming-outdoor-news-event-30048693/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-33191999-landscape.mp4",
+          "durationMs": 8008,
+          "credit": {
+            "id": 33191999,
+            "photographer": "Airam Dato-on",
+            "photographerUrl": "https://www.pexels.com/@airamdphoto",
+            "url": "https://www.pexels.com/video/group-of-photographers-in-action-indoors-33191999/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-35449634-portrait.mp4",
+          "durationMs": 7767,
+          "credit": {
+            "id": 35449634,
+            "photographer": "cami",
+            "photographerUrl": "https://www.pexels.com/@casnafu",
+            "url": "https://www.pexels.com/video/photographer-workshop-session-with-model-35449634/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-4994145-portrait.mp4",
+          "durationMs": 12800,
+          "credit": {
+            "id": 4994145,
+            "photographer": "Tima Miroshnichenko",
+            "photographerUrl": "https://www.pexels.com/@tima-miroshnichenko",
+            "url": "https://www.pexels.com/video/man-taking-photos-of-another-man-4994145/"
+          }
+        }
+      ]
+    },
+    "startMs": 167556,
+    "endMs": 176672
+  },
+  {
+    "keyword": "old ledger book pages",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-4061896-landscape.mp4",
+          "durationMs": 19753,
+          "credit": {
+            "id": 4061896,
+            "photographer": "K",
+            "photographerUrl": "https://www.pexels.com/@kelly",
+            "url": "https://www.pexels.com/video/close-up-shot-of-a-page-from-a-book-4061896/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-11384843-portrait.mp4",
+          "durationMs": 15018,
+          "credit": {
+            "id": 11384843,
+            "photographer": "Sahil Sharma",
+            "photographerUrl": "https://www.pexels.com/@sahil-sharma-133964792",
+            "url": "https://www.pexels.com/video/flipping-pages-in-old-book-11384843/"
+          }
+        }
+      ]
+    },
+    "startMs": 176672,
+    "endMs": 185628
+  },
+  {
+    "keyword": "empty street night rain",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-12570193-landscape.mp4",
+          "durationMs": 11988,
+          "credit": {
+            "id": 12570193,
+            "photographer": "Ricky Esquivel",
+            "photographerUrl": "https://www.pexels.com/@rickyrecap",
+            "url": "https://www.pexels.com/video/street-during-rain-at-night-12570193/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-38003073-portrait.mp4",
+          "durationMs": 7800,
+          "credit": {
+            "id": 38003073,
+            "photographer": "Iban Lopez Luna",
+            "photographerUrl": "https://www.pexels.com/@iban-lopez-luna-2159602676",
+            "url": "https://www.pexels.com/video/moody-urban-night-street-scene-with-rain-38003073/"
+          }
+        }
+      ]
+    },
+    "startMs": 185628,
+    "endMs": 187828
+  },
+  {
+    "keyword": "closed shop shutter night",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-26233703-landscape.mp4",
+          "durationMs": 8000,
+          "credit": {
+            "id": 26233703,
+            "photographer": "Adventist Asia",
+            "photographerUrl": "https://www.pexels.com/@adventistasia",
+            "url": "https://www.pexels.com/video/siem-reap-market-26233703/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-16407861-portrait.mp4",
+          "durationMs": 5845,
+          "credit": {
+            "id": 16407861,
+            "photographer": "Erik Mclean",
+            "photographerUrl": "https://www.pexels.com/@introspectivedsgn",
+            "url": "https://www.pexels.com/video/a-sign-that-says-no-smoking-in-the-dark-16407861/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-15396022-portrait.mp4",
+          "durationMs": 5505,
+          "credit": {
+            "id": 15396022,
+            "photographer": "Beyza Kaplan",
+            "photographerUrl": "https://www.pexels.com/@kaplanart",
+            "url": "https://www.pexels.com/video/a-street-with-a-street-light-on-it-at-night-15396022/"
+          }
+        }
+      ]
+    },
+    "startMs": 187828,
+    "endMs": 195668
+  },
+  {
+    "keyword": "calendar pages turning",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7235016-landscape.mp4",
+          "durationMs": 18133,
+          "credit": {
+            "id": 7235016,
+            "photographer": "Artem Podrez",
+            "photographerUrl": "https://www.pexels.com/@artempodrez",
+            "url": "https://www.pexels.com/video/flipping-pages-of-a-book-7235016/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-35332817-portrait.mp4",
+          "durationMs": 7367,
+          "credit": {
+            "id": 35332817,
+            "photographer": "Cis14_04 09",
+            "photographerUrl": "https://www.pexels.com/@cis14_04-09-2156191398",
+            "url": "https://www.pexels.com/video/flipping-calendar-pages-in-motion-35332817/"
+          }
+        }
+      ]
+    },
+    "startMs": 195668,
+    "endMs": 200724
+  },
+  {
+    "keyword": "typewriter keys close up",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-6980925-landscape.mp4",
+          "durationMs": 25120,
+          "credit": {
+            "id": 6980925,
+            "photographer": "KoolShooters",
+            "photographerUrl": "https://www.pexels.com/@koolshooters",
+            "url": "https://www.pexels.com/video/close-up-shot-of-typewriter-typing-6980925/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-31176143-portrait.mp4",
+          "durationMs": 12496,
+          "credit": {
+            "id": 31176143,
+            "photographer": "Burak Bahadır  Büyükkılınç",
+            "photographerUrl": "https://www.pexels.com/@bahadirbuyukkilinc",
+            "url": "https://www.pexels.com/video/vintage-typewriter-close-up-with-soft-focus-31176143/"
+          }
+        }
+      ]
+    },
+    "startMs": 200724,
+    "endMs": 208220
+  },
+  {
+    "keyword": "glass office tower low angle",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-15191845-landscape.mp4",
+          "durationMs": 21183,
+          "credit": {
+            "id": 15191845,
+            "photographer": "Alan W",
+            "photographerUrl": "https://www.pexels.com/@alanw",
+            "url": "https://www.pexels.com/video/low-angle-shot-of-glass-buildings-15191845/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7066746-portrait.mp4",
+          "durationMs": 10010,
+          "credit": {
+            "id": 7066746,
+            "photographer": "Laura Tancredi",
+            "photographerUrl": "https://www.pexels.com/@laura-tancredi",
+            "url": "https://www.pexels.com/video/low-angle-shot-of-a-tall-building-7066746/"
+          }
+        }
+      ]
+    },
+    "startMs": 208220,
+    "endMs": 212964
+  },
+  {
+    "keyword": "office workers walking corridor",
+    "clips": {
+      "landscape": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-3201794-landscape.mp4",
+          "durationMs": 20080,
+          "credit": {
+            "id": 3201794,
+            "photographer": "cottonbro studio",
+            "photographerUrl": "https://www.pexels.com/@cottonbro",
+            "url": "https://www.pexels.com/video/women-walking-and-greeting-each-other-inside-an-office-3201794/"
+          }
+        }
+      ],
+      "portrait": [
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7652109-portrait.mp4",
+          "durationMs": 10602,
+          "credit": {
+            "id": 7652109,
+            "photographer": "Kindel Media",
+            "photographerUrl": "https://www.pexels.com/@kindelmedia",
+            "url": "https://www.pexels.com/video/man-walking-in-the-office-7652109/"
+          }
+        },
+        {
+          "file": "E:\\ryu\\project\\vidgen\\assets\\cache\\pexels-7652294-portrait.mp4",
+          "durationMs": 9770,
+          "credit": {
+            "id": 7652294,
+            "photographer": "Kindel Media",
+            "photographerUrl": "https://www.pexels.com/@kindelmedia",
+            "url": "https://www.pexels.com/video/man-and-woman-walking-while-talking-to-each-other-7652294/"
+          }
+        }
+      ]
+    },
+    "startMs": 212964,
+    "endMs": 226100
+  }
+]

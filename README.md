@@ -196,7 +196,7 @@ npm run vg -- footage  <项目名>
 npm run vg -- render   <项目名> --profile portrait
 ```
 
-项目目录：`projects/<日期_标题>/`
+项目目录：`projects/记者读稿/<日期_标题>/`
 
 | 文件 | 说明 |
 |---|---|
@@ -215,7 +215,7 @@ npm run vg -- render   <项目名> --profile portrait
 npx tsx src/smoke.ts
 ```
 
-产物在 `.smoke/`，**不在 `projects/`** —— 它的音频是正弦测试音、画面是合成色块，
+产物在 `.smoke/`，**不在 `projects/记者读稿/`** —— 它的音频是正弦测试音、画面是合成色块，
 只用来验证时间轴、字幕和滤镜图。听到"滴滴嘟嘟"是正常的，那不是配音坏了。
 真人声要走上面的正常流程。
 

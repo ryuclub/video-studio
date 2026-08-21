@@ -16,7 +16,7 @@ export interface Issue {
   msg: string;
 }
 
-const RIGS = ['serpentine', 'human', 'turtle', 'mouse', 'cat', 'none', 'still'];
+const RIGS = ['serpentine', 'human', 'turtle', 'mouse', 'cat', 'none', 'still', 'horse'];
 
 export function preflight(cfg: JokeCfg): Issue[] {
   const out: Issue[] = [];

@@ -4,6 +4,7 @@
 import { piece, tornRect, tornEllipse, toPath, capsule, rng, n } from '../style/papercut.js';
 import { P } from '../style/palette.js';
 import { W, H, GROUND } from '../config.js';
+import { scene as horseScene, SCENES as HORSE_SCENE_TABLE, GROUND as HORSE_GROUND } from '../../horse/scenes.mjs';
 
 export interface Layers {
   far: string;
@@ -442,7 +443,50 @@ const eaves: Scene = (ink, seed) => {
   };
 };
 
-export const SCENES: Record<string, Scene> = { grass, room, office, street, abstract, shore, hillside, hillrocks, pond, eaves };
+
+// ── 老马线的场景：外挂 horse/scenes.mjs ──────────────────────────────
+//
+// 那 10 个场景是**另一套画风**（手绘线条，`horse/rough.mjs`），跟这边的剪纸风
+// 不是一回事，所以不重画、直接外挂。两套画风并存是有意的：
+// 段子/《一页故事》是剪纸，老马是手绘线条，观众一眼能分出是哪条线。
+//
+// 三处要接：
+//
+//   ① **地平线不一样。** 这边 GROUND=1290，那边 1500。
+//      靠 `Layers.ground` 钩子解决 —— 那个钩子本来就是为「地面不在默认高度」写的。
+//      不接的话马会悬在半空，而且**不报错**（layout 只对没实现 ground() 的场景报警）。
+//   ② **只放一层。** 那边一个场景是一整张扁的图，没有远中近三层。
+//      全部塞进 mid：推镜时整张一起动，手绘线条风本来也不该做视差。
+//   ③ **颜色过 ink()。** 那边的颜色是写死的十六进制，
+//      不换的话定格去色那一下背景还是彩的，而角色已经灰了。
+//
+// 场景名直接沿用（office-desk / elevator …），跟这边现有的十个不撞。
+
+const horseInner = (name: string) => {
+  // 那边返回的是完整 <svg>…</svg>，这儿只要里面的内容
+  const raw = horseScene(name, 1);
+  return raw.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+};
+
+const horseAdapter =
+  (name: string): Scene =>
+  (ink, seed) => ({
+    far: '',
+    // seed 不透传：那边的笔触抖动按 seed 重洗，**逐帧渲的时候每帧重洗就是满屏跳**。
+    // 固定成 1，整条片子共用同一张背景（跟 horse/render.mjs 的 sequence() 同一个道理）
+    mid: horseInner(name).replace(/#[0-9a-fA-F]{6}\b/g, (c) => ink(c)),
+    near: '',
+    ground: () => HORSE_GROUND,
+  });
+
+const HORSE_SCENES: Record<string, Scene> = Object.fromEntries(
+  Object.keys(HORSE_SCENE_TABLE).map((k) => [k, horseAdapter(k)])
+);
+
+export const SCENES: Record<string, Scene> = {
+  grass, room, office, street, abstract, shore, hillside, hillrocks, pond, eaves,
+  ...HORSE_SCENES,
+};
 
 export const SCENE_NAMES = Object.keys(SCENES);
 

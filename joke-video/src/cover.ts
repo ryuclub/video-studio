@@ -126,7 +126,26 @@ const T = {
   lineH: 1.12,
   trackK: 0.03,
   marginK: 0.062,
-  baselineK: 0.115,
+  /**
+   * 主标题首行基线，占画布高的比例。
+   *
+   * **2026-08-22 从 0.115 改成 0.22。** 原来那个数只顾了 9:16：标题墨迹落在
+   * y 55–243，而**个人主页九宫格裁的是 `crop=1080:1440:0:240`，只留 y ≥ 240** ——
+   * 四字标题整行都在裁切线外面，`-3x4.png` 上主标题一个字都不剩，只剩副标题。
+   * 规范 §一 早就写着「关键内容必须落在 3:4 区域里」，但 §七之六 的自检表漏了这条。
+   *
+   * 0.22 是量出来的：墨迹顶边 = 基线 − 字号 × (字面上伸 0.88 ＋ 描边外沿 0.075)，
+   * 182 的字号下 = 基线 − 174。要让顶边落在 240 以下再留点余量，基线得 ≥ 419。
+   *
+   * ⚠ **不能靠「不碰到角色的任何墨迹」去反推，那样算出来是无解的。** 角色墨迹
+   * 最上一行在 y=328（头发尖），按那个当上界，可用带只有 240→328 共 88px，
+   * 装不下一个 182px 的字。但规范 §七之三 说的是**不压脸** —— 耳朵尖和头发不是脸。
+   * 实测 0.22 的时候标题落在他耳朵旁边，离脸还远。
+   *
+   * 验过两种：4 字一行（007）与 5 字两行（005），3:4 里标题、副标题、角色、署名全在。
+   * ⚠ 7 字标题拆成 4/3，第二行位置最低，左端会擦到他头右侧约 9px —— 写到时看一眼。
+   */
+  baselineK: 0.22,
   /** 需要避让画面上方元素（电梯楼层屏那类）时整体下移到这儿 */
   lowBaselineK: 0.4,
   subFsK: 0.5,
@@ -201,14 +220,17 @@ export function laomaTitleClip(title: string, low = false): string[] {
   const widest = Math.max(...lines.map((l) => units(l) + T.trackK * Math.max(0, [...l].length - 1)));
   const fs = Math.min(T.maxFs, avail / widest);
   const y0 = H * (low ? T.lowBaselineK : T.baselineK);
-  const inkTop = y0 - fs * T.cjkAscent;
+  // 墨迹顶边 = 基线 − 字号 × (字面上伸 ＋ 描边往外那一半)。
+  // ⚠ **描边那一项不能漏。** 描边宽是字号 × 0.15，骑在轮廓上、往外长一半 ——
+  // 182 的字号下就是 13.7px。只按字面上伸算的话这道检查会偏乐观 13px 才报。
+  const inkTop = y0 - fs * (T.cjkAscent + T.strokeK / 2);
   if (inkTop >= CROP_3X4_TOP) return [];
-  const lastTop = y0 + (lines.length - 1) * fs * T.lineH - fs * T.cjkAscent;
+  const lastTop = y0 + (lines.length - 1) * fs * T.lineH - fs * (T.cjkAscent + T.strokeK / 2);
   const lost = lastTop >= CROP_3X4_TOP ? `第 1 行` : `整个标题`;
   return [
     `**九宫格封面（3:4）会把${lost}裁掉**：字顶在 y=${inkTop.toFixed(0)}，而 3:4 只留 y≥${CROP_3X4_TOP}。` +
-      `规范 §一 说「关键内容必须落在 3:4 区域里」，§七之三 的首行基线 ${low ? '0.40' : '0.115'} 跟它是冲突的。` +
-      `要么给这条稿件加 "titleLow": true（基线下移到 0.40），要么改 §七之三 的缺省值 —— 别只出 9:16 就发`,
+      `规范 §一 说「关键内容必须落在 3:4 区域里」。` +
+      `基线（§七之三，现在是 ${low ? T.lowBaselineK : T.baselineK}）要往下挪，或者字号上限往下压 —— 别只出 9:16 就发`,
   ];
 }
 

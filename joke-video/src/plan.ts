@@ -96,13 +96,28 @@ function shotTable(cfg: JokeCfg, tl: Timeline): string {
     const say = `**${line.who}**：${subtitleText(line)}`;
 
     rows.push(`| ${fmt(seg.start)}–${fmt(seg.start + (line.dur ?? 0))} | ${cell(picture)} | ${cell(say)} | ${cell(sfxAt(cfg, tl, seg.start))} |`);
+    // 张嘴无声 / 闭目：**这两样是分镜表上必须看得见的**。
+    // 它们不是一句台词，所以原来一行都不占 —— 而《天气预报》全片最要紧的
+    // 那一下（她说「我知道啊」，他张嘴说不出话）正好就是这一种，
+    // 人对着分镜表核片子的时候等于看不到它。
+    const after = seg.start + (line.dur ?? 0);
+    if (line.openMouth)
+      rows.push(
+        `| ${fmt(after + 0.1)}–${fmt(after + 0.1 + line.openMouth)} | **张嘴，不出声** ${line.openMouth}s　*他想说什么，说不出来* | — | 静音 |`
+      );
+    if (line.closeEyes)
+      rows.push(
+        `| ${fmt(after + 0.06)}–${fmt(after + 0.06 + line.closeEyes)} | **闭目** ${line.closeEyes}s　*不是眨眼 —— 忍耐* | — | 静音 |`
+      );
   }
 
   const tail = tl.segments.find((s) => s.kind === 'freeze' || s.kind === 'hold');
   if (tail) {
     const what =
       cfg.type === 'A'
-        ? `定格去色 + 钩子字幕${cfg.hook ? `「${cfg.hook}」` : ''}`
+        ? cfg.hook
+          ? `定格去色 + 钩子字幕「${cfg.hook}」`
+          : `定格去色${cfg.fadeOut ? ` + 黑场 ${cfg.fadeOut}s` : ''}　**不出收尾卡**`
         : `缓慢淡出 + 尾字幕${cfg.hook ? `「${cfg.hook}」` : ''}`;
     rows.push(`| ${fmt(tail.start)}–${fmt(tl.duration)} | ${what} | — | ${cfg.type === 'A' ? 'BGM 骤停' : 'BGM 收尾'} |`);
   }

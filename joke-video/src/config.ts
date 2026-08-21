@@ -33,10 +33,36 @@ export const FONT =
   'Noto Sans CJK SC, Noto Sans CJK JP, Source Han Sans SC, Microsoft YaHei, Yu Gothic UI, PingFang SC, sans-serif';
 
 /**
- * 账号名，署在封面右下角。频道级常量，不写在每条稿件里。
+ * 封面主标题用的**特粗**字族。老马线的封面标题规范要求 Heavy / Black 字重 ——
+ * 那条规范的描边宽度是字号的 0.15，**Regular / Bold 撑不住这么粗的描边，出来会脏**。
+ *
+ * ⚠ **必须点名到「Black」那个字族，不能靠 `font-weight="900"` 去够。**
+ * resvg 是按字族名找字的，`Noto Sans SC` 和 `Noto Sans SC Black` 在系统里是
+ * 两个独立的族；只写前者加 900，多数情况下拿到的还是 Regular，**而且不报错**。
+ *
+ * 本机实测装着：Noto Sans SC Black / Noto Serif SC Black / Noto Sans JP Black。
+ * 一个都没有的时候会退到 `FONT`，那时候封面会明显变细 —— 出片前扫一眼封面就看得出来。
+ */
+export const FONT_HEAVY =
+  process.env.JOKE_FONT_HEAVY ||
+  'Noto Sans SC Black, Source Han Sans SC Heavy, Noto Sans CJK SC Black, Noto Sans JP Black, Microsoft YaHei, sans-serif';
+
+/**
+ * 账号名，署在封面右下角。**频道级常量，不写在每条稿件里** ——
+ * 写进稿件的话每条都得记得填，漏一条封面上就是另一个号。
  * 临时换用环境变量：JOKE_ACCOUNT="别的名字" npm run cover ...
+ *
+ * ⚠ **这条管线上跑着不止一个频道，署名不能只有一个。**
+ * `ACCOUNT` 是缺省（段子 / 《一页故事》），老马那条线是自己的号，见下。
+ * 谁署谁由 `cover.ts` 的 `accountFor()` 判，判据跟 `yiye-publish.ts` 一致。
  */
 export const ACCOUNT = process.env.JOKE_ACCOUNT || 'Ellie';
+
+/**
+ * 老马独白线的账号名。频道文档在 `horse/CHANNEL_LAOMA.md`
+ * （名字的读法、备选名的退让顺序都在那儿，改名先看那份）。
+ */
+export const ACCOUNT_LAOMA = process.env.JOKE_ACCOUNT_LAOMA || '碎嘴老马';
 
 /** 音频总体电平（dBFS 目标峰值） */
 export const PEAK_DBFS = -1.0;

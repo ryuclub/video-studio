@@ -27,7 +27,10 @@
     "shuoshu:parse": "tsx src/shuoshu-parse.ts",
     "shuoshu:check": "tsx src/shuoshu-ship.ts --check",
     "shuoshu:preview": "tsx src/shuoshu-build.ts --preview",
-    "shuoshu:ship": "tsx src/shuoshu-ship.ts"
+    "shuoshu:ship": "tsx src/shuoshu-ship.ts",
+    "laoma:check": "tsx src/laoma-check.ts",
+    "plan": "tsx src/cli.ts plan",
+    "laoma:publish": "tsx src/yiye-publish.ts"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

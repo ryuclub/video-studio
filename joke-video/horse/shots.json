@@ -1,0 +1,9 @@
+{
+  "outDir": "out3",
+  "shots": [
+    { "id": "s01", "scene": "office-desk", "seed": 3, "pose": { "eyeX": -14, "eyeY": 4 } },
+    { "id": "s02", "scene": "office-desk", "seed": 3, "pose": { "mouth": "A", "turn": -12, "eyeX": 10 } },
+    { "id": "s03", "scene": "elevator", "seed": 5, "place": "近景半身", "pose": { "eyeX": 20, "eyeY": -6 } },
+    { "id": "s04", "scene": "home-living", "seed": 7, "pose": { "mouth": "O" } }
+  ]
+}

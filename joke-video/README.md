@@ -372,7 +372,9 @@ npm run cover -- jokes/snake-poison.json "大哥，我完了"      # 指定大�
 （提问句）去标点截到 8 字——建立了情境但不含答案，天然不剧透，但只是兜底，
 上线前建议手写一句。
 
-右下角署名是账号名，改 `src/config.ts` 的 `ACCOUNT`（频道级常量，不写在每条稿件里）。
+右下角署名是账号名，改 `src/config.ts`（频道级常量，不写在每条稿件里）：
+段子 /《一页故事》用 `ACCOUNT`，老马独白线用 `ACCOUNT_LAOMA`（`碎嘴老马`）——
+**这条管线上跑着不止一个号**，谁署谁由 `cover.ts` 的 `accountFor()` 按 `rig === 'horse'` 判。
 
 **封面会自动嵌成视频第一帧**，平台多数拿第一帧做缩略图。默认只占 1 帧（33ms），
 观众看不见但平台取得到；`"cover": { "asFirstFrame": false }` 可关。

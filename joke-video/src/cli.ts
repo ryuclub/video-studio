@@ -29,7 +29,7 @@ import { morphToWav, isIdentity } from './audio/morph.js';
 import { renderStills, jokeSection, page, navEntry, navPanel, projectDir, findProjectDir, syncProjects, buildVoiceSamples } from './preview.js';
 import { coverSvg, checkTitle, safeZoneOverlaySvg } from './cover.js';
 import { buildVoiceDoc } from './voicedoc.js';
-import { unfilled } from './plan.js';
+import { unfilled, ensurePlan } from './plan.js';
 import { report } from './preflight.js';
 import { buildShotDoc } from './shotdoc.js';
 import { SCENE_NAMES, getScene } from './scenes/index.js';
@@ -336,6 +336,30 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     const n = await synthesizeJoke(cfg);
     console.log(`\n生成 ${n} 句到 voice/${cfg.id}/`);
     console.log(`接着跑：npm run align -- ${path} && npm run build -- ${path}`);
+    return;
+  }
+
+  // ── 出片思路：方案骨架 ──────────────────────────────────────────────
+  //
+  // **在写稿阶段跑，不是出片之后。** 方案 §四 的发布文案（标题、封面大字、
+  // 收尾金句）是同一个钩子的三种长度，分开想必然对不齐；而且填 §四 的时候
+  // 就得把「这一条的中心思想是什么」想清楚 —— 想不清楚的稿子，
+  // 渲完片子也还是想不清楚，只是多花了一次渲染。
+  if (cmd === 'plan') {
+    const dir = findProjectDir(cfg) ?? projectDir(cfg);
+    mkdirSync(dir, { recursive: true });
+    ensurePlan(cfg, dir);
+    const miss = unfilled(dir);
+    console.log(`  ${dir}/方案.md`);
+    if (miss.length) {
+      console.log('');
+      console.log('还没填：');
+      for (const u of miss) console.log(`  ⚠ 「${u.section}」${u.count} 处`);
+      console.log('');
+      console.log(`填完 §四 就能出发布文案（不用等成片）：npx tsx src/yiye-publish.ts ${path}`);
+    } else {
+      console.log(`  全部填完了。出发布文案：npx tsx src/yiye-publish.ts ${path}`);
+    }
     return;
   }
 

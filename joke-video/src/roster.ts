@@ -14,6 +14,7 @@ import { human } from './rigs/human.js';
 import { turtle } from './rigs/turtle.js';
 import { mouse } from './rigs/mouse.js';
 import { cat } from './rigs/cat.js';
+import { horse } from './rigs/horse.js';
 import type { CharState } from './rigs/state.js';
 
 export interface RosterEntry {
@@ -92,6 +93,16 @@ export function baseState(over: Partial<CharState>): CharState {
 }
 
 export const ROSTER: RosterEntry[] = [
+  {
+    key: 'horse',
+    label: '老马',
+    usage: '"rig": "horse"',
+    note: '段子独白线主角。**原稿在 horse/ 不在 assets/characters/** —— 那条线是外挂的一整套（角色 + 手绘线条场景 + 漫符），整体搬进来会跟剪纸风混成一锅。脸上不做戏，情绪靠眼珠和头边上的漫符',
+    svg: 'horse/horse_only.svg',
+    voice: '老马',
+    rigged: true,
+    draw: (ink) => horse(baseState({ scale: 0.42 }), ink, 3),
+  },
   {
     key: 'turtle-kid',
     label: '小龟',

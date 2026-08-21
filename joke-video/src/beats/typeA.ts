@@ -3,6 +3,7 @@
 // 这一层是整套方案里最值钱的部分：换段子、换动物、换人都不改这里。
 
 import { lineText, type JokeCfg, type Timeline, type Segment, type SfxCue } from '../types.js';
+import { clauseGap, type Pace } from '../pace.js';
 
 
 /** 没有配音时的时长估算：中文约每字 0.22s */
@@ -48,7 +49,7 @@ function buildTimelineA(cfg: JokeCfg): Timeline {
     if (line.beat === 'punch') {
       punchStart = start;
       punchEnd = end;
-      sfx.push({ name: 'slide', at: Math.max(start, end - 0.55) });
+      if (cfg.cues?.punchSlide ?? true) sfx.push({ name: 'slide', at: Math.max(start, end - 0.55) });
     }
     t = end + padAfter;
   });
@@ -58,8 +59,10 @@ function buildTimelineA(cfg: JokeCfg): Timeline {
   segments.push({ kind: 'hold', start: freezeStart + freezeDur, end: freezeStart + freezeDur + holdDur });
   const duration = freezeStart + freezeDur + holdDur;
 
-  // 定格那一下：BGM 骤停 + 咚
-  sfx.push({ name: 'thud', at: freezeStart });
+  // 定格那一下：BGM 骤停 + 咚。
+  // **独白 deadpan 档要关掉**（cues.freezeThud: false）—— 那一声等于自己先敲了锣，
+  // 而落点最需要的是「什么都不发生」的半拍。
+  if (cfg.cues?.freezeThud ?? true) sfx.push({ name: 'thud', at: freezeStart });
   // 定格之后的蝉鸣（死寂里的夏天）
   if ((cfg.ambience ?? 'grass') !== 'none') {
     sfx.push({ name: 'grass', at: 0, until: intro + 0.6 });
@@ -95,4 +98,101 @@ export function subtitleAt(tl: Timeline, t: number): { line: import('../types.js
     }
   }
   return null;
+}
+
+/**
+ * 一句话里每个 `say` 小句各占哪一段时间。
+ *
+ * ── 为什么需要它 ──
+ *
+ * 字幕原来是**整句一次性铺出来**的。铺垫句无所谓，落点句和转折句致命：
+ * 观众三秒读完，后面几秒在听复述 —— **笑点在被听到之前就消费掉了**。
+ * 要做到「跟着配音逐屏出」，就得知道每个小句从第几秒开始。
+ *
+ * ── 怎么算 ──
+ *
+ * 一句话是一个 wav（TTS 把小句合成完再按 gap 拼起来），所以只有整句的
+ * 实测 `dur`。先按字数把「说话时间」摊到各小句上（gap 是已知的静音，先扣掉），
+ * 再拿配音包络去**吸附**到真正的静音处 —— 拼接时插的那段 gap 是**真零**，
+ * 在包络上是一段谷，找得到。找不到就用估算值，不会崩。
+ *
+ * 传了 env 才吸附。排眨眼那种地方用估算值就够，字幕才需要准。
+ */
+export interface PartSpan {
+  a: number;
+  b: number;
+  text: string;
+  /** 这一小句自己点的表情。undefined = 沿用 line.look，'' = 归中正视 */
+  look?: string;
+}
+
+export function partSpans(
+  line: import('../types.js').LineCfg,
+  start: number,
+  dur: number,
+  opts: { env?: Float32Array; fps?: number; pace?: Pace } = {}
+): PartSpan[] {
+  const say = line.say;
+  if (!say?.length || say.length === 1)
+    return [{ a: start, b: start + dur, text: lineText(line), look: say?.[0]?.look }];
+
+  // gap 没写就跟 tts.ts 用同一套缺省，不然算出来的边界会系统性偏移
+  const gaps = say.map((c, i) =>
+    i === say.length - 1 ? 0 : c.gap ?? (opts.pace ? clauseGap(c.text, opts.pace) : 0.24)
+  );
+  const totalGap = gaps.reduce((s, g) => s + g, 0);
+  const speech = Math.max(0.2, dur - totalGap);
+  const chars = say.map((c) => Math.max(1, c.text.replace(/[\s\p{P}]/gu, '').length));
+  const totalCh = chars.reduce((s, c) => s + c, 0);
+
+  const spans: PartSpan[] = [];
+  let cur = start;
+  for (let i = 0; i < say.length; i++) {
+    const d = (speech * chars[i]) / totalCh;
+    spans.push({ a: cur, b: cur + d, text: say[i].text, look: say[i].look });
+    cur += d + gaps[i];
+  }
+
+  const env = opts.env;
+  const fps = opts.fps ?? 30;
+  if (!env) return spans;
+
+  // 吸附：在估算边界前后 0.5 秒里找**最安静的一帧**，把交界挪过去。
+  // 只挪交界，不改总长 —— 最后一小句的 b 永远是 start + dur。
+  for (let i = 1; i < spans.length; i++) {
+    const guess = spans[i].a;
+    const lo = Math.max(0, Math.round((guess - start - 0.5) * fps));
+    const hi = Math.min(env.length - 1, Math.round((guess - start + 0.5) * fps));
+    let best = -1;
+    let bestV = Infinity;
+    for (let f = lo; f <= hi; f++) {
+      if (env[f] < bestV) {
+        bestV = env[f];
+        best = f;
+      }
+    }
+    if (best < 0 || bestV > 0.06) continue; // 没找到真谷就信估算值
+    // 谷底往后走到重新有声音的那一帧 —— 字幕要在**他开口的那一刻**换
+    let f = best;
+    while (f < env.length - 1 && env[f] < 0.08) f++;
+    const at = start + f / fps;
+    if (at > spans[i - 1].a + 0.15 && at < spans[i].b - 0.15) {
+      spans[i - 1].b = at;
+      spans[i].a = at;
+    }
+  }
+  return spans;
+}
+
+/** 这一刻正在被念的是哪个小句。传 env 才准，见 partSpans */
+export function partAt(
+  line: import('../types.js').LineCfg,
+  start: number,
+  dur: number,
+  t: number,
+  opts: { env?: Float32Array; fps?: number; pace?: Pace } = {}
+): PartSpan {
+  const spans = partSpans(line, start, dur, opts);
+  for (const s of spans) if (t < s.b) return s;
+  return spans[spans.length - 1];
 }

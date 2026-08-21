@@ -175,7 +175,51 @@ const stamp = (sec: number) => {
  * 去掉就读不通了。
  */
 export function trimTailPunct(s: string): string {
-  return s.trim().replace(/[。，、；：！？…·.,;:!?]+$/u, '').trim();
+  return s.trim().replace(/[。，、；：！？…·—.,;:!?]+$/u, '').trim();
+}
+
+/**
+ * 一行字**中间**的句号换成逗号。
+ *
+ * 屏幕上的一行不是纸上的一段：一行字里蹦出一个句号，读起来像话已经完了、
+ * 可后面还接着 —— 「三点十三分。三点二十」这种在屏幕上很怪。同一个位置写逗号，
+ * 停顿的意思一样在，看着才是一行话。
+ *
+ * **只动句中的，末尾那个不管** —— 末尾归 `trimTailPunct`。
+ * 句中的逗号、顿号、冒号一律照留，那是节奏（跟 `trimTailPunct` 同一条界）。
+ *
+ * 半角的 `.` 不碰：那多半是数字（3.5）或西文缩写，换成逗号就错了。
+ */
+export function midPeriodToComma(s: string): string {
+  // 后面还有非空白、非句号的字 → 这个句号在句中
+  return s.replace(/。(?=[\s\S]*[^\s。])/gu, '，');
+}
+
+/**
+ * **屏幕上的一行字，统一走这儿。**
+ *
+ * 去尾标点 ＋ 句中句号换逗号。新起任何一条要把字放到画面上的管线，
+ * 第一件事就是把这个函数接上 —— 这两条都是频道规范，
+ * 而规范每次靠人记着就每次都会漏（尾标点那条用户提醒过很多次）。
+ *
+ * 现在接着的：`toSrt`（说书烧字幕 ＋ 治愈/心理的 .srt）、
+ * `xinli-text.ts`（文字版正文层）、`zhiyu-scene.ts`（题句卡横排）、
+ * `subtitle.ts`（段子与《一页故事》的台词条，带 `keepTone`）。
+ * 另外两个 npm 工程导不进来，各照抄了一份：`src/lib/ass.ts`（记者读稿）、
+ * `video-pipeline/src/layers/scenes.ts`（动效面板）。**改规则三处一起改。**
+ *
+ * ── `keepTone`：留住结尾的 ！和 ？ ──
+ *
+ * 旁白线上的 `！？` 跟句号一样是噪声，去掉。**段子和《一页故事》的台词不一样** ——
+ * 「打蛋了！」「我们把它滚回去吧！」那个感叹号是包袱的语气，不是标点。
+ * 54 条台词里有 8 条落在这个情况上，一刀切掉等于把语气一起切了。
+ * 所以那条线传 `keepTone: true`：句号、逗号、冒号照去，只留 `！？`。
+ */
+export function tidyCaption(s: string, opts: { keepTone?: boolean } = {}): string {
+  const trimmed = opts.keepTone
+    ? s.trim().replace(/(?<![！？])[。，、；：…·—.,;:]+$/u, '').trim()
+    : trimTailPunct(s);
+  return midPeriodToComma(trimmed);
 }
 
 /**
@@ -199,7 +243,7 @@ export function shiftSrt(srt: string, seconds: number): string {
 
 export function toSrt(cues: SrtCue[]): string {
   const body = cues
-    .map((c, i) => `${i + 1}\n${stamp(c.start)} --> ${stamp(c.end)}\n${trimTailPunct(c.text)}\n`)
+    .map((c, i) => `${i + 1}\n${stamp(c.start)} --> ${stamp(c.end)}\n${tidyCaption(c.text)}\n`)
     .join('\n');
   return '﻿' + body;
 }

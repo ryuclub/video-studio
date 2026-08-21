@@ -16,6 +16,7 @@
 import { Resvg } from '@resvg/resvg-js';
 import { W, H, GROUND } from './config.js';
 import { PROPS } from './props/index.js';
+import { resolveColor } from './style/palette.js';
 import { getScene } from './scenes/index.js';
 import { human } from './rigs/human.js';
 import { turtle } from './rigs/turtle.js';
@@ -23,6 +24,7 @@ import { mouse } from './rigs/mouse.js';
 import { cat } from './rigs/cat.js';
 import { still } from './rigs/still.js';
 import { serpentine } from './rigs/serpentine.js';
+import { horse } from './rigs/horse.js';
 import type { CharState } from './rigs/state.js';
 import type { JokeCfg } from './types.js';
 
@@ -41,6 +43,7 @@ const RIGS: Record<string, (s: CharState, ink: (c: string) => string, seed: numb
   cat,
   still,
   serpentine,
+  horse,
 };
 
 const AX = W / 2;
@@ -117,13 +120,44 @@ const neutral = (over: Partial<CharState>): CharState =>
     ...over,
   }) as CharState;
 
-/** 量出这条片子里每个角色和道具的包围盒 */
+/**
+ * 量出这条片子里每个角色和道具的包围盒。
+ *
+ * **形状相关的字段一个都不能漏。** 早先这里只传了 `length` 和 `art`，
+ * 于是两件事同时坏掉：
+ *
+ *   ① `color` 没传 → `human` / `serpentine` 里 `ink(s.color)` 拿到 undefined，
+ *      一路传到 `hexToRgb(undefined)` 直接抛 —— **`npm run voice` 整条命令是炸的**
+ *      （preflight 会跑 layout 检查）。example-human 和 snake-poison 都在这个状态。
+ *   ② `proportion` / `hair` / `props` 没传 → 无论配置写的是 adultF 还是 child，
+ *      量出来的都是 adultM 的盒子。这个不报错，只是撞车检测按错的尺寸算 ——
+ *      比①更难发现。
+ *
+ * 颜色过一道 `resolveColor`：这里的 ink 是恒等函数（量尺寸不需要真配色），
+ * 而配置里写的是 `primary` 这种调色板键名，不解析的话 `deepen()` 会拿到一个
+ * 不是十六进制的字符串，parseInt 出 NaN，颜色静默变成垃圾值。
+ */
 export function measure(cfg: JokeCfg): Map<string, Box> {
   const out = new Map<string, Box>();
   for (const c of cfg.characters) {
     const fn = RIGS[c.rig];
     if (!fn) continue; // rig:none 的旁白不出画面
-    out.set(c.id, bbox(fn(neutral({ length: c.length, art: c.art } as Partial<CharState>), id, 100)));
+    const state = neutral({
+      length: c.length,
+      art: c.art,
+      variant: c.variant,
+      proportion: c.proportion,
+      hair: c.hair,
+      props: c.props,
+      // ⚠ **缺省要跟 `charStateFor` 一致**（render.ts：`c.scale ?? (snake ? 1 : 1.25)`）。
+      // 早先这儿写死 1：没写 scale 的稿子，layout 量的是 1120px 的马、渲出来是 1400px 的，
+      // 站位报「没有重叠」而成片里出画 —— 而且顺带把 `rigs/horse.ts` 说的
+      // 「渲染高度锁死 1120 ↔ horse/scenes.mjs 的参考人高 U」那条不变量给破了。
+      // 已出的七条都显式写了 "scale": 1，所以一直没露。
+      scale: c.scale ?? (c.rig === 'serpentine' ? 1 : 1.25),
+      color: resolveColor(c.color),
+    } as Partial<CharState>);
+    out.set(c.id, bbox(fn(state, id, 100)));
   }
   for (const p of cfg.props ?? []) {
     const draw = PROPS[p.kind];

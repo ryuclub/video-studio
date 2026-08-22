@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 96">
+
+<path d="M 55,25 C 72,25 83,37 83,53 C 83,61 80,67 76,71
+ C 75,78 72,82 67,84 C 63,85.5 59,86 55,86 C 51,86 47,85.5 43,84
+ C 38,82 35,78 34,71 C 30,67 27,61 27,53 C 27,37 38,25 55,25 Z" fill="var(--mark, #3F4A4E)"/>
+<ellipse cx="44" cy="53" rx="7.6" ry="8.4" fill="var(--paper, #F3EDE1)" transform="rotate(-8 44 53)"/>
+<ellipse cx="66" cy="53" rx="7.6" ry="8.4" fill="var(--paper, #F3EDE1)" transform="rotate(8 66 53)"/>
+<path d="M 55,64 C 57,68 59,71 59,73 L 51,73 C 51,71 53,68 55,64 Z" fill="var(--paper, #F3EDE1)"/>
+<rect x="44.2" y="77" width="3.4" height="6.2" rx="0.7" fill="var(--paper, #F3EDE1)"/><rect x="49.0" y="77" width="3.4" height="6.2" rx="0.7" fill="var(--paper, #F3EDE1)"/><rect x="53.8" y="77" width="3.4" height="6.2" rx="0.7" fill="var(--paper, #F3EDE1)"/><rect x="58.6" y="77" width="3.4" height="6.2" rx="0.7" fill="var(--paper, #F3EDE1)"/><rect x="63.4" y="77" width="3.4" height="6.2" rx="0.7" fill="var(--paper, #F3EDE1)"/>
+</svg>

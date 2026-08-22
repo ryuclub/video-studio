@@ -131,7 +131,10 @@ export const LINES: Record<string, Line> = {
     // 自己实现了（短句多、逗号少，实测 258 对 226），不需要动音色。
     cast: '夜读',
     cpm: 258,
-    defaultBed: '../zhiyu/musics/1.wav',
+    // **跟禅佛典同一条**，理由也一样：1.wav 只有 10.3 秒，二十分钟的片子
+    // 循环上百遍会被听成节拍器。E01/E02 都在 发布.json 里写了 bed，
+    // 缺省从来没被走到过 —— 哪天有一期忘了写，走的就是错的那条。
+    defaultBed: '../zhiyu/musics/LNDO_Glorious_instrumental_3_24.wav',
     /**
      * 比治愈档冷两档（稿源 §七之二）：把绿相整体推向石青灰。
      * 主色取自封面 series 的 accent `#4A5B66`，让片内和封面同源。

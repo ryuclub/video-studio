@@ -277,10 +277,17 @@ const FRAME_RED = '#B03A2E';
  * 逐字包 tspan 的话字间距会被 tspan 边界撑开，肉眼看得出来。
  */
 function redDigits(t: string): string {
+  // ⚠ **两处都栽过跟头，别再改回去。**
+  //
+  // `\d` 不能写成 `[d]` —— 字符类里的 d 就是字母 d，阿拉伯数字一个都标不上，
+  // 而这条线的数虽然多半是中文写的，`frameText` 里照样有「23 位」那种写法。
+  //
+  // 不能先 `.filter(Boolean)` 再按下标判奇偶。split 带捕获组时奇数位一定是数字段，
+  // 可**首字就是数字的句子**（「二十三位在前面」）会在开头留一个空串 ——
+  // 先滤掉它，下标整体错一位，红的就跑到后半句去了。空串在 map 里跳过，下标不动。
   return t
-    .split(/([d]+|[零一二两三四五六七八九十百千万]+)/)
-    .filter(Boolean)
-    .map((seg, i) => (i % 2 === 1 ? `<tspan fill="${FRAME_RED}">${escapeXml(seg)}</tspan>` : escapeXml(seg)))
+    .split(/(\d+|[零一二两三四五六七八九十百千万]+)/)
+    .map((seg, i) => (!seg ? '' : i % 2 === 1 ? `<tspan fill="${FRAME_RED}">${escapeXml(seg)}</tspan>` : escapeXml(seg)))
     .join('');
 }
 

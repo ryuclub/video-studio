@@ -42,7 +42,14 @@ const arg = (k: string, d: string) => {
   const i = argv.indexOf(`--${k}`);
   return i >= 0 ? argv[i + 1] : d;
 };
-const BGM_FILE = `../zhiyu/musics/${arg('bgm', '1')}.wav`;
+/**
+ * 床音。**不写 `--bgm` 就跟成片同源**（`zhiyu-lines.ts` 的 `defaultBed`）。
+ *
+ * 原来这儿硬写 `1.wav` 当缺省 —— 治愈线碰巧就是它，所以一直没露馅；
+ * 心理和禅佛典的缺省早就不是它了，**试听过了的调性和成片不是一回事**，
+ * 正是这个文件和 `zhiyu-audio.ts` 开头都在防的那件事。
+ */
+const BGM_FILE = argv.includes('--bgm') ? `../zhiyu/musics/${arg('bgm', '1')}.wav` : DEF.defaultBed;
 const TEXT = arg('text', '幕一-三米见方.md');
 const TEXT_FILE = `${PROJ}/${TEXT}`;
 /**

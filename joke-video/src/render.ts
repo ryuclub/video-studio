@@ -11,10 +11,11 @@ import { mouse } from './rigs/mouse.js';
 import { cat } from './rigs/cat.js';
 import { still } from './rigs/still.js';
 import type { CharState } from './rigs/state.js';
-import { dialogueStrip, hookStrip, seriesCard, sideText } from './subtitle.js';
+import { dialogueStrip, hookStrip, seriesCard, sideText, openLineSvg, openFrameSvg } from './subtitle.js';
+import { drawObject } from '../horse/objects.mjs';
 import { breathe, blinking, clamp, easeOut, lerp, shake, smoothstep, talkBob, track, type Key } from './anim.js';
 import { getPace } from './pace.js';
-import { segAt, speakingAt, subtitleAt, estimateDur, partAt, partSpans } from './beats/typeA.js';
+import { segAt, speakingAt, subtitleAt, estimateDur, partAt, partSpans, openSpan, introOf } from './beats/typeA.js';
 import { subtitleText, lineText, type Timeline } from './types.js';
 import { mouthFrom } from './audio/align.js';
 import { horse as horseRig, horseBox } from './rigs/horse.js';
@@ -125,7 +126,7 @@ export function eyeTrack(tl: Timeline): { fixes: Fix[]; blinks: number[] } {
   const hit = gazeCache.get(tl);
   if (hit) return hit;
 
-  const intro = tl.cfg.intro ?? 2;
+  const intro = introOf(tl.cfg);
   const lines = tl.segments
     .filter((s) => s.kind === 'line' && s.line)
     .map((s) => {
@@ -260,12 +261,25 @@ function cameraKeys(tl: Timeline) {
     at(ty, t, v.ty);
   };
 
-  // 开场：轻微缓推，落到中景
-  const intro = tl.cfg.intro ?? 2;
+  /**
+   * 开场：轻微缓推，落到中景。
+   *
+   * ⚠ **voice-first 那一档，窗口是 [0, 大字撤掉]，不是 [0, intro]。**
+   * 那一档 intro 是 0，按 [0, intro] 排两个关键帧会落在同一个时刻 —— 等于没有缓推。
+   *
+   * 用大字那一段当窗口，缓推就跟第 1 句同长：**字在读，镜头在收，
+   * 读完的那一刻镜头正好稳住，人接着滑进来。** 一个动作交给下一个动作，中间不留空。
+   *
+   * （黑底卡那一版这个窗口是 [卡撤, +slide] —— 那时候前几秒画面全黑，
+   * 推了也没人看得见。改成场景直出之后，缓推从第一帧就该开始。）
+   */
+  const camOpen = openSpan(tl);
+  const pushFrom = 0;
+  const pushTo = camOpen ? camOpen.end : introOf(tl.cfg);
   const neutral = { zoom: 1.06, tx: 0, ty: 0 };
-  push3(0, neutral);
+  push3(pushFrom, neutral);
   let prev = { zoom: 1.0, tx: 0, ty: 0 };
-  push3(intro, prev);
+  push3(pushTo, prev);
 
   // static：开场缓推之后就停住，后面的跟随/推近一概不排。
   // **不是把幅度调小**——调小还是在动，而「几乎不动」的意思是不动。
@@ -401,7 +415,7 @@ function charStateFor(
   const baseX = c.x ?? (isLeft ? anchors.left : anchors.right);
   const facing: 1 | -1 = isLeft ? 1 : -1;
 
-  const intro = tl.cfg.intro ?? 2;
+  const intro = introOf(tl.cfg);
   const frozen = t >= tl.freezeStart;
   const at = frozen ? tl.freezeStart - 0.001 : t; // 定格：所有相位停住
 
@@ -414,8 +428,17 @@ function charStateFor(
   const visible = onStage.includes(c.id);
   const solo = onStage.length === 1;
 
-  // 入场：从画外滑入
-  const inK = easeOut(clamp(at / (intro * 0.75)));
+  // 入场：从画外滑入。
+  //
+  // ⚠ **两档出场共用同一条曲线，差别只在「什么时候开始滑」**（types.ts 的 opening）：
+  //
+  //   老样子      窗口 [0, intro×0.75] —— 空镜里滑到位，滑完才开口
+  //   voice-first 窗口 [第 1 句结束, +slide] —— 黑底大字先响，卡一撤他才进来
+  //
+  // **动画本身一个参数都没动**（同一条 easeOut、同样 ±520px），
+  // 改的只是它跟音轨的对齐关系。
+  const op = openSpan(tl);
+  const inK = op ? easeOut(clamp((at - op.end) / op.slide)) : easeOut(clamp(at / (intro * 0.75)));
   let offX = (isLeft ? -520 : 520) * (1 - inK);
   let walking = 0;
 
@@ -589,6 +612,38 @@ export function toScreen(cam: { zoom: number; tx: number; ty: number }, px: numb
 export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {}): string {
   const { tl } = ctx;
   const t = frame / FPS;
+
+  /**
+   * 「先出声，后出人」的开场：**场景照常渲，人不出，字压在场景上。**
+   *
+   * ⚠ **不需要把角色藏起来。** 入场窗口是 `[open.end, +slide]`，
+   * 在那之前 `inK = 0`、`offX = ±520` —— 角色框（114–465）整个被推到画外，
+   * 本来就不在画面里。**再加一层「隐藏角色」的判断是重复的**，
+   * 而重复的开关迟早会跟入场动画对不上。
+   */
+  const card0 = openSpan(tl);
+  /**
+   * 出场档 ③「先出声 · 物件」的首帧：**整幅就是物件特写 ＋ 一行字，所以早返回。**
+   *
+   * 跟档 ② 的分工在 `openFrameSvg` 顶上写着：② 是场景直出（场景本身是内容），
+   * ③ 是只有物件（首帧规范 §五 把「整幅场景图」列成禁令：信息量太散，
+   * 观众要花半秒扫画面，同时声音在讲第一句，注意力分裂）。
+   *
+   * ⚠ 早返回顺带保证了**没有东西能从它底下漏出来** —— 钩子、片头卡、fadeOut
+   * 都排在合成的最外面，靠「盖一块不透明矩形」是盖不住它们的。
+   */
+  if (card0?.style === 'object-first' && t < card0.end) {
+    // ⚠ 这儿单独拦一次，不指望 drawObject 报「没有物件 undefined」——
+    // 体检拦得住 build/voice，但 still / frame 是不过闸的，那两条路要能自己说清楚
+    if (!card0.subject)
+      throw new Error(
+        '出场档 ③ 缺 opening.frameSubject（首帧特写画哪样东西）。' +
+          '老马线不写 opening 就是档 ③ —— 要么补上 frameSubject/frameText，' +
+          '要么写 "opening": { "style": "figure-first" } 退回老样子。'
+      );
+    const art = drawObject(card0.subject, 1);
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${openFrameSvg(art, card0.text, { height: H })}</svg>`;
+  }
 
   // 定格：整帧去色（不用 SVG 滤镜，直接换色，快很多）
   // 定格去色只属于 A 类。**B 类不去色**——beats/typeB.ts 开头就写明了：
@@ -797,11 +852,45 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
   // 字幕
   const sub = ov.hideSubtitle ? null : subtitleAt(tl, Math.min(t, tl.freezeStart - 0.001));
   let subtitle = '';
-  if (sub && t < tl.freezeStart && tl.cfg.subtitleStyle === 'side') {
+  /**
+   * 开场大字。**占的是字幕那一格。**
+   *
+   * ⚠ **这一档里，第 1 句的字幕就是这一行大字；大字一撤，第 1 句就没有字幕了。**
+   *
+   * 判据写成 `sub.index === 0` 而不是 `t < card0.end`，是因为
+   * `subtitleAt` 在句子说完之后还会继续返回这一句（要盖住 padAfter 那段停顿）。
+   * 只按时刻判的话，大字在句尾撤掉的同一瞬间，**同一句话会以侧边字幕的小号原地再出现一次** ——
+   * 一模一样的字、一模一样的位置，只是忽然小了一半。那读起来是渲染打嗝，不是设计。
+   *
+   * 现在是：字随声走。他说完，字就没了，接着在这半秒静音里滑进来。
+   */
+  if (card0 && sub?.index === 0) {
+    // 档 ③ 走的是整幅早返回，到不了这儿；这一格只归档 ②
+    subtitle = card0.style === 'voice-first' && t < card0.end ? openLineSvg(card0.text, H * 0.4, ink) : '';
+    // 0.40 是侧边字幕的那条视线高度（`box.y + box.h × 0.34` ≈ 761，H×0.40 = 768）。
+    // 不直接算角色框：这会儿他还在画外，而这一行字要落在他**将要**站定之后
+    // 字幕会出现的地方 —— 那一片是每个老马场景都留空的（家具全避开它）。
+  } else if (sub && t < tl.freezeStart && tl.cfg.subtitleStyle === 'side') {
     // 侧边：排在角色的另一侧。角色框由 rig 给，列宽吃满剩下的地方再留边
     const ch = tl.cfg.characters.find((c) => c.id === sub.line.who);
+    /**
+     * ⚠ **角色还在滑入的时候，字幕列要钉在他的落位上，不能跟着他漂。**
+     *
+     * 列位是拿角色框算的（`box.x + box.w + GAP`）。「先出声，后出人」那一档里，
+     * 他在第 2 句的头 0.9 秒还在从画外滑进来 —— 按当帧的框算，字幕会从
+     * x≈320 一路漂到 x≈509，**而这一句正在被念**，读着的字自己在动。
+     *
+     * 这条线的字幕规矩是「不动」（见 subtitle.ts 顶上那段：一动就是这幅静止画面里
+     * 唯一在动的东西，注意力全被它拿走）。滑入这几帧尤其不能破例：
+     * 画面本来就有一个大动作了，再让字跟着跑就是两件事在抢。
+     *
+     * 做法是**按落位那一刻取框**，不是按当帧。老样子那一档 `settled === t`，一个分支都不进。
+     */
+    const settled = card0 && t < card0.end + card0.slide ? card0.end + card0.slide : t;
     const box =
-      ch && ch.rig === 'horse' ? horseBox(charStateFor(ctx, tl.cfg.characters.indexOf(ch), t, frame)) : null;
+      ch && ch.rig === 'horse'
+        ? horseBox(charStateFor(ctx, tl.cfg.characters.indexOf(ch), settled, Math.round(settled * FPS)))
+        : null;
     const GAP = 44;
     const EDGE = 56;
     // 角色偏左就把字排右边，反之亦然
@@ -863,8 +952,11 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
   // 它是贴在画面上的一层，不是场景里的东西，跟着镜头飘会露馅
   let card = '';
   const sr = tl.cfg.series;
-  if (sr && t < (tl.cfg.intro ?? 2)) {
-    card = seriesCard(sr.name, `第 ${String(sr.no).padStart(2, '0')} ${sr.unit ?? '页'}`, ink, 555, t / (tl.cfg.intro ?? 2));
+  // ⚠ 用有效 intro：voice-first 那一档它是 0，片头卡自然一帧都不出 ——
+  // 那一档没有空镜，卡没地方待（真出的话会压在黑底大字上）
+  const introLen = introOf(tl.cfg);
+  if (sr && introLen > 0 && t < introLen) {
+    card = seriesCard(sr.name, `第 ${String(sr.no).padStart(2, '0')} ${sr.unit ?? '页'}`, ink, 555, t / introLen);
   }
 
   /**

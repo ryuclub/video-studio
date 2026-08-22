@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>laoma-007 稿件预览</title>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #fffdf8; --ink: #23303d; --dim: #6b7785;
+  --line: #e0dace; --accent: #1f3a5f; --hot: #c8452e; --gold: #d8a53a;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171a1d; --card:#20252a; --ink:#e8e4da; --dim:#9aa4ae;
+          --line:#2f363d; --accent:#7fa8d8; --hot:#e2694f; --gold:#e0b954; }
+}
+* { box-sizing: border-box; }
+body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+/* 有侧栏时改成两栏；没侧栏（单条稿件页）时 .wrap 保持原样居中 */
+.layout { max-width: 1360px; margin:0 auto; display:grid;
+  grid-template-columns: 250px minmax(0,1fr); gap:34px; align-items:start; }
+.layout > .wrap { max-width:none; margin:0; }
+
+/* ── 左侧稿件导航 ── */
+.side { position:sticky; top:24px; max-height:calc(100vh - 48px);
+  display:flex; flex-direction:column; background:var(--card);
+  border:1px solid var(--line); border-radius:14px; padding:16px 12px 12px; }
+.side-head { font-size:13px; font-weight:700; color:var(--dim); letter-spacing:1px;
+  padding:0 8px 12px; border-bottom:1px solid var(--line); margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between; }
+.side-count { background:var(--accent); color:#fff; font-size:11px; font-weight:600;
+  min-width:20px; height:20px; padding:0 6px; border-radius:10px;
+  display:inline-flex; align-items:center; justify-content:center; }
+/* min-height:0 不能省：flex 子项默认不肯缩到内容高度以下，
+   少了它 overflow-y 不生效，稿件一多侧栏就会顶穿 max-height */
+.side-list { overflow-y:auto; min-height:0; display:flex; flex-direction:column; gap:4px; }
+.nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
+  text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
+.nav-item:hover { background:rgba(127,127,127,.1); }
+.nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
+/* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
+@media (prefers-color-scheme: dark) {
+  .nav-item.active { background:rgba(127,168,216,.16); }
+}
+.nav-thumb { width:34px; height:60px; object-fit:cover; border-radius:5px;
+  border:1px solid var(--line); flex:none; display:block; }
+.nav-thumb.ph { background:rgba(127,127,127,.12); }
+.nav-body { display:flex; flex-direction:column; min-width:0; gap:1px; }
+.nav-title { font-size:13px; font-weight:700; line-height:1.35;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* 序号做成小方牌：目录长了之后"第几条"比标题更快定位 */
+.nav-num { display:inline-block; min-width:15px; margin-right:5px; padding:0 3px;
+  border-radius:3px; background:var(--accent); color:#fff;
+  font-size:10px; font-weight:700; text-align:center; vertical-align:1px; }
+.nav-date { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+.nav-meta { font-size:11px; color:var(--dim); }
+.nav-cast { font-size:11px; color:var(--accent); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.side-top { margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+  font-size:12px; color:var(--dim); text-decoration:none; text-align:center; }
+.side-top:hover { color:var(--accent); }
+/* 锚点跳转时标题不被贴顶 */
+.joke { scroll-margin-top:24px; }
+h1 { font-size:26px; margin:0 0 6px; letter-spacing:.5px; }
+.sub { color:var(--dim); margin:0 0 32px; font-size:14px; }
+.joke { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:24px 26px 20px; margin-bottom:34px; }
+.joke > header { border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:20px; }
+h2 { font-size:20px; margin:0 0 8px; }
+h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
+.facts { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--dim); font-size:13px; }
+.alarm { background:rgba(200,69,46,.1); border-left:3px solid var(--hot);
+  padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
+/* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
+.film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+.film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
+  background:#000; display:block; }
+.film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
+.film-none { color:var(--dim); font-size:13px; margin-bottom:20px;
+  padding:10px 14px; border:1px dashed var(--line); border-radius:8px; }
+.rows { display:flex; flex-direction:column; gap:18px; }
+.row { display:grid; grid-template-columns:150px 1fr; gap:20px; align-items:start;
+  padding:14px; border-radius:10px; border:1px solid transparent; }
+.row.punch { border-color:var(--gold); background:rgba(216,165,58,.07); }
+.shot { position:relative; }
+.shot img { width:100%; border-radius:8px; display:block; border:1px solid var(--line); }
+.noshot { aspect-ratio:9/16; display:grid; place-items:center; color:var(--dim);
+  border:1px dashed var(--line); border-radius:8px; font-size:12px; }
+.ts { position:absolute; left:6px; bottom:6px; background:rgba(0,0,0,.6); color:#fff;
+  font-size:11px; padding:1px 6px; border-radius:4px; }
+.beat { font-size:12px; color:var(--dim); letter-spacing:1px; }
+.who { font-weight:700; color:var(--accent); margin:2px 0 6px; }
+.text { font-size:18px; margin:0 0 10px; line-height:1.6; }
+.text em { font-style:normal; color:var(--gold); font-weight:700; }
+.voice { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:4px; }
+.pill { background:var(--accent); color:#fff; font-size:12px; padding:2px 10px; border-radius:20px; }
+.pill.alt { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+.meta { color:var(--dim); font-size:12px; }
+.meta.warn { color:var(--hot); }
+.extras { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:16px; }
+.extras figure { margin:0; }
+/* 公用素材区 */
+.assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+.asset { margin:0; }
+.asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
+.asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
+.asset figcaption b { font-size:13px; color:var(--ink); }
+.asset figcaption code { font-size:10px; word-break:break-all; }
+.asset figcaption .src { opacity:.7; font-size:10px; }
+.asset.unrigged img { opacity:.72; border-style:dashed; }
+.voice-row { display:flex; align-items:center; gap:6px; margin:3px 0 1px; flex-wrap:wrap; }
+.vpill { background:var(--accent); color:#fff; font-size:10px; padding:1px 7px; border-radius:20px; white-space:nowrap; }
+.asset audio { height:26px; max-width:100%; flex:1 1 110px; min-width:100px; }
+.badge { background:var(--hot); color:#fff; font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; vertical-align:middle; margin-left:4px; }
+.assets h3:first-of-type { margin-top:6px; }
+.extras figure.is-cover img { border:2px solid var(--gold); }
+.extras figure.is-cover figcaption { color:var(--gold); font-weight:700; }
+.extras img { width:100%; border-radius:8px; border:1px solid var(--line); display:block; }
+figcaption { font-size:12px; color:var(--dim); margin-top:6px; }
+.ts-inline { opacity:.7; }
+.hook { margin-top:20px; padding:12px 16px; background:rgba(31,58,95,.08);
+  border-radius:8px; font-size:15px; }
+.analysis { margin-top:24px; border-top:1px solid var(--line); padding-top:14px; }
+summary { cursor:pointer; color:var(--dim); font-size:14px; font-weight:600; }
+.analysis h2,.analysis h3 { font-size:15px; margin:18px 0 8px; color:var(--ink); }
+.analysis p { margin:6px 0; font-size:14px; }
+.analysis ul { margin:6px 0; padding-left:22px; font-size:14px; }
+.analysis li.task { list-style:none; margin-left:-18px; }
+.analysis blockquote { margin:8px 0; padding:6px 12px; border-left:3px solid var(--line);
+  color:var(--dim); font-size:13px; }
+.analysis .note { color:var(--accent); font-style:normal; font-size:13px; }
+summary .src { float:right; font-weight:600; font-size:12px; color:var(--accent);
+  text-decoration:none; }
+/* 分镜表可能很宽，让它自己横向滚，别把整页撑出横条 */
+.tw { overflow-x:auto; margin:10px 0; }
+.tw table { border-collapse:collapse; font-size:13px; min-width:100%; }
+.tw th,.tw td { border:1px solid var(--line); padding:6px 9px; text-align:left;
+  vertical-align:top; }
+.tw th { background:rgba(127,127,127,.10); font-weight:700; white-space:nowrap; }
+.tw td:first-child { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--dim); }
+code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; font-size:13px; }
+/* 窄屏：侧栏收到顶部，横向滚动 */
+@media (max-width:900px){
+  .layout { grid-template-columns:1fr; gap:20px; }
+  .side { position:static; max-height:none; }
+  .side-list { flex-direction:row; overflow-x:auto; padding-bottom:4px; }
+  .nav-item { flex:none; width:190px; }
+  .side-top { display:none; }
+}
+@media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+</style>
+</head>
+<body id="top">
+<div class="wrap"><h1>laoma-007</h1>
+<p class="sub">成片 · 场景图 · 对话内容 · 音色设置 · 分析思路</p>
+<section class="joke" id="laoma-007">
+  <header>
+    <h2>laoma-007</h2>
+    <div class="facts">
+      <span>A 类 · office-desk</span>
+      <span>片长 25.4s</span>
+      <span>笑点 20.8s</span>
+      <span>定格 22.7s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film">
+    <video src="laoma-007.mp4" controls preload="metadata" playsinline></video>
+    <div class="film-note">成片　<code>laoma-007.mp4</code></div>
+  </div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">上个月优化以后，报销要过七个人</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.91s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">3.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">优化以前是这样，找我领导签个字，三天</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.34s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">7.1s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">现在不用找人了，打开系统，自己提交</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.25s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">10.8s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">系统里有七个节点，每个节点一个人点同意，都是我同事</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 4.12s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">16.0s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">上周我报了一笔打车费，一共三十七块，当天就提了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 4.12s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">20.8s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">今天，<em>第十一天</em></p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.92s</div>
+  </div>
+</div></div>
+  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="cover/laoma-007-9x16.png" alt="封面" loading="lazy">
+  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.5s</span></figcaption></figure>
+<figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">23.2s</span></figcaption></figure>
+<figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">24.7s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1853 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1853 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　一个流程被优化了：签字的人从一个变成七个，三天变成十一天 —— 而他从头到尾没说过一句「这不合理」。</li>
+<li><strong>为什么这么分镜</strong>　<strong>一镜到底，不切。</strong> 全片一个人在工位说话，切镜会把它变成 PPT（SCRIPT_GUIDE §五：一条切换不超过 3 次，这条用 0）。场景选 <code>office-desk</code>：<strong>落点指的东西要从第一秒起就在画面上</strong> —— 那台显示器就是「系统」，观众听到「第十一天」的时候，那块屏他已经看了二十多秒。跟 001 同场景但隔了六条，而且 001 讲群消息、这条讲审批流；工位栏目只有两个场景，005 刚用过 meeting-room。</li>
+<li><strong>不能动的地方</strong></li>
+</ul>
+<p>  - <code>x: 290</code> 站位：跟 001–006 一模一样</p>
+<p>  - <strong>例一那个「三天」不能删、不能并屏。</strong> 它是落点「第十一天」唯一的尺子（§一之三 误导必须公平）—— 没有这个基准，十一天只是个数字，观众量不出长短</p>
+<p>  - <strong>例二不能带贬义。</strong> 「不用找人了，打开系统，自己提交」听上去必须是个改进，观众跟着以为这是进步，第三条才打得下去</p>
+<p>  - <strong>三条例子的 <code>padAfter</code> 必须等长（0.3）</strong>：§四 要「短且等长」，节拍立不住，转折前那半秒就没有对比</p>
+<p>  - 例三之后 <code>closeEyes: 0.9</code>：全片唯一一次闭目。⚠ <code>padAfter: 1.05</code> 是为它加长的，改小会让闭目咬进下一句（体检拦）</p>
+<p>  - <strong>落点「今天，」后面那 0.4 秒不能删。</strong> 观众在这 0.4 秒里知道要来一个数，但不知道是几 —— 这半拍就是让他自己先猜一个，然后被那个数打掉</p>
+<p>  - <strong>不要把落点改成「到今天还没批下来」</strong>：那是在解释，而且末词成了「下来」不是那个数。数字自己就是包袱，多一个字都是替观众下判断</p>
+<p>  - <strong>三天 / 七个 / 三十七块 / 十一天，四个数一个都不能凑成整数</strong>：§一之四，奇数和非整数听起来像真数过</p>
+<p>  - <strong>物件是「系统」</strong>（<code>object</code> 字段，出现在第 3、4 两句）。§一之十二 判据：<strong>删掉它至少有一句话说不通</strong> ——</p>
+<p>    删掉系统，「打开系统，自己提交」和「系统里有七个节点」当场垮掉。而且全片一个字都没解释它：</p>
+<p>    谁做的、为什么七个节点、凭什么去掉一个人要加七个人。<strong>物件要有用，不给的是解释。</strong></p>
+<p>  - <strong>钩子 2 → 回收 6</strong>（<code>hookLine</code> / <code>payoffLine</code>）：第 2 句「找我领导签个字，三天」，第 6 句「今天，第十一天」——</p>
+<p>    量度回收，字面共用一个「天」，那正是被比较的单位。<strong>不能写成钩子 1</strong>：第 1 句没埋任何具体的东西，跟落点一个实词都不重叠</p>
+<p>  - ⚠ <strong>2026-08-22 删掉了转折句末尾的「发票是绿的。」。</strong> 那是上一版 §一之十二（要「闲置物件」）催生的装饰：</p>
+<p>    纯外观描述、只出现一次、删掉毫发无伤 —— 新规范点名的反例，体检的 <code>APPEARANCE</code> 正则就是照它写的。别再补回去</p>
+<p>  - 收尾卡那个问号：见下</p>
+<p>  - <strong>收尾卡挂问号，不是汗也不是灯。</strong> 这一条的第二层就是一个问句：他把账算完了，全程一个判断都没下，那句没说出口的「所以这优化了什么」交给收尾卡 —— 它不是替观众下判断，它就是观众自己的那句话。汗＝被自己抓包（这条他是受害者），灯＝想通了（他什么都没想通），都不对</p>
+<p>  - ⚠ 挑它的时候顺带修了一条我自己写的规矩：老马出片方案 §五 原来写「漫符必须是那一帧上唯一<strong>有颜色</strong>的东西」，按那条问号该被排除（它是墨色）。渲出来判据该是<strong>落差</strong>不是颜色 —— 问号近黑压在浅墙上，明度差比那滴淡蓝的汗还大。真正挂不住的是<strong>中间调</strong>（点、云）</p>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.9</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：上个月优化以后，报销要过七个人</td><td>—</td></tr><tr><td>0:03.4–0:06.7</td><td>同上</td><td><strong>ma</strong>：优化以前是这样，找我领导签个字，三天</td><td>—</td></tr><tr><td>0:07.1–0:10.4</td><td>同上</td><td><strong>ma</strong>：现在不用找人了，打开系统，自己提交</td><td>—</td></tr><tr><td>0:10.8–0:14.9</td><td>同上</td><td><strong>ma</strong>：系统里有七个节点，每个节点一个人点同意，都是我同事</td><td>—</td></tr><tr><td>0:14.9–0:15.8</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.0–0:20.2</td><td>同上</td><td><strong>ma</strong>：上周我报了一笔打车费，一共三十七块，当天就提了</td><td>—</td></tr><tr><td>0:20.8–0:22.7</td><td>同上</td><td><strong>ma</strong>：今天，第十一天</td><td>—</td></tr><tr><td>0:22.7–0:25.4</td><td>定格去色 + 钩子字幕「老马的第 1853 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>office-desk</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 25.42s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. <code>我们公司上个月优化了一个流程</code>　←主选</p>
+<p>  2. <code>优化以前找领导签个字，三天</code></p>
+<p>  3. <code>一笔三十七块的打车费</code></p>
+<ul>
+<li><strong>为什么是第 1 个</strong>　它是钩子原句，<strong>「优化」这两个字放在标题里自带反讽</strong>，而且它不说优化成了什么 —— 悬念全留在片子里。跟封面大字「优化以后」唱双簧：大字问「以后怎么样了」，标题给「上个月优化了」，两边都不碰落点那个数。第 2 个把基准值抖在标题上，观众就有了预期；第 3 个最抓人，但它是转折句，用掉之后片子里那句就不新鲜了。</li>
+<li><strong>副标题</strong>　<code>老马 · 工位　签字的人从一个变成七个</code></li>
+<li><strong>内容关键词</strong>　优化流程 / 报销 / 审批 / 无效流程 / 打工人</li>
+<li><strong>热度关键词</strong>　报销 / 审批流程 / 优化 / 职场黑话 / 打工人日常</li>
+<li><strong>话题标签</strong>　#报销 #职场 #打工人</li>
+<li><strong>简介</strong></li>
+</ul>
+<p>  &gt; 我们公司上个月，优化了一个流程，报销的那个。</p>
+<p>  &gt;</p>
+<p>  &gt; 优化以前是这样：找我领导签个字，三天。优化以后不用找人了，打开系统，自己提交。</p>
+<p>  &gt; 系统里有七个节点，每个节点一个人点同意。</p>
+<ul>
+<li><strong>封面大字</strong>　<code>优化以后</code></li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section></div>
+
+</body>
+</html>

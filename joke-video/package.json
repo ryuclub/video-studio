@@ -30,7 +30,8 @@
     "shuoshu:ship": "tsx src/shuoshu-ship.ts",
     "laoma:check": "tsx src/laoma-check.ts",
     "plan": "tsx src/cli.ts plan",
-    "laoma:publish": "tsx src/yiye-publish.ts"
+    "laoma:publish": "tsx src/yiye-publish.ts",
+    "frame": "tsx src/cli.ts frame"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

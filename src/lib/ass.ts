@@ -192,13 +192,35 @@ function wrapToWidth(text: string, fontSize: number, maxWidth: number): string[]
  * 正常情况下字号就是基准值，折行解决问题。只有极端长句（折满还是超行数）
  * 才缩字保命，最多缩到 78% —— 再小就看不清了，那种句子该回去改稿。
  */
+/**
+ * 屏幕上的一条字，上屏之前统一过这儿：**去尾标点 ＋ 句中的句号换逗号。**
+ *
+ * 两条都是频道规范，四条线通用：
+ *   - 结尾不留标点：句读靠断句和停顿已经交代清楚了，屏幕上那个句号只是噪声
+ *   - 句中不留句号：一行字里蹦出一个句号，读起来像话已经完了、可后面还接着。
+ *     同一个位置写逗号，停顿的意思一样在，看着才是一行话
+ *
+ * 句中的逗号、顿号、冒号照留 —— 那是节奏。半角的 `.` 不碰（多半是数字 3.5）。
+ *
+ * **这份是抄的。** 权威实现在 `joke-video/src/shuoshu-srt.ts` 的 `tidyCaption()`，
+ * 但那边是另一个 npm 工程、导不进来（`FX-PORT.md` 立的规矩：跨工程搬规格不搬文件）。
+ * 改规则记得两边一起改。
+ */
+function tidyCaption(s: string): string {
+  return s
+    .trim()
+    .replace(/[。，、；：！？…·—.,;:!?]+$/u, '')
+    .trim()
+    .replace(/。(?=[\s\S]*[^\s。])/gu, '，');
+}
+
 function layoutSub(text: string, p: RenderProfile): { text: string; fontSize: number } {
   const k = subScale(p);
   const base = BASE.sub * k;
   const maxWidth = p.width - Math.round(SUB_MARGIN * k) * 2;
   const maxLines = subMaxLines(p);
   // 稿件里显式写的换行是硬断点，各段分别折
-  const segments = toAssBreaks(text).split('\\N');
+  const segments = toAssBreaks(tidyCaption(text)).split('\\N');
 
   let size = base;
   let lines = segments.flatMap((seg) => wrapToWidth(seg, size, maxWidth));

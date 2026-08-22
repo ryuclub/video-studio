@@ -172,9 +172,13 @@ function main() {
 
   console.log(`《${EP}》　${pngs.length} 张画面　${manifest.duration.toFixed(1)}s`);
   spec.scenes.forEach((s, i) => {
-    const m = Math.floor(cuts[i] / 60);
+    // **先把秒取整再拆分钟**。原来是 floor(t/60) 配 (t-m*60).toFixed(0)，
+    // 秒数落在 59.5–59.99 时 toFixed 进位成 60，打出来是「16:60」——
+    // E04 排片表上就出现过一次。数字只是打给人看的，但看的人会拿它去对时间轴。
+    const total = Math.round(cuts[i]);
+    const m = Math.floor(total / 60);
     console.log(
-      `  ${String(i + 1).padStart(2)}  ${m}:${(cuts[i] - m * 60).toFixed(0).padStart(2, '0')}  ` +
+      `  ${String(i + 1).padStart(2)}  ${m}:${String(total - m * 60).padStart(2, '0')}  ` +
         `${durs[i].toFixed(0).padStart(3)}s  ${s.comp.padEnd(5)} ${s.title}`
     );
   });

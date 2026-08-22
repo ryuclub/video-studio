@@ -352,18 +352,27 @@ export function coverSvg(s: CoverSpec): string {
   const secondSvg =
     s.kind === 'book' ? second.svg : `<g opacity="${L.bookOpacity}">${second.svg}</g>`;
 
-  const hook = vtext(s.hook, L.hookCx, L.hookBase, L.hookGap, L.hookSize, C.hook, 400);
+  // ── 副题的起点跟着第二列走 ──
+  //
+  // 第二列和副题共用 x=320 这一列，撞上就是两段字叠在一起。
+  // 原来 `hookBase` 是写死的 400，**只经得起三个字的书名**：
+  // 《陶庵梦忆》四个字排到 y=370，直接压到 400 上，分期封面就出不来了。
+  // 方版那边早就是 `Math.max(400, second.bottom + 92)`，横版这儿照它改。
+  const hookBase = Math.max(L.hookBase, second.bottom + L.hookSize * 2);
+  const hook = vtext(s.hook, L.hookCx, hookBase, L.hookGap, L.hookSize, C.hook, 400);
 
   // 硬约束①：文字和印章都不许碰右下角。竖条在最左边，正常排不到，
   // 但主位一长就会往下跑，断言比记性可靠
   assertClear('主标题', L.titleCx - t.size / 2, t.base - t.size, t.size, title.bottom - t.base + t.size);
-  assertClear('副题', L.hookCx - L.hookSize / 2, L.hookBase - L.hookSize, L.hookSize, hook.bottom - L.hookBase + L.hookSize);
+  assertClear('副题', L.hookCx - L.hookSize / 2, hookBase - L.hookSize, L.hookSize, hook.bottom - hookBase + L.hookSize);
   assertClear('朱砂印', L.sealX, L.sealY, L.sealS, L.sealS);
-  // 第二列跟副题共用 x=320 这一列，撞上就是两段字叠在一起
-  if (second.bottom + L.hookSize > L.hookBase - L.hookSize)
+  // 往下让也有尽头：让到压上底部那条色带就得改字。
+  // **不拿朱砂印当底** —— 印在 x=48 那一列，副题在 x=320，两者根本不同列，
+  // 副题排过 y=608 也碰不到它（《枕草子》的八字副题一直就排到 638）。
+  if (hook.bottom > L.bandY - L.hookSize)
     throw new Error(
-      `第二列（${s.kind === 'book' ? '作者' : '书名'}）排到 y=${Math.round(second.bottom)}，` +
-        `跟副题的起点 y=${L.hookBase} 挤上了。缩短它，或者把 L.hookBase 往下挪。`
+      `副题排到 y=${Math.round(hook.bottom)}，压到底部色带（y=${L.bandY}）上了。\n` +
+        `副题（hook）改短，或者第二列（${s.kind === 'book' ? '作者' : '书名'}）改短。`
     );
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CW}" height="${CH}" viewBox="0 0 ${CW} ${CH}">
@@ -444,7 +453,7 @@ interface PubDoc {
   shot: string;
   titleLang?: 'sc' | 'jp';
   cover: { hook: string; label: string };
-  parts: { part: string; epTitle: string; hook: string; title: string; duration: string }[];
+  parts: { part: string; partName?: string; epTitle: string; hook: string; title: string; duration: string }[];
 }
 
 /** 出一套四张：横版上传 + 微信方版 + 两张缩略图自检 */
@@ -490,7 +499,7 @@ function main() {
     if (only && p.part !== only) continue;
     emit(
       `${PROJ}/cover/${p.part}`,
-      { ...common, kind: 'episode', epTitle: p.epTitle, hook: p.hook, part: p.part, label: `${p.part}篇` },
+      { ...common, kind: 'episode', epTitle: p.epTitle, hook: p.hook, part: p.part, label: p.partName ?? `${p.part}篇` },
       `《${doc.book}》${p.part}篇（期标题占主位，书名第二列）`
     );
   }

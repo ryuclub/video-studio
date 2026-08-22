@@ -13,15 +13,18 @@
 //                  但要知道自己在偏离，别是手滑
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { resolveEp } from './zhiyu-ep.js';
+import { resolveEp, DEF } from './zhiyu-ep.js';
 import { stripMarks, suspectMarks } from './zhiyu-audio.js';
 
 const { dir: PROJ, book: BOOK } = resolveEp(process.argv.slice(2));
 const argv = process.argv.slice(2);
 const only = argv.indexOf('--text') >= 0 ? argv[argv.indexOf('--text') + 1] : null;
 
-/** 规范第七节：整幕实测，不是样章外推 */
-const CPM = 226;
+/**
+ * 实测含停顿均速。**唯一出处是 zhiyu-lines.ts** ——
+ * 心理线那份体检里也有同一个概念，散成两个常量迟早分叉。
+ */
+const CPM = DEF.cpm;
 /** 规范第三节的实测区间 */
 const LIMITS = {
   // 区间的下限上限都要**把通过了的稿子包进去** —— 第一版定 18–25 / 28–35，
@@ -93,6 +96,33 @@ function checkOne(file: string, name: string) {
       warn.push(`${halfway.length} 处 ⏸ 前一句没收住：${halfway[0].slice(-16)}`);
   }
 
+  // ── 人味儿：机器只拦得住最粗的两种 AI 味（规范第十一节）──────────────
+  //
+  // **这两条查不出「没有中心思想」**，那只能人判断。它们拦的是两个
+  // 有固定长相的坏味道，而这两个恰好是照着规范写、不照着真事写时必然出现的。
+
+  // ① 占位式表述。「一件需要对方点头的事」——细节密度很高，可每个都能替换。
+  //    《已读不回》通篇是这个：时间精确到分钟，内容一件具体的都没有。
+  const VAGUE = /(某个?[人事物件天]|一[件个][^。，]{0,10}的[事人东]|有些人|很多人|大家都|人们|这种事情|那样的东西|一些东西)/;
+  const vague = says.filter((b) => VAGUE.test(b.text));
+  if (vague.length >= 3)
+    warn.push(
+      `${vague.length} 处占位式表述（「${vague[0].text.match(VAGUE)![0]}」这类）。
+` +
+        `      抽象是为了「普遍适用」，可听众记住的从来是具体的那一个 ——
+` +
+        `      **越具体越普遍**，见规范第十一节判据①`
+    );
+
+  // ② 落点是个名词。结尾几段里出现「叫做/名字/被称为」而没有一个可带走的动作，
+  //    多半就是「知道它有名字」型收尾 —— 那等于承认这一期没给出东西。
+  const ending = says.slice(-8).map((b) => b.text).join('');
+  if (/(叫做|叫作|有个名字|有名字|被称为|这个说法)/.test(ending))
+    warn.push(
+      `结尾几段落在「它叫什么」上。**知道名字不改变任何事** ——
+` +
+        `      听众能带走的应该是一个动作或一个新看法，不是一个术语。见规范第十一节判据②`
+    );
   const tag = err.length ? '✗' : warn.length ? '⚠' : '✓';
   console.log(
     `${tag} ${name.padEnd(18)} ${String(chars).padStart(5)} 字  ${mmss(sec).padStart(6)}  ` +
@@ -103,7 +133,7 @@ function checkOne(file: string, name: string) {
   return { chars, sec, err: err.length, warn: warn.length, name };
 }
 
-function main() {
+export function gate(): void {
   // **不能用默认 sort** —— 中文按码位排会把「幕三」排在「幕二」前面，
   // 上下期就配成了「幕一+幕三」，而且不报错，只是数字悄悄错了。按汉字数序排。
   const ORDER = ['一', '二', '三', '四', '五', '六', '七', '八'];
@@ -157,7 +187,15 @@ function main() {
   );
   console.log(`\n**机器只查得了一半。** 调子飘没飘、腻不腻、共鸣接不接得上，只能人听 ——`);
   console.log(`所以「样章 → 试听 → 确认调性」那一步不能因为体检过了就省。`);
-  if (e) process.exitCode = 1;
+  if (e) {
+    console.error(
+      `
+体检没过：${e} 处违反文本闸。**不往下跑了。**
+` +
+        `带着这些错出片，成品是废的 —— 感叹号和问号会直接改掉这条线的调子。`
+    );
+    process.exit(1);
+  }
 }
 
-main();
+if (process.argv[1] && process.argv[1].endsWith('zhiyu-check.ts')) gate();

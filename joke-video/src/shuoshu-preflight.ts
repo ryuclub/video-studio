@@ -27,6 +27,38 @@ import { BEAT_NAMES } from './shuoshu-beat.js';
 import { CAST_NAMES } from './cast.js';
 import { resolveEp } from './shuoshu-ep.js';
 
+/**
+ * 片长目标。**2026-08-20 从 15–17 分钟调到 20 分钟上下** ——
+ * 反馈是「太短了确实没营养」。
+ *
+ * `CPM` 是实测：E01 228 / E02 237 / E03 230 汉字每分钟（含停顿）。
+ * 按 228 折算，20 分钟约 4560 汉字。
+ */
+const CPM = 228;
+/** 新标准的下限。低于这个是**错**，出片会被拦住 */
+const TARGET_MIN = 18;
+/**
+ * 老标准（15–17 分钟）的下限。**在这之间只警告不拦。**
+ *
+ * E01（16.8 分）和 E02（15.9 分）是按老标准做的，不该被新标准倒查成错 ——
+ * 已经出过的片子不回改，这是这个仓库的一贯做法。
+ * 但也不能一声不吭：哪天要重出，得知道它们按今天的标准是偏短的。
+ */
+const LEGACY_MIN = 15;
+const TARGET_MAX = 24;
+
+/**
+ * 分幕汉字下限。卡片里每一幕后面括号那个数就是这个，**是下限不是配额**。
+ * 这里给的是通用兜底值，各篇卡片上的数更准 —— 但卡片在文档里，机器读不到，
+ * 所以先用一套保守的通用值拦住「明显塌了」的那种。
+ */
+const ACT_FLOOR: Record<string, number> = {
+  冷开场: 150,
+  引入: 300,
+  '幕X · ': 400,
+  收束: 300,
+};
+
 export interface Issue {
   level: 'error' | 'warn';
   msg: string;
@@ -56,6 +88,48 @@ export function preflightShuoshu(dir: string): Issue[] {
 
   const review = lines.filter((l) => l.needsReview);
   if (review.length) err(`${review.length} 段说话人还没确认（第 ${review.slice(0, 6).map((l) => l.no).join(' / ')}${review.length > 6 ? ' …' : ''} 段）`);
+
+  // ── ⑥ 稿子太短 ──────────────────────────────────────────────────────
+  //
+  // **这一条是 E03 补上的，它之前不存在。**
+  //
+  // E03 第一版 1969 汉字、成片 8:38，每一幕都低于卡片写的分幕下限，
+  // 而体检**一路绿灯放它出片了** —— 因为体检查选角、查节拍、查段号，
+  // 唯独不查字数。规范写在文档里但没进机器，等于只防君子。
+  //
+  // 卡片里的分幕字数是**下限不是配额**（`liaozhai-17-cards.md` 第一原则：
+  // 「宁长勿断，为了凑时长把过程砍掉是错的」）。可下限只在文档里，
+  // 写稿的人（包括模型）很容易把它读成「差不多就行」。所以搬进来。
+  const han = (t: string) => (t.match(/[一-龥]/g) ?? []).length;
+  const total = lines.reduce((a, l) => a + han(l.text), 0);
+  const mins = total / CPM;
+  if (mins < LEGACY_MIN)
+    err(
+      `稿件只有 ${total} 汉字，按 ${CPM} 字/分约 ${mins.toFixed(1)} 分钟，` +
+        `短于 ${TARGET_MIN} 分钟。\n` +
+        `    **这不是让你去注水** —— 卡片第一原则写着「为了凑时长把过程砍掉是错的」，` +
+        `反过来为了凑时长灌水一样错。\n` +
+        `    短了先回去看哪一幕的过程戏被压掉了：砍柴、追捕、交涉这类有过程的段落，` +
+        `原文很省，要铺开不是再省一道。`
+    );
+  else if (mins < TARGET_MIN)
+    warn(
+      `稿件 ${total} 汉字约 ${mins.toFixed(1)} 分钟，短于现行的 ${TARGET_MIN} 分钟。
+` +
+        `    老标准是 15–17 分钟，E01/E02 就在这一档 —— **已出片的不回改**。
+` +
+        `    但新片要按 20 分钟上下做，反馈是「太短了确实没营养」。`
+    );
+  else if (mins > TARGET_MAX)
+    warn(`稿件 ${total} 汉字约 ${mins.toFixed(1)} 分钟，超过 ${TARGET_MAX} 分钟。长不是错，但确认一下没有车轱辘话`);
+
+  // 分幕下限也查一遍：总数够了也可能是某一幕撑着、另一幕塌了
+  const byAct = new Map<string, number>();
+  for (const l of lines) byAct.set(l.act, (byAct.get(l.act) ?? 0) + han(l.text));
+  const floorOf = (act: string) => (/^幕/.test(act) ? ACT_FLOOR['幕X · '] : ACT_FLOOR[act]) ?? 0;
+  const thin = [...byAct].filter(([a, c]) => c < floorOf(a));
+  for (const [a, c] of thin)
+    warn(`「${a}」只有 ${c} 汉字，比同类段落的下限低。过程戏是说书的本体，先看是不是被压掉了`);
 
   const badBeat = lines.filter((l) => l.beat && !BEAT_NAMES.includes(l.beat));
   for (const l of badBeat) err(`第 ${l.no} 段的节拍「${l.beat}」不在节拍表里`);

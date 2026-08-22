@@ -15,7 +15,7 @@ import { OUT_JOKE } from './paths.js';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { basename } from 'node:path';
 import { FPS } from './config.js';
-import { buildTimeline } from './beats/typeA.js';
+import { buildTimeline, openSpan } from './beats/typeA.js';
 import { renderFrame, type RenderCtx, type VoiceTrack } from './render.js';
 import { svgToPng } from './video.js';
 import { resolveLineVoice } from './tts.js';
@@ -87,7 +87,18 @@ export function renderStills(
   };
 
   const lineSegs = tl.segments.filter((s: Segment) => s.kind === 'line');
-  push(Math.min(1.0, tl.duration - 0.1), '00-开场', '开场空镜', null);
+  // 开场那一张：老样子取空镜，「先出声后出人」取黑底大字卡。
+  //
+  // ⚠ 两档取帧的时刻不一样。空镜那档取 1.0s（人差不多滑到位）；
+  // 黑底卡那档取**卡的正中**（`open.end / 2`）—— 取 1.0s 也行，
+  // 但卡上全程一个字不换，取中间更像「这一张就是它」。
+  const open = openSpan(tl);
+  push(
+    open ? Math.min(open.end / 2, tl.duration - 0.1) : Math.min(1.0, tl.duration - 0.1),
+    '00-开场',
+    open ? (open.style === 'object-first' ? '开场物件' : '开场大字') : '开场空镜',
+    null
+  );
   lineSegs.forEach((s: Segment) => {
     const i = s.lineIndex!;
     const mid = (s.start + s.end) / 2;
@@ -285,11 +296,11 @@ export function jokeSection(
 }
 
 /**
- * 左侧导航的一项。缩略图用开场空镜——扫一眼就知道是哪条片子的场景。
+ * 左侧导航的一项。缩略图用开场那一张（空镜／黑底大字卡）——扫一眼就知道是哪条片子。
  */
 export function navEntry(cfg: JokeCfg, shots: PreviewShot[], assetPrefix = '', index?: number): string {
   const tl = buildTimeline(cfg);
-  const thumb = shots.find((s) => s.label === '开场空镜') ?? shots[0];
+  const thumb = shots.find((s) => ['开场空镜', '开场大字', '开场物件'].includes(s.label)) ?? shots[0];
   const casts = cfg.characters.map((c) => c.cast ?? '?').join(' · ');
   // 标题优先用发布标题，其次片尾钩子，最后才回退到 id。
   // id 是文件名（mouse-cake），扫目录时认不出是哪条片子。

@@ -332,10 +332,15 @@ function timeline(scene: SceneSpec, c: Ctx): FrameFn {
 // ── quote（金句卡，支持逐字打出 + 关键词强调）──────────────
 
 function quote(scene: SceneSpec, c: Ctx): FrameFn {
-  const raw = scene.text ?? '';
+  const raw = tidyCaption(scene.text ?? '');
   const typewriter = !!scene.typewriter;
-  // 关键词必须显式给出，不自动识别 —— 猜错关键词比不强调更糟
-  const keys = (scene.emphasize ?? []).filter((k) => k && raw.includes(k));
+  // 关键词必须显式给出，不自动识别 —— 猜错关键词比不强调更糟。
+  // **关键词里的句号也要跟着换**：`validateScene` 是拿原文校验的，
+  // 而这儿的 `raw` 已经过了 tidyCaption；不换的话带句号的关键词会在这条
+  // filter 里静默掉队 —— 校验过了、却不高亮，正是「静默不高亮等于白写」那种事故。
+  const keys = (scene.emphasize ?? [])
+    .map((k) => k.replace(/。/g, '，'))
+    .filter((k) => k && raw.includes(k));
 
   // SVG 没有自动换行，得手工折行。
   // 每行字数按「内容区宽度 / 字号」算 —— 直接按画布宽度缩放会和字号缩放双重打折，
@@ -558,6 +563,28 @@ function badgeSvg(
 }
 
 /**
+ * 屏幕上的一条字，上屏之前统一过这儿：**去尾标点 ＋ 句中的句号换逗号。**
+ *
+ * 两条都是频道规范（RUNBOOK 六之八）：结尾那个句号是噪声；
+ * 而一行字里蹦出一个句号，读起来像话已经完了、可后面还接着。
+ * 句中的逗号顿号冒号照留（那是节奏），半角 `.` 不碰（多半是数字）。
+ *
+ * **这份是抄的**，权威实现在 `joke-video/src/shuoshu-srt.ts` 的 `tidyCaption()`。
+ * 三个 npm 工程互相导不进来（`FX-PORT.md`：跨工程搬规格不搬文件），改规则三处一起改：
+ * 那份、`src/lib/ass.ts` 的同名函数、这一份。
+ *
+ * **长度只会从末尾变短**，所以 `quote` 里那些按 `indexOf` 算的关键词下标不受影响 ——
+ * 前提是在算下标**之前**先过这个函数。
+ */
+function tidyCaption(s: string): string {
+  return s
+    .trim()
+    .replace(/[。，、；：！？…·—.,;:!?]+$/u, '')
+    .trim()
+    .replace(/。(?=[\s\S]*[^\s。])/gu, '，');
+}
+
+/**
  * 中日文折行 + 行头禁则。
  * 直接按字数硬切会把「，」「。」「）」甩到下一行行首，中文排版里这是明显的错。
  * 处理方式：下一行若以禁则字符开头，就把它拉回上一行。
@@ -725,7 +752,7 @@ function rng(seed = 1): () => number {
  * 给已经剪好的片子在某几秒补一块「带出处的说明」，不用回去重排字幕重渲。
  */
 function subtitleStack(scene: SceneSpec, c: Ctx): FrameFn {
-  const lines = (scene.lines ?? []).slice(0, 3);
+  const lines = (scene.lines ?? []).slice(0, 3).map(tidyCaption);
   // 基准字号按 fx-kit 的三级比例，再按内容区高度放大：
   // 同一套代码既要当叠加面板用（矮），也要当整屏镜头用（高），不放大整屏下就是一小撮字
   const natural = [52, 32, 24];
@@ -770,7 +797,7 @@ function subtitleStack(scene: SceneSpec, c: Ctx): FrameFn {
  * +105% 行高滑到 0。裁剪框比字号高一点（1.25 倍），否则字的上下伸出部分会被削掉。
  */
 function maskTitle(scene: SceneSpec, c: Ctx): FrameFn {
-  const lines = (scene.lines ?? (scene.title ? [scene.title] : [])).slice(0, 4);
+  const lines = (scene.lines ?? (scene.title ? [scene.title] : [])).slice(0, 4).map(tidyCaption);
   const n = Math.max(1, lines.length);
   const fsize = Math.max(11, Math.min(fz(c, 64), Math.floor((c.box.y1 - c.box.y0) / n / 1.5)));
   const lh = fsize * 1.42;

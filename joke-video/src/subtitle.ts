@@ -3,7 +3,7 @@
 
 import { piece, tornRect, n } from './style/papercut.js';
 import { P } from './style/palette.js';
-import { W, FONT } from './config.js';
+import { W, FONT, FONT_HEAVY } from './config.js';
 import { clamp, easeOutBack } from './anim.js';
 import { tidyCaption } from './shuoshu-srt.js';
 
@@ -158,6 +158,55 @@ export function hookStrip(
 }
 
 /**
+ * 「先出声，后出人」的**开场大字**（老马线的第二档出场风格）。
+ *
+ * 第 1 句在说，画面上只有场景和这一行字 —— 人还没进来。
+ *
+ * ── 它跟 seriesCard 不是一回事 ──
+ *
+ * `seriesCard` 是**系列识别**：三十期同一张卡、同一位置，刷到第五期就认得出来。
+ * 这一行是**内容**：写的是这一条自己的那个数，每条都不一样。
+ *
+ * ── ⚠ 2026-08-22 从「黑底卡」改成「场景上的大字」 ──
+ *
+ * 先做的是一张**整幅黑底、纸白大字**的卡，理由是这条线全片纸白配深墨、
+ * 对比度压得很低，在信息流里没有首帧优势，而黑底是唯一能把对比度拉满的地方。
+ *
+ * **看下来黑得太久。** 第 1 句要念三四秒，那几秒画面上什么都没有 ——
+ * 对比度是拉满了，但观众盯着一块黑，**场景这条信息白白晚到了四秒**。
+ * 而这条线的场景本来就是内容的一部分（008 那块叫号屏从第一秒起就该在画面上）。
+ *
+ * 现在是：**场景照常出，人不出，字压在场景上。** 首帧仍旧是一句大字，
+ * 但同一帧里还交代了「他在医院」—— 同样的三秒装了两条信息。
+ *
+ * ⚠ 底色换了，字色也得跟着换：**黑底那版是纸白字，这版是墨字**。
+ * 照抄纸白会直接消失在纸白底上。
+ *
+ * ⚠ **字号按宽度反推，不写死** —— 那句话可长可短（「前面还有二十三位」9 字、
+ * 「第十一行」4 字），写死字号的话短句显小、长句折行，而这一行的全部力气就在「大」。
+ *
+ * ⚠ **`cy` 要传侧边字幕那条视线高度，不是画幅正中。**
+ * 正中（y=960）在 hospital 那个场景里正好压在排椅上，字被家具的边啃。
+ * 更要紧的是**视线**：大字撤掉之后紧接着就是侧边字幕，两处对齐的话
+ * 眼睛一次都不用换位置 —— 大字缩成小字，位置没动。
+ */
+export function openLineSvg(text: string, cy: number, ink: (c: string) => string): string {
+  const t = tidyCaption(text, { keepTone: true });
+  const margin = 96;
+  const maxW = W - margin * 2;
+  // ⚠ **字族和 font-weight 两样都要给。** 只写字族名拿到的是这一族里的常规甚至细体
+  //（第一次渲出来就是细的，跟"大字"完全不是一回事）；只写 900 又拿不到 Black
+  // 这个独立字族（封面设计规范 §七之一 那条警告）。`cover.ts` 的 inkedLine 也是两样都写。
+  // 上限 200：再大就顶到平台顶部 UI 那条带子里去了
+  let fs = 200;
+  while (fs > 60 && textWidth(t, fs) > maxW) fs -= 4;
+  return (
+    `<text x="${n(W / 2)}" y="${n(cy + fs * 0.36)}" font-family="${FONT_HEAVY}" font-size="${n(fs)}"` +
+    ` font-weight="900" fill="${ink(P.ink)}" text-anchor="middle" letter-spacing="${n(fs * 0.02)}" xml:space="preserve">${escapeXml(t)}</text>`
+  );
+}
+
+/**
  * 片头卡 —— 系列固定的那张「XX，第 NN 页」。
  *
  * **为什么是卡不是旁白念一句**：短视频前 3 秒决定观众留不留，而系列识别
@@ -169,6 +218,72 @@ export function hookStrip(
  *
  * @param prog 0..1，卡片在 intro 里的进度。首尾自动淡入淡出
  */
+/**
+ * 出场档 ③「先出声 · 物件」的首帧：**物件特写 ＋ 一行字**，整幅。
+ *
+ * 规格出处 `老马_首帧规范_v1.md` §三。那份的起因写在开头：
+ * **2 秒跳出 50–80%，因为开头 1.3 秒是无声的角色入场动画** ——
+ * 这一档的全部目的是把那 1.3 秒还给内容。
+ *
+ * ── 跟出场档 ② 的分工 ──
+ *
+ * ② 是**场景直出 ＋ 一行大字**（`openLineSvg`）：三秒里同时交代「他在哪」和那句话。
+ * ③ 是**只有物件**：首帧规范 §五 把「整幅场景图」列成了禁令 ——
+ * 「信息量太散，观众要花半秒扫画面，同时声音在讲第一句，注意力分裂」。
+ *
+ * **两档都留着，不是谁替谁。** 场景本身是内容的时候走 ②（008 的叫号屏从第一秒
+ * 就该在画面上）；物件画得出特写、而且要在信息流里抢那 120px 缩略图的时候走 ③。
+ *
+ * ── 数字标红是这个系列的签名 ──
+ *
+ * 首帧唯一的一点红是那个数，收尾卡是「第 N 天」。一红一黑，开合对上了。
+ * **别的地方一律不用红** —— 这条红只值钱在它稀缺。
+ *
+ * ⚠ **无描边、无阴影、无底框、无动效。**「整块直接出现，第 0 帧就在那」——
+ * 动效意味着「还没说完」，观众会等；而这一帧要的是「已经开始了」。
+ */
+export function openFrameSvg(objectSvg: string, text: string, opts: { height: number } ): string {
+  const H2 = opts.height;
+  const t = tidyCaption(text, { keepTone: true });
+  // 规范 §三：左右安全区各 90px
+  const maxW = W - 90 * 2;
+  // 规范 §三：字号 128–148（8 字满宽时取下限）。**先按上限试，装不下往下退到 128** ——
+  // 退到底还装不下说明 frame_text 超了 8 字，那是体检该拦的事，这儿不再缩
+  let fs = 148;
+  while (fs > 128 && textWidth(t, fs) > maxW) fs -= 2;
+  // 规范 §三：基线 y = 0.72H
+  const baseY = H2 * 0.72;
+  return (
+    `<rect width="${W}" height="${H2}" fill="${FRAME_PAPER}"/>` +
+    objectSvg +
+    `<text x="${n(W / 2)}" y="${n(baseY)}" font-family="${FONT_HEAVY}" font-size="${n(fs)}"` +
+    ` font-weight="900" fill="${FRAME_INK}" text-anchor="middle" xml:space="preserve">${redDigits(t)}</text>`
+  );
+}
+
+/** 规范 §三 的三个色。**不走 palette** —— 这一帧是独立版式，不跟着全片的墨色走 */
+const FRAME_PAPER = '#EDEEE8';
+const FRAME_INK = '#1B1E1B';
+/** 数字用的朱。首帧唯一的一点红 */
+const FRAME_RED = '#B03A2E';
+
+/**
+ * 把一行字里的**数字**换成朱色 tspan。
+ *
+ * ⚠ **中文数字也要算**（二十三、七、六）—— 这条线的数几乎全是中文写的，
+ * 只认阿拉伯数字的话这个签名一次都不会出现。
+ *
+ * ⚠ **连续的数字要连成一段**：「二十三」是一个数不是三个，
+ * 逐字包 tspan 的话字间距会被 tspan 边界撑开，肉眼看得出来。
+ */
+function redDigits(t: string): string {
+  return t
+    .split(/([d]+|[零一二两三四五六七八九十百千万]+)/)
+    .filter(Boolean)
+    .map((seg, i) => (i % 2 === 1 ? `<tspan fill="${FRAME_RED}">${escapeXml(seg)}</tspan>` : escapeXml(seg)))
+    .join('');
+}
+
 export function seriesCard(
   name: string,
   label: string,

@@ -1,0 +1,732 @@
+{
+  "id": "page-02-cat",
+  "type": "B",
+  "title": "猫决定去上班",
+  "scene": "office",
+  "pace": "bedtime",
+  "intro": 3,
+  "hold": 3.2,
+  "ambience": "none",
+  "series": {
+    "name": "一页故事",
+    "no": 2
+  },
+  "bgm": {
+    "enabled": true,
+    "stopAtPunch": false,
+    "key": "happy",
+    "gain": 0.13
+  },
+  "cues": {
+    "subtitlePop": false,
+    "replyWood": false,
+    "introHiss": false
+  },
+  "characters": [
+    {
+      "id": "旁白",
+      "rig": "none",
+      "side": "left",
+      "cast": "青年女",
+      "rate": "-8%"
+    },
+    {
+      "id": "猫",
+      "rig": "cat",
+      "variant": "day",
+      "side": "left",
+      "cast": "大叔",
+      "length": 460,
+      "x": 206,
+      "_": "白天戏用 day（方案第四节第 5 条）。cat rig 的嘴不能动，所以他全程零台词，最后那两句由旁白转述——限制变成人设，见第 4 条。"
+    },
+    {
+      "id": "松鼠",
+      "rig": "still",
+      "art": "squirrel",
+      "side": "right",
+      "length": 300,
+      "x": 515,
+      "cast": "女童"
+    },
+    {
+      "id": "兔子",
+      "rig": "still",
+      "art": "rabbit-line",
+      "side": "right",
+      "length": 420,
+      "x": 840,
+      "_": "三人同框那一镜 1080 宽横排放不下（方案第四节第 1 条）。480 时出右框 6px，缩到 420。",
+      "cast": "青年女"
+    }
+  ],
+  "lines": [
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "猫住在一条街上，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "每天早上都看见有人出门。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "开场立住「他在看别人」这个位置。猫单独在画面里，办公室的方格背景在他身后。",
+      "dur": 4.916,
+      "audio": "out/voice/page-02-cat/1-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "那些人走得很快，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "手里拿着东西，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "谁也不看谁。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 5.324,
+      "audio": "out/voice/page-02-cat/2-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "到了晚上他们回来，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "脸上都很累。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.516,
+      "audio": "out/voice/page-02-cat/3-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "猫"
+      ],
+      "text": "可是累完了，他们看起来是踏实的。",
+      "delivery": "叙缓",
+      "dur": 3.978,
+      "audio": "out/voice/page-02-cat/4-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "setup",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "猫看了很久。",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "他想，我大概也该有点正事。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 4.952,
+      "audio": "out/voice/page-02-cat/5-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "text": "第一天，他准时到了。",
+      "delivery": "叙平",
+      "note": "第一镜到此为止。往下换会议桌那一景。",
+      "dur": 2.232,
+      "audio": "out/voice/page-02-cat/6-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "他找了个靠窗的位置坐下，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "把尾巴收好。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 4.244,
+      "audio": "out/voice/page-02-cat/7-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "text": "然后他盯着窗外的鸟，盯了八个小时。",
+      "delivery": "叙缓",
+      "dur": 4.416,
+      "audio": "out/voice/page-02-cat/8-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "中间他动过两次。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "一次是鸟飞走了，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "一次是鸟又飞回来了。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 6.796,
+      "audio": "out/voice/page-02-cat/9-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "下班回家，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "他累得话都不想说。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.588,
+      "audio": "out/voice/page-02-cat/10-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "text": "那天晚上他睡得特别香。",
+      "delivery": "叙缓",
+      "dur": 3.144,
+      "audio": "out/voice/page-02-cat/11-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "他从来没有这样睡过。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "以前他白天也睡，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "睡完还是想睡。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 6.466,
+      "audio": "out/voice/page-02-cat/12-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "ask",
+      "stage": [
+        "猫"
+      ],
+      "text": "这一觉不一样。他觉得自己是挣来的。",
+      "delivery": "叙缓",
+      "dur": 5.024,
+      "audio": "out/voice/page-02-cat/13-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠",
+        "兔子"
+      ],
+      "text": "第二天要开会。",
+      "delivery": "叙平",
+      "note": "换到会议桌一景。三人同框全片只用这一段（方案第四节第 1 条），交代「一屋子人在点头」。",
+      "dur": 1.508,
+      "audio": "out/voice/page-02-cat/14-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠",
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "会开得很长。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "猫听不太懂，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "就学着把眼睛闭上。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 5.718,
+      "audio": "out/voice/page-02-cat/15-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠",
+        "兔子"
+      ],
+      "text": "所有人都夸他专注。",
+      "delivery": "叙缓",
+      "dur": 2.15,
+      "audio": "out/voice/page-02-cat/16-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠",
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "猫愣了一下。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "他只是困。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 2.898,
+      "audio": "out/voice/page-02-cat/17-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠",
+        "兔子"
+      ],
+      "say": [
+        {
+          "text": "松鼠说他沉得住气。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "兔子说他有大将之风。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 5.13,
+      "audio": "out/voice/page-02-cat/18-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠",
+        "兔子"
+      ],
+      "text": "猫睁开眼，点了点头。",
+      "delivery": "叙缓",
+      "dur": 2.88,
+      "audio": "out/voice/page-02-cat/19-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠"
+      ],
+      "text": "第三天，有人问了他一个问题。",
+      "delivery": "叙平",
+      "dur": 2.992,
+      "audio": "out/voice/page-02-cat/20-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠"
+      ],
+      "text": "那人问，你具体负责什么。",
+      "delivery": "叙缓",
+      "dur": 2.976,
+      "audio": "out/voice/page-02-cat/21-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "turn",
+      "stage": [
+        "猫",
+        "松鼠"
+      ],
+      "say": [
+        {
+          "text": "那人问得很客气。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "不是刁难，就是随口一问。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 5.326,
+      "audio": "out/voice/page-02-cat/22-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "猫想了很久。",
+      "delivery": "叙缓",
+      "note": "回到猫单独一镜。这一段是全片的停顿点，往下三句都很短。",
+      "dur": 1.472,
+      "audio": "out/voice/page-02-cat/23-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "他想到了窗台。",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "想到了那只鸟。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.994,
+      "audio": "out/voice/page-02-cat/24-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "想到了那八个小时。",
+      "delivery": "叙缓",
+      "dur": 2.212,
+      "audio": "out/voice/page-02-cat/25-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "可是他想不出，这些和「负责」有什么关系。",
+      "delivery": "叙缓",
+      "dur": 4.488,
+      "audio": "out/voice/page-02-cat/26-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "第四天他没去。",
+      "delivery": "叙平",
+      "dur": 1.522,
+      "audio": "out/voice/page-02-cat/27-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "第五天也没去。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "没有人来找他。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.604,
+      "audio": "out/voice/page-02-cat/28-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫",
+        "松鼠"
+      ],
+      "text": "别人问他为什么不干了。",
+      "delivery": "叙平",
+      "dur": 2.362,
+      "audio": "out/voice/page-02-cat/29-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "猫不爱说话。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "他只说了两句。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "cat rig 的嘴不能动，所以他的台词由旁白转述，并在词里写成「不爱说话」——限制变成人设（方案第四节第 4 条）。",
+      "dur": 3.522,
+      "audio": "out/voice/page-02-cat/30-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "他说，我不是干不了。",
+      "delivery": "叙缓",
+      "dur": 2.466,
+      "audio": "out/voice/page-02-cat/31-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "我是想不出干这个的理由。",
+      "delivery": "叙缓",
+      "dur": 2.952,
+      "audio": "out/voice/page-02-cat/32-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "说完他转过身，",
+          "delivery": "叙平"
+        },
+        {
+          "text": "往回走了。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "末镜：猫背对镜头往回走，背后的方格一格一格熄灭。",
+      "dur": 3.012,
+      "audio": "out/voice/page-02-cat/33-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "身后的灯，一格一格灭了。",
+      "delivery": "叙缓",
+      "dur": 3.2,
+      "audio": "out/voice/page-02-cat/34-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "他走得不快，也没有回头。",
+      "delivery": "叙缓",
+      "dur": 3.1,
+      "audio": "out/voice/page-02-cat/35-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "text": "回到街上，天还亮着。",
+      "delivery": "叙缓",
+      "dur": 2.71,
+      "audio": "out/voice/page-02-cat/36-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "say": [
+        {
+          "text": "那些人还没下班。",
+          "delivery": "叙平"
+        },
+        {
+          "text": "街上很空。",
+          "delivery": "叙缓"
+        }
+      ],
+      "dur": 3.522,
+      "audio": "out/voice/page-02-cat/37-旁白.wav"
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "scene": "room",
+      "say": [
+        {
+          "text": "他坐回自己的窗台上。",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "那只鸟又飞回来了。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "说破段第 1 句。换到 room（家里的窗台，不是 office 那扇）—— scene 一变就是换镜，padAfterShot 1.6s 自动给出说破段前那一拍。",
+      "dur": 5.084,
+      "audio": "out/voice/page-02-cat/38-旁白.wav",
+      "shuopo": true
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "scene": "room",
+      "say": [
+        {
+          "text": "猫看着它，一直看到天黑。",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "这一次，他一点也不累。",
+          "delivery": "叙缓"
+        }
+      ],
+      "padAfter": 1.3,
+      "note": "说破段第 2 句。padAfter 1.3 是「停一拍」——比同镜的 0.55 长，比换镜的 1.6 短，落点前要空但不要断。",
+      "dur": 6.604,
+      "audio": "out/voice/page-02-cat/39-旁白.wav",
+      "shuopo": true
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "scene": "room",
+      "say": [
+        {
+          "text": "有的事情，做完就很累。",
+          "delivery": "叙缓"
+        },
+        {
+          "text": "有的事情，做很久也不累。",
+          "delivery": "叙缓"
+        }
+      ],
+      "note": "说破段落点。**这一句要跟尾字幕逐字相同**（规则第 2 条）——两句不同的话会互相抢，孩子只能接住一句。",
+      "dur": 6.808,
+      "audio": "out/voice/page-02-cat/40-旁白.wav",
+      "shuopo": true
+    },
+    {
+      "who": "旁白",
+      "beat": "punch",
+      "stage": [
+        "猫"
+      ],
+      "scene": "room",
+      "text": "猫想找的，是第二种。",
+      "delivery": "叙缓",
+      "note": "说破段收句。回答「猫做错了吗」——没有，他不是失败，是找到了（规则第 5 条）。",
+      "dur": 2.726,
+      "audio": "out/voice/page-02-cat/41-旁白.wav",
+      "shuopo": true
+    }
+  ],
+  "hook": "有的事情做完就很累，有的事情做很久也不累",
+  "cover": {
+    "title": "他盯了八个小时的鸟",
+    "at": 120
+  }
+}

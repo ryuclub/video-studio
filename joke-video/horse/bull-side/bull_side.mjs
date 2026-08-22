@@ -15,7 +15,7 @@
  * 远侧那根压暗并画在头之前，近侧那根压在最上层。
  */
 import { writeFileSync, mkdirSync } from "node:fs";
-import { stroke, hatch, sample, poly, jitter, ellipsePts } from "./rough.mjs";
+import { stroke, hatch, sample, poly, jitter, ellipsePts } from "../rough.mjs";
 
 const VB = { x: 150, y: 30, w: 560, h: 1080 };
 const LINE = "#2E2622";

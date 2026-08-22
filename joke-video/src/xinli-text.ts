@@ -271,13 +271,19 @@ Style: 正文,${FONT},${SIZE},${INK},${INK},${PAPER},&H00000000,0,0,0,0,100,100,
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `;
 
-  const out = `${dir}/文字.ass`;
-  writeFileSync(out, head + events.join('\n') + '\n', 'utf8');
-  console.log(`${p.part}篇《${p.epTitle ?? ''}》　${shown} 句上屏　${events.length} 条事件 → ${out}`);
+  console.log(`${p.part}篇《${p.epTitle ?? ''}》　${shown} 句上屏　${events.length} 条事件`);
   console.log(`  跳过 ${skipped} 段（落在题句卡时间窗里，那几段已经竖排画进背景图了）`);
   console.log(`  最长一段 ${maxLines} 行，占 ${maxLines * lh} px（窗高 ${WIN.h}，上限 ${Math.floor(WIN.h / lh)} 行）`);
   if (maxLines * lh > WIN.h)
     throw new Error(`最长的那一段 ${maxLines} 行装不进窗子。要么把 SIZE 调小，要么 packLines 的每条字数调小`);
+
+  // ⚠ **落盘放在这一句之后。** 原来是先写文件再抛：抛出来的那一次留下的是一份
+  // 语法完全合法、只是装不进窗子的 `文字.ass`，而 `zhiyu-video.ts --text-layer`
+  // 只认头上那行 `; cover-sec:` —— 下一次 build 会一声不响地把这份被否掉的层烧进片子。
+  // 「报成功的失败」那两个坑就是这么来的：**失败就不要留半成品。**
+  const out = `${dir}/文字.ass`;
+  writeFileSync(out, head + events.join('\n') + '\n', 'utf8');
+  console.log(`  → ${out}`);
   if (walls.length) {
     console.log(`  ! ${walls.length} 段超过 ${WALL} 行，屏上是一堵字墙（装得下，但一次来这么多没人读）：`);
     for (const w of walls) console.log(`      ${w}`);

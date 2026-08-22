@@ -10,7 +10,7 @@
  * 这样正面版和侧面版按同一个 height 合成时，两者身高对得上，切镜不会跳。
  */
 import { writeFileSync, mkdirSync } from "node:fs";
-import { stroke, hatch, sample, poly, jitter, ellipsePts } from "./rough.mjs";
+import { stroke, hatch, sample, poly, jitter, ellipsePts } from "../rough.mjs";
 
 // 画框裁紧。高度与 horse_only.svg 的 1028 保持同一"角色占框比例"，
 // 这样正面版和侧面版按同一个 height 合成时身高一致，切镜不跳。

@@ -60,6 +60,17 @@ projects/记者读稿/*/work_portrait/
 # 说书：场景图
 projects/说书/*/scenes/
 
+# 心理洞察：片内画面（每 30 秒一张 + 题句卡淡入淡出那几张，E01 96 张 7.9M）+ concat 清单
+# **补于 2026-08-21**：这条线开线时漏了这两条，治愈和说书都有。
+# E01 那批图一直等在待提交列表里，没人注意到 —— 文字版一上来量还会更大。
+projects/心理洞察/*/成片/*/scenes/
+projects/心理洞察/*/成片/*/_concat.txt
+
+# 禅佛典：片内画面 + concat 清单，跟治愈/心理洞察同一套（E01 146 张 14M）
+# 开线时又漏了一次 —— 每开一条线记得回来补这两行。
+projects/禅佛典/*/成片/*/scenes/
+projects/禅佛典/*/成片/*/_concat.txt
+
 # 治愈：片内画面（一景不换、每 30 秒一张，两期 81 张 15M）+ concat 清单
 projects/治愈/*/成片/*/scenes/
 projects/治愈/*/成片/*/_concat.txt

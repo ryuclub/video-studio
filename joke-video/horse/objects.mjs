@@ -194,10 +194,55 @@ function approvalFlow(s = 3) {
   return o;
 }
 
+/**
+ * 便签。
+ *
+ * 一张卷了角的方纸，上面三条手写横线。**不画笔、不画桌面、不画贴在哪儿** ——
+ * 那些都是环境，规范 §三 禁了；而且一贴到别的东西上，缩略图里就分不清主体是哪个。
+ *
+ * ⚠ **卷角是这个物件的识别点。** 一个纯方块在 120px 上读作「一张卡片／一块屏」，
+ * 缺一个角、再补一折之后才读作便签。这一档的验收就是缩略图，不是大图。
+ *
+ * ⚠ **横线只画三条，而且不写字。** 首帧那行字归文字层，画在物件上会跟它打架；
+ * 而且写了字就得跟台词里的数对上，改台词要连这儿一起改 ——
+ * 留白的便签任何一条稿子都能用。
+ *
+ * （2026-08-23 为一条已经撤掉的稿子画的。**物件本身跟专辑无关，留着。**）
+ */
+function stickyNote(s = 4) {
+  const b = box(1.02);
+  // 右下角缺一块 —— 卷角是从这块缺口里翻出来的
+  const cut = b.w * 0.2;
+  const body = [
+    [b.x, b.y],
+    [b.x + b.w, b.y],
+    [b.x + b.w, b.y + b.h - cut],
+    [b.x + b.w - cut, b.y + b.h],
+    [b.x, b.y + b.h],
+  ];
+  let o = "";
+  o += shape(body, { fill: LIGHT, hatchGap: 0, seed: s, w: LW, line: INK, amp: 3.2 });
+  // 翻起来的那一折：从缺口的两个端点折回去
+  o += stroke(
+    [[b.x + b.w - cut, b.y + b.h], [b.x + b.w - cut * 0.92, b.y + b.h - cut * 0.92], [b.x + b.w, b.y + b.h - cut]],
+    { color: INK, w: LW * 0.8, passes: 2, amp: 2.6, seed: s + 5 }
+  );
+  // 三条手写横线。长短不齐 —— 一样长读作横格纸，不读作写过字
+  const lens = [0.72, 0.78, 0.5];
+  lens.forEach((len, i) => {
+    const y = b.y + b.h * (0.3 + i * 0.17);
+    o += stroke([[b.x + b.w * 0.14, y], [b.x + b.w * (0.14 + len), y]], {
+      color: INK, w: LW * 0.55, passes: 1, amp: 2.4, seed: s + 10 + i, op: 0.85,
+    });
+  });
+  return o;
+}
+
 export const OBJECTS = {
   叫号屏: callBoard,
   小门: smallDoor,
   系统: approvalFlow,
+  便签: stickyNote,
 };
 
 export const hasObject = (name) => Object.prototype.hasOwnProperty.call(OBJECTS, name);

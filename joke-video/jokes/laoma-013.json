@@ -1,0 +1,146 @@
+{
+  "_": "老马 · 第 1866 天 · subway。稿源：素材包 v3-S1 第一批六条（`E:/ryu/laoma/老马_v3-S1_六条.json`）。\n\nlane=命名类／domain=出行 是稿源自己的分类，仓库不按它分流（栏目从 `scene` 反查）。**这两个字段原样存着，别拿它们当栏目用。**\n\n⚠ **「十一分钟」改成了「十三分钟」**（两处）。十一在第 1853 天用过（007 的「第十一天」），近 10 条内复用是硬伤 —— §一之十六：**重复的数字是最明显的模板痕迹**。十三同样不圆、同样具体。",
+  "id": "laoma-013",
+  "day": 1866,
+  "type": "A",
+  "scene": "subway",
+  "pace": "banter",
+  "intro": 0,
+  "freeze": 1.5,
+  "hold": 2.6,
+  "opening": {
+    "style": "object-first",
+    "frameSubject": "手机",
+    "frameText": "出地铁的时候"
+  },
+  "_opening": "出场档 ③「先出声 · 物件」，老马线缺省。首帧＝物件特写 ＋ 一行字，音轨 0.0 起，人在第 1 句说完那半秒静音里滑进来。",
+  "ambience": "none",
+  "bgm": {
+    "enabled": false
+  },
+  "characters": [
+    {
+      "id": "ma",
+      "rig": "horse",
+      "side": "left",
+      "x": 290,
+      "scale": 1,
+      "cast": "老马",
+      "keepX": true
+    }
+  ],
+  "lines": [
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0,
+      "padAfter": 0.3,
+      "say": [
+        {
+          "text": "出地铁的时候，",
+          "gap": 0.26
+        },
+        {
+          "text": "手机剩百分之三。"
+        }
+      ]
+    },
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0.1,
+      "padAfter": 0.3,
+      "say": [
+        {
+          "text": "到家还有十三分钟的路。"
+        }
+      ]
+    },
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0.1,
+      "padAfter": 0.3,
+      "say": [
+        {
+          "text": "老马把亮度调到最低，",
+          "gap": 0.26
+        },
+        {
+          "text": "手机塞进兜里。"
+        }
+      ]
+    },
+    {
+      "who": "ma",
+      "beat": "reply",
+      "padBefore": 0.1,
+      "padAfter": 0.3,
+      "say": [
+        {
+          "text": "我没有要看的东西。"
+        }
+      ]
+    },
+    {
+      "who": "ma",
+      "beat": "punch",
+      "padBefore": 0.45,
+      "padAfter": 0.3,
+      "delivery": "叙平",
+      "say": [
+        {
+          "text": "剩下那十三分钟，",
+          "gap": 0.26,
+          "delivery": "叙平"
+        },
+        {
+          "text": "我一直在算它还能撑多久。",
+          "delivery": "叙平"
+        }
+      ]
+    }
+  ],
+  "object": "手机",
+  "bodyAnchor": "把屏幕亮度调到最低，手机塞回兜里",
+  "hookLine": 2,
+  "payoffLine": 5,
+  "emotionLine": 5,
+  "domain": "出行",
+  "hook": "老马的第 1866 天",
+  "cues": {
+    "introHiss": false,
+    "replyWood": false,
+    "punchSlide": false,
+    "freezeThud": false,
+    "subtitlePop": false
+  },
+  "speechBurst": {
+    "spot": "右",
+    "size": 0.36,
+    "tilt": -14,
+    "seed": 23,
+    "byBeat": {
+      "setup": 0,
+      "reply": 0.7,
+      "punch": 1.15
+    }
+  },
+  "camera": "static",
+  "subtitleStyle": "side",
+  "endPose": {
+    "mouth": 2,
+    "eyes": "wide"
+  },
+  "cover": {
+    "title": "",
+    "sub": "",
+    "cam": {
+      "zoom": 1,
+      "tx": 0,
+      "ty": 0
+    },
+    "mark": "none"
+  },
+  "_hook": "⚠ **`hookLine` 不是稿源的 `hook_line`。** 稿源那个是「开场钩子句」（叙事上的钩子），仓库这个是「**被落点字面回收的那一句**」（§一之十四：听觉媒介，同义词不算回收）。两者常常重合，但这一条不重合 —— 按落点里真正复现的那个词回填的。"
+}

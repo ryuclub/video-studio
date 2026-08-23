@@ -5,7 +5,7 @@ import { Worker } from 'node:worker_threads';
 import { cpus } from 'node:os';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { W, H, FPS, FONT, OUT } from './config.js';
+import { W, H, FPS, FONT, FONT_FILES, OUT } from './config.js';
 import { paperTextureSvg } from './style/papercut.js';
 import { renderFrame, type RenderCtx } from './render.js';
 
@@ -13,6 +13,9 @@ const resvgOpts = () => ({
   fitTo: { mode: 'original' as const },
   font: {
     loadSystemFonts: true,
+    // ⚠ **仓库自带的字体要显式喂进来**，不能指望系统装了。
+    // 缺了 resvg 不报错，静默回退 —— 见 config.ts 的 FONT_FILES。
+    fontFiles: FONT_FILES,
     defaultFontFamily: FONT.split(',')[0].trim(),
   },
 });
@@ -45,7 +48,10 @@ export function ensureTexture(strength = 0.38): string {
 function makeRasterPool(n: number) {
   const url = new URL('./raster-worker.cjs', import.meta.url);
   const font = FONT.split(',')[0].trim();
-  const ws = Array.from({ length: n }, () => new Worker(url, { workerData: { font } }));
+  // ⚠ **worker 是另一个线程，它不共享主线程的 resvg 配置。**
+  // 字体文件要一起传过去，否则出片（走 worker 池）跟 still / frame（走主线程）
+  // 用的是两套字体 —— 静帧上字对了、成片里回退了，而且不报错。
+  const ws = Array.from({ length: n }, () => new Worker(url, { workerData: { font, fontFiles: FONT_FILES } }));
 
   interface Job {
     svg: string;

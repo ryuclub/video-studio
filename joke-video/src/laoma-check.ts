@@ -32,6 +32,7 @@
 // 但形式硬伤值得拦 —— 因为它们不是品味问题，是规范里写死的数，
 // 而人照着结构填稿的时候，最容易漏掉的正是这些数。
 
+import { FONT_FILES } from './config.js';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { lineText, dayNo, type JokeCfg, type LineCfg } from './types.js';
 // ⚠ **有效 intro，不是 `cfg.intro`。** 「先出声后出人」那一档空镜恒等于零，
@@ -585,8 +586,22 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
       0
     );
     const total = introOf(cfg) + spoken + pad + (cfg.freeze ?? 2) + (cfg.hold ?? 4);
-    if (total > 35) err(`全片 ${total.toFixed(1)}s，超过 35。§四：超了砍字，**不要加速** —— 加速会毁掉所有停顿设计`);
-    else warn(`全片 ${total.toFixed(1)}s（区间 25–32）`);
+    // ⚠ **区间 2026-08-23 从 25–32 放宽到 18–32，而且措辞改了。**
+    //
+    // v3 那批稿子每条五句、写得更精炼，实测 19–24 秒。旧的下限 25 会对每一条报一次，
+    // 而人消掉这个提醒的办法只有一个：**把定格和收尾卡撑长**。
+    // 010 就是这么被撑到 25.2 的（freeze 1.6 / hold 3.0），看着不自然。
+    //
+    // **片子首先要自然流畅，不是凑够一个数。** 所以下限只留一个「是不是漏了一拍」的
+    // 提醒，**永远不提「加长停顿」** —— 那是这条提醒唯一会被误用的方向。
+    if (total > 35)
+      err(`全片 ${total.toFixed(1)}s，超过 35。§四：超了砍字，**不要加速** —— 加速会毁掉所有停顿设计`);
+    else if (total < 18)
+      warn(
+        `全片 ${total.toFixed(1)}s，短于 18 —— **回头看是不是漏了一拍**（少了一句铺垫、或者落点前没留白）。` +
+          `**别靠拉长定格和收尾卡凑**：硬停出来的长度看着就是硬停的`
+      );
+    else warn(`全片 ${total.toFixed(1)}s`);
   }
 
   // ── 画面：抵消单调的工具用了几件 ──
@@ -812,6 +827,19 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     err(
       `收尾卡「${cfg.hook}」不是日子牌的字样。写成 \`老马的第 1847 天\`：` +
         `数字前后各一个空格、结尾不加标点。数字照 horse/CHANNEL_LAOMA.md §五之二 的分配表`
+    );
+
+  // ── 字体在不在 ──────────────────────────────────────────────────
+  //
+  // ⚠ **字体缺了不报错，只是悄悄回退。** `FONT_FILES` 是 `.filter(existsSync)`，
+  // 文件不在就少喂一个，resvg 跟着用系统字体 —— 字幕规范 §二 的原话是
+  // 「你只会觉得『字怎么没变』」。实测不喂文件时渲出来跟雅黑**字节数完全一样**。
+  //
+  // 所以在这儿拦一道：**没有字体就不该出片**，而不是出一条字体不对的片子。
+  if (!FONT_FILES.some((p) => p.includes('SmileySans')))
+    err(
+      '找不到得意黑字体文件（`fonts/smiley-sans-v2.0.1/SmileySans-Oblique.otf`）。' +
+        '**缺了不会报错，只会静默回退到系统黑体** —— 字幕就不是这条线的样子了。见 `fonts/README.md`'
     );
 
   return out;

@@ -677,6 +677,24 @@ export function subtitleText(line: LineCfg): string {
  * 台词文本：写了 say 就把小句拼起来。**这是送进 TTS 的那一串，标点原样保留。**
  * 时长估算、预览页也读这个，别直接读 line.text。
  */
+/**
+ * **天数号：老马这条线的身份。** 目录名、发布排期、数字账本都用它。
+ *
+ * ⚠ **优先读 `day`，收尾卡只是兜底。** 家庭类的条目不出收尾卡（`laoma-002`），
+ * 但日子照样占一格（CHANNEL_LAOMA §五之二）—— 只认 `hook` 的话那种条目就没有身份了。
+ *
+ * ⚠ **别再各处抄这段正则。** 2026-08-23 加 `day` 字段的那天就抄成了三份：
+ * `preview.ts` 读了新字段，`laoma-check.ts` 和 `laoma-schedule.ts` 还只读收尾卡 ——
+ * 后果是 002 的数字**永远进不了账本**、而且跳过撞车检查（账本存在的全部理由），
+ * 排期那边「稿件天数号 vs 目录期号」那条也整条不跑。
+ * 三处说法不一致的时候，坏的那两处不报错，只是安静地少做事。
+ */
+export function dayNo(cfg: JokeCfg): number | null {
+  if (typeof cfg.day === 'number') return cfg.day;
+  const m = cfg.hook?.match(/第\s*(\d+)\s*天/);
+  return m ? Number(m[1]) : null;
+}
+
 export function lineText(line: LineCfg): string {
   if (line.say?.length) return line.say.map((s) => s.text).join('');
   return line.text ?? '';

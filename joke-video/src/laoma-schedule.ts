@@ -39,7 +39,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { OUT_LAOMA } from './paths.js';
-import type { JokeCfg } from './types.js';
+import { dayNo, type JokeCfg } from './types.js';
 
 /**
  * 排期树的根 = **老马的成品根**。这两样是同一棵树，不是两处。
@@ -317,10 +317,11 @@ function checkPointers(it: Item): void {
     return;
   }
 
-  // 期号 = 收尾卡上那个天数
-  const no = Number(cfg.hook?.match(/第\s*(\d+)\s*天/)?.[1]);
-  if (Number.isNaN(no))
-    warn(`[${it.series}] 稿件 ${pub.script} 的收尾卡里读不出天数：${it.name}`);
+  // 期号 = 天数号。**走 `dayNo()`，不在这儿抄正则** —— 家庭类的条目不出收尾卡，
+  // 只读 `hook` 的话它永远是 NaN，下面那条「稿件天数号 vs 目录期号」整条不跑。
+  const no = dayNo(cfg);
+  if (no === null)
+    warn(`[${it.series}] 稿件 ${pub.script} 读不出天数号（\`day\` 和收尾卡都没有）：${it.name}`);
   else if (no !== it.id) fail(`[${it.series}] 稿件的天数号是 ${no}，目录期号是 ${it.id}，两个对不上：${it.name}`);
 
   // ── 成片就在这个目录里 ──

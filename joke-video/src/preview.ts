@@ -22,7 +22,7 @@ import { renderFrame, type RenderCtx, type VoiceTrack } from './render.js';
 import { svgToPng } from './video.js';
 import { resolveLineVoice } from './tts.js';
 import { isIdentity } from './audio/morph.js';
-import { lineText, subtitleText, type JokeCfg, type Segment } from './types.js';
+import { dayNo, lineText, subtitleText, type JokeCfg, type Segment } from './types.js';
 import { ensurePlan } from './plan.js';
 import { makeInk } from './style/palette.js';
 import { SCENE_NAMES, getScene } from './scenes/index.js';
@@ -45,19 +45,6 @@ export interface PreviewShot {
 
 /** 这一条是不是老马线。判据跟 `cover.ts`、`yiye-publish.ts`、`cli.ts` 的体检闸是同一条 */
 export const isLaoma = (cfg: JokeCfg): boolean => !!cfg.characters?.some((c) => c.rig === 'horse');
-
-/**
- * 天数号：老马的**身份**。目录名、排期、数字账本都用它。
- *
- * ⚠ **优先读 `day` 字段，收尾卡只是兜底。** 家庭类的条目不出收尾卡
- * （`laoma-002`），但**日子照样占一格**（CHANNEL_LAOMA §五之二）——
- * 只认 `hook` 的话那种条目就没有身份了。
- */
-export function dayNo(cfg: JokeCfg): number | null {
-  if (typeof cfg.day === 'number') return cfg.day;
-  const m = cfg.hook?.match(/第\s*(\d+)\s*天/);
-  return m ? Number(m[1]) : null;
-}
 
 /** 老马的排期树：`projects/老马/段子/{_待发,_已发}/` */
 export const LAOMA_TREE = `${OUT_LAOMA}/段子`;

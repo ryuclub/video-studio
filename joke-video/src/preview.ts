@@ -43,6 +43,66 @@ export interface PreviewShot {
   lineIndex: number | null;
 }
 
+/**
+ * 发片信息：**标题、关键词、排期时刻**，摆在成片旁边。
+ *
+ * ── 为什么要摆在旁边 ──
+ *
+ * 预览页原来只有画面和台词，发布那头的东西全在 `发布文案.md` 里 ——
+ * 而审片时真正要一起看的正是这两样：**这条片子长这样，它顶着的标题是这个**。
+ * 分在两处的结果是，标题从来没在成片旁边被看过一眼。
+ *
+ * ⚠ **只读，不生成。** 文案的唯一出处仍是 `发布文案.md`（`yiye-publish.ts` 生成）——
+ * 这儿把它抠出来显示，**不做第二份**。抠不到就不显示那一栏，不猜、不兜底。
+ */
+export interface PublishInfo {
+  title?: string;
+  sub?: string;
+  tags?: string;
+  /** `_待发` / `_已发` */
+  bucket?: string;
+  /** 目录名前缀里那个时刻，例：2026-09-06 21:00 JST */
+  slot?: string;
+  /** 各平台时刻，从 publish.json 来 */
+  platforms?: Array<[string, string]>;
+}
+
+/** 抠出 `## 标题` 那类小节里第一个代码块的内容 */
+function blockAfter(md: string, head: string): string | undefined {
+  const re = new RegExp("^## " + head + "\\s*$[\\s\\S]*?" + "```" + "\\n([\\s\\S]*?)" + "```", "m");
+  return md.match(re)?.[1].trim();
+}
+
+export function readPublishInfo(dir: string): PublishInfo {
+  const out: PublishInfo = {};
+  const md = dir + "/发布文案.md";
+  if (existsSync(md)) {
+    const t = readFileSync(md, "utf8");
+    out.title = blockAfter(t, "标题");
+    out.sub = blockAfter(t, "副标题");
+    out.tags = blockAfter(t, "关键词与标签");
+  }
+  // 排期：目录名前缀 ＋ publish.json
+  const name = basename(dir);
+  const m = /^(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})JST_/.exec(name);
+  if (m) out.slot = m[1] + " " + m[2] + ":" + m[3] + " JST";
+  else if (/^未排期_/.test(name)) out.slot = "未排期";
+  const b = /[/\\](_待发|_已发)[/\\]/.exec(dir.replace(/\\/g, "/"));
+  if (b) out.bucket = b[1];
+  const pj = dir + "/publish.json";
+  if (existsSync(pj)) {
+    try {
+      const j = JSON.parse(readFileSync(pj, "utf8")) as { platforms?: Record<string, { at?: string }> };
+      const ps = Object.entries(j.platforms ?? {})
+        .filter(([, v]) => v?.at)
+        .map(([k, v]) => [k, String(v.at)] as [string, string]);
+      if (ps.length) out.platforms = ps;
+    } catch {
+      /* 坏 json 就当没有 —— 预览页不该因为一个字段打不开 */
+    }
+  }
+  return out;
+}
 /** 这一条是不是老马线。判据跟 `cover.ts`、`yiye-publish.ts`、`cli.ts` 的体检闸是同一条 */
 export const isLaoma = (cfg: JokeCfg): boolean => !!cfg.characters?.some((c) => c.rig === 'horse');
 
@@ -284,13 +344,59 @@ function mdToHtml(md: string): string {
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** 一条稿件的区块：场景图 + 对话 + 分析 */
+/**
+ * 成片那一块：**左边成片，右边发片信息**（2026-08-23 改，原来只有成片一栏）。
+ *
+ * 右边那栏是审片时要跟画面一起看的几样：**排期 / 标题 / 副标题 / 关键词 / 各平台时刻**。
+ * 抠不到就整栏不出 —— 不猜、不兜底、不做第二份文案。
+ */
+function filmBlock(prefix: string, video?: string, pub?: PublishInfo): string {
+  const row = (k: string, v: string, cls = "") =>
+    `<div class="pub-row"><span class="k">${k}</span><span class="v ${cls}">${v}</span></div>`;
+  const side = !pub
+    ? ""
+    : [
+        pub.slot
+          ? row(
+              "排期",
+              esc(pub.slot) + (pub.bucket ? "　<em>" + esc(pub.bucket.replace("_", "")) + "</em>" : ""),
+              "slot" + (pub.bucket === "_已发" ? " done" : pub.slot === "未排期" ? " none" : "")
+            )
+          : "",
+        pub.title ? row("标题", esc(pub.title), "title") : "",
+        pub.sub ? row("副标题", esc(pub.sub)) : "",
+        pub.tags ? row("关键词", esc(pub.tags), "tags") : "",
+        pub.platforms?.length
+          ? row(
+              "各平台",
+              pub.platforms
+                .map(([k, at]) => esc(k) + " <code>" + esc(at.replace("T", " ").replace(/(\+\d\d):\d\d$/, " $1")) + "</code>")
+                .join("<br>"),
+              "plat"
+            )
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+  const film = video
+    ? `<video src="${prefix}${esc(video)}" controls preload="metadata" playsinline></video>` +
+      `<div class="film-note">成片　<code>${esc(video)}</code></div>`
+    : '<div class="film-none">还没出片　<code>npm run build</code></div>';
+  return (
+    '<div class="film' + (side ? " with-pub" : "") + '">' +
+    '<div class="film-main">' + film + "</div>" +
+    (side ? '<aside class="pub">' + side + "</aside>" : "") +
+    "</div>"
+  );
+}
 export function jokeSection(
   cfg: JokeCfg,
   shots: PreviewShot[],
   analysis: string,
   assetPrefix = '',
   video?: string,
-  cover?: string
+  cover?: string,
+  pub?: PublishInfo
 ): string {
   const tl = buildTimeline(cfg);
   const byLine = new Map<number, PreviewShot>();
@@ -369,14 +475,7 @@ export function jokeSection(
     </div>
   </header>
   ${dupe}
-  ${
-    video
-      ? `<div class="film">
-    <video src="${assetPrefix}${esc(video)}" controls preload="metadata" playsinline></video>
-    <div class="film-note">成片　<code>${esc(video)}</code></div>
-  </div>`
-      : '<div class="film-none">还没出片　<code>npm run build</code></div>'
-  }
+  ${filmBlock(assetPrefix, video, pub)}
   <div class="rows">${rows}</div>
   ${extraShots ? `<h3>${cover ? '封面 / ' : ''}开场 / 定格 / 钩子</h3><div class="extras">${extraShots}</div>` : ''}
   ${cfg.hook ? `<div class="hook">结尾钩子：<strong>${esc(cfg.hook)}</strong></div>` : ''}
@@ -551,7 +650,7 @@ export function syncProjects(
     const k = laoma ? 'laoma' : 'joke';
     // 相对汇总页的路径：老马那张页在 `projects/老马/`，条目在 `段子/_待发/<名>/`
     const prefix = laoma ? `${relative(OUT_LAOMA, dir).split(sep).join('/')}/` : `${basename(dir)}/`;
-    sections[k].push(jokeSection(cfg, shots, analysis, prefix, film, cover));
+    sections[k].push(jokeSection(cfg, shots, analysis, prefix, film, cover, laoma ? readPublishInfo(dir) : undefined));
     navItems[k].push(navEntry(cfg, shots, prefix, navItems[k].length + 1));
     if (!opts.quiet) console.log(`  ${cfg.id}${reuse ? '（复用已有场景图）' : ` ${shots.length} 张场景图`}`);
   }
@@ -657,6 +756,24 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
   padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
 /* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
 .film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+/* 成片旁边那栏发片信息（老马线）。**成片固定 250px，剩下全给它** ——
+   关键词那串很长，给固定宽度会一直换行 */
+.film.with-pub { align-items:flex-start; gap:22px; }
+.film.with-pub .film-main { flex:0 0 auto; }
+.film.with-pub .pub { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:9px;
+  border-left:2px solid var(--line); padding-left:16px; }
+.pub-row { display:flex; gap:10px; align-items:baseline; font-size:13px; }
+.pub-row .k { flex:0 0 46px; color:var(--dim); font-size:12px; }
+.pub-row .v { flex:1 1 auto; min-width:0; word-break:break-word; }
+.pub-row .v.title { font-size:16px; font-weight:700; line-height:1.35; }
+.pub-row .v.tags { color:var(--dim); font-size:12px; line-height:1.5; }
+.pub-row .v.plat code { font-size:11px; }
+.pub-row .v.slot { font-variant-numeric:tabular-nums; }
+/* 排期那一行三种态：待发（默认）／已发（灰下去）／未排期（提示要补） */
+.pub-row .v.slot em { font-style:normal; font-size:11px; padding:1px 6px; border-radius:9px;
+  background:var(--line); color:var(--dim); }
+.pub-row .v.slot.done { color:var(--dim); }
+.pub-row .v.slot.none { color:#B0563F; }
 .film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
   background:#000; display:block; }
 .film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }

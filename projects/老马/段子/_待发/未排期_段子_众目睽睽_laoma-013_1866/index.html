@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>laoma-009 稿件预览</title>
+<title>laoma-013 稿件预览</title>
 <style>
 :root {
   --bg: #f4f1ea; --card: #fffdf8; --ink: #23303d; --dim: #6b7785;
@@ -74,6 +74,24 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
   padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
 /* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
 .film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+/* 成片旁边那栏发片信息（老马线）。**成片固定 250px，剩下全给它** ——
+   关键词那串很长，给固定宽度会一直换行 */
+.film.with-pub { align-items:flex-start; gap:22px; }
+.film.with-pub .film-main { flex:0 0 auto; }
+.film.with-pub .pub { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:9px;
+  border-left:2px solid var(--line); padding-left:16px; }
+.pub-row { display:flex; gap:10px; align-items:baseline; font-size:13px; }
+.pub-row .k { flex:0 0 46px; color:var(--dim); font-size:12px; }
+.pub-row .v { flex:1 1 auto; min-width:0; word-break:break-word; }
+.pub-row .v.title { font-size:16px; font-weight:700; line-height:1.35; }
+.pub-row .v.tags { color:var(--dim); font-size:12px; line-height:1.5; }
+.pub-row .v.plat code { font-size:11px; }
+.pub-row .v.slot { font-variant-numeric:tabular-nums; }
+/* 排期那一行三种态：待发（默认）／已发（灰下去）／未排期（提示要补） */
+.pub-row .v.slot em { font-style:normal; font-size:11px; padding:1px 6px; border-radius:9px;
+  background:var(--line); color:var(--dim); }
+.pub-row .v.slot.done { color:var(--dim); }
+.pub-row .v.slot.none { color:#B0563F; }
 .film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
   background:#000; display:block; }
 .film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
@@ -152,179 +170,132 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 </style>
 </head>
 <body id="top">
-<div class="wrap"><h1>laoma-009</h1>
+<div class="wrap"><h1>laoma-013</h1>
 <p class="sub">成片 · 场景图 · 对话内容 · 音色设置 · 分析思路</p>
-<section class="joke" id="laoma-009">
+<section class="joke" id="laoma-013">
   <header>
-    <h2>laoma-009</h2>
+    <h2>laoma-013</h2>
     <div class="facts">
-      <span>A 类 · meeting-room</span>
-      <span>片长 29.1s</span>
-      <span>笑点 23.6s</span>
-      <span>定格 26.4s</span>
+      <span>A 类 · subway</span>
+      <span>片长 24.7s</span>
+      <span>笑点 15.4s</span>
+      <span>定格 20.6s</span>
       <span>ma=老马</span>
     </div>
   </header>
   
-  <div class="film">
-    <video src="out.mp4" controls preload="metadata" playsinline></video>
-    <div class="film-note">成片　<code>out.mp4</code></div>
-  </div>
+  <div class="film"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div></div>
   <div class="rows"><div class="row">
-  <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">1.3s</span></div>
+  <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
   <div class="talk">
     <div class="beat">铺垫</div>
     <div class="who">ma</div>
-    <p class="text">我们开会有一句话，谁说了这句，这件事就算有人管了</p>
+    <p class="text">出地铁的时候，手机剩百分之三</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">平</span>
       <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 4.72s</div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
   </div>
 </div>
 <div class="row">
-  <div class="shot"><img src="stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">6.5s</span></div>
+  <div class="shot"><img src="stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">4.2s</span></div>
   <div class="talk">
     <div class="beat">铺垫</div>
     <div class="who">ma</div>
-    <p class="text">原话六个字，这个我拉个群。说完就散会</p>
+    <p class="text">到家还有十三分钟的路</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">平</span>
       <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 3.67s</div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
   </div>
 </div>
 <div class="row">
-  <div class="shot"><img src="stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">10.6s</span></div>
+  <div class="shot"><img src="stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">7.5s</span></div>
   <div class="talk">
     <div class="beat">铺垫</div>
     <div class="who">ma</div>
-    <p class="text">群建得特别快，名字带日期，该在的人一个不少</p>
+    <p class="text">老马把亮度调到最低，手机塞进兜里</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">平</span>
       <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 3.94s</div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
   </div>
 </div>
 <div class="row">
-  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">14.9s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">第一条消息是，群拉好了，后续在这里同步</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 3.40s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">19.5s</span></div>
+  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">12.2s</span></div>
   <div class="talk">
     <div class="beat">回应</div>
     <div class="who">ma</div>
-    <p class="text">我手机里，有四十一个这样的群，一个都没退</p>
+    <p class="text">我没有要看的东西</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">平</span>
       <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 3.42s</div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
   </div>
 </div>
 <div class="row punch">
-  <div class="shot"><img src="stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">23.6s</span></div>
+  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">15.4s</span></div>
   <div class="talk">
     <div class="beat">反转 · 笑点</div>
     <div class="who">ma</div>
-    <p class="text">每个群，都还停在<em>第一条</em></p>
+    <p class="text">剩下那十三分钟，我一直在算它还能撑多久</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">叙平</span>
       <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 2.83s</div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
   </div>
 </div></div>
-  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="thumb.png" alt="封面" loading="lazy">
-  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="stills/00-开场.png" alt="开场空镜" loading="lazy">
-  <figcaption>开场空镜　<span class="ts-inline">1.0s</span></figcaption></figure>
+  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.9s</span></figcaption></figure>
 <figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">26.9s</span></figcaption></figure>
+  <figcaption>定格去色　<span class="ts-inline">21.1s</span></figcaption></figure>
 <figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">28.4s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1855 天</strong></div>
+  <figcaption>结尾钩子　<span class="ts-inline">22.9s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1866 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1855 天　落地方案</h2>
+    <h2>老马的第 1866 天　落地方案</h2>
 <blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
 <blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
 <h3>一、稿件定位</h3>
 <ul>
 <li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　一句话就能把一件事从「没人管」变成「有人管」，代价是手机里多一个群 —— 三十七个群，没有一个往下走过一步，包括他自己拉的那些。</li>
-<li><strong>为什么这么分镜</strong>　<strong>一镜到底，不切。</strong> 全片一个人在会议室说话，切镜会把它变成 PPT（SCRIPT_GUIDE §五：一条切换不超过 3 次，这条用 0）。场景选 <code>meeting-room</code>：工位栏目只有两个场景，<strong>007 刚用过 office-desk，隔两条再用太近</strong>（001 → 007 隔了六条），meeting-room 上一次是 005，隔四条。</li>
+<li><strong>一句话讲什么</strong>　（？）</li>
+<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
+<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
 </ul>
-<p>  ⚠ <strong>这条的场景不当道具，是有意的，跟 008 正好相反。</strong> 008 的叫号屏是落点指着的东西（「让场景替台词说话」，老马出片方案 §六之二）；这条落点指的是<strong>手机里的群</strong>，那东西摆不进画面 —— 硬摆一只手机就成了图解台词（§五：「画面出现了台词已经说过的东西，等于抢戏」）。白板只提供一个「他刚开完会」的底。<strong>选哪种做法，看落点指的东西能不能真的进画面。</strong></p>
-<ul>
-<li><strong>不能动的地方</strong></li>
-</ul>
-<p>  - <code>x: 290</code> 站位：跟 001–008 一模一样。<strong>系列里角色的站位要固定</strong></p>
-<p>  - <strong>例二（「群建得特别快，名字带日期，该在的人一个不少」）不能带贬义。</strong> 群确实建得又快又齐，这一句得先立得住，观众才会跟着以为这是执行力，例三和落点才打得下去 —— 跟 007 的「优化以后不用找人了」是同一处机关</p>
-<p>  - ⚠ <strong>「一个不少」不能改回「一个不落」。</strong> 「落」在这儿读 <strong>là</strong>，Edge 默认读 luò，而 <strong>tone-check 查不了它</strong> —— là 和 luò 同为四声，那个脚本比的是基频曲线，两个读音在它眼里一模一样。量不了的音就别用（正音层规矩：同音字替身）</p>
-<p>  - <strong>例三那句群公告要照抄，不能改成人话。</strong> 「群拉好了，后续在这里同步」原样就是群公告体，改顺了反而假；而且落点唯一的凭据就是这句里那个<strong>没人接的「后续」</strong>（§一之三 误导必须公平）</p>
-<p>  - <strong>物件是「群」</strong>（<code>object</code>，出现在第 2、3、4、5、6 五句）。§一之十二：删掉它整条稿子全塌。</p>
-<p>    <strong>全片没有一个字解释它</strong>：为什么一件事必须靠拉群才算有人管？没人说。物件不一定是实物 —— 一个动作也算</p>
-<p>  - <strong>钩子 4 → 回收 6</strong>：第 4 句「<strong>第一条</strong>消息是，群拉好了，后续在这里同步」，第 6 句「都还停在<strong>第一条</strong>」——</p>
-<p>    同一个词，一个字都没换（§一之十四 要求字面复现）</p>
-<p>  - ⚠ <strong>「四十一」不能改回「三十七」。</strong> 007 的转折句是「一共三十七块」，两条只隔两期 ——</p>
-<p>    同一个数出现两次是<strong>最明显的模板痕迹</strong>（§一之十六）。这是数字账本 <code>horse/used-numbers.json</code> 报出来的，</p>
-<p>    不是眼睛看出来的。<strong>改这个数要连封面副标题一起改</strong>：封面不在 lines 里，账本查不到它</p>
-<p>  - <strong>转折句的「一个都没退」不能删。</strong> 没有它，落点就是在数落别人；有了它，三十七个群里他自己也一言未发（§一之十一：写他们是嘲笑，写我才是自嘲）</p>
-<p>  - <strong>落点的「还」不能删。</strong> 「都停在第一条」是静态描述，「都<strong>还</strong>停在第一条」才有「到今天为止」的时间感</p>
-<p>  - <strong>三条例子的 <code>padAfter</code> 必须等长（0.3）</strong>：§四 要「短且等长」，节拍立不住，转折前那半秒就没有对比</p>
-<p>  - 例三之后 <code>closeEyes: 0.9</code>：全片唯一一次闭目。⚠ <code>padAfter: 1.05</code> 是为它加长的，改小会让闭目咬进下一句（体检拦）</p>
-<p>  - <strong>落点「每个群，」后面那 0.4 秒不能删。</strong> 观众在这 0.4 秒里知道要来一个统一的结论，但猜不到是哪一条</p>
-<p>  - <strong>六个字 / 三十七 / 第一条，三个数一个都不能凑成整数</strong>：§一之四，奇数和具体数听起来像真数过</p>
-<p>  - <strong>收尾卡挂灯，不是汗。</strong> §五：想通了一件没用的事用「灯」，自带反讽 —— 他数完三十七个群，得出的结论对生活一点用都没有。汗＝当场被自己抓包（这条他是在盘账，不是被抓；而且前八条已经用了四次汗），问＝账没算清（007 用过，这条账是清的），冷＝僵住发凉（005 用过，这条的底色是发现不是受惊）。参数照抄 004 不换 seed</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:06.1</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们开会有一句话，谁说了这句，这件事就算有人管了</td><td>—</td></tr><tr><td>0:06.5–0:10.2</td><td>同上</td><td><strong>ma</strong>：原话六个字，这个我拉个群。说完就散会</td><td>—</td></tr><tr><td>0:10.6–0:14.5</td><td>同上</td><td><strong>ma</strong>：群建得特别快，名字带日期，该在的人一个不少</td><td>—</td></tr><tr><td>0:14.9–0:18.3</td><td>同上</td><td><strong>ma</strong>：第一条消息是，群拉好了，后续在这里同步</td><td>—</td></tr><tr><td>0:18.4–0:19.3</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:19.5–0:22.9</td><td>同上</td><td><strong>ma</strong>：我手机里，有四十一个这样的群，一个都没退</td><td>—</td></tr><tr><td>0:23.6–0:26.4</td><td>同上</td><td><strong>ma</strong>：每个群，都还停在第一条</td><td>—</td></tr><tr><td>0:26.4–0:29.1</td><td>定格去色 + 钩子字幕「老马的第 1855 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>subway</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:00.0</td><td>场景 <code>subway</code>　在场 ma　单人镜</td><td><strong>ma</strong>：出地铁的时候，手机剩百分之三</td><td>—</td></tr><tr><td>0:04.2–0:04.2</td><td>同上</td><td><strong>ma</strong>：到家还有十三分钟的路</td><td>—</td></tr><tr><td>0:07.5–0:07.5</td><td>同上</td><td><strong>ma</strong>：老马把亮度调到最低，手机塞进兜里</td><td>—</td></tr><tr><td>0:12.2–0:12.2</td><td>同上</td><td><strong>ma</strong>：我没有要看的东西</td><td>—</td></tr><tr><td>0:15.4–0:15.4</td><td>同上</td><td><strong>ma</strong>：剩下那十三分钟，我一直在算它还能撑多久</td><td>—</td></tr><tr><td>0:20.6–0:24.7</td><td>定格去色 + 钩子字幕「老马的第 1866 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>meeting-room</code></p>
+<p><strong>场景</strong>　<code>subway</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 29.08s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 24.69s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
 <li><strong>标题候选</strong></li>
 </ul>
-<p>  1. <code>我们开会有一句话，说完这件事就算有人管了</code>　←主选</p>
-<p>  2. <code>我手机里有三十七个群</code></p>
-<p>  3. <code>原话六个字，这个我拉个群</code></p>
+<p>  1. （？）</p>
+<p>  2. （？）</p>
+<p>  3. （？）</p>
 <ul>
-<li><strong>为什么是第 1 个</strong>　它是钩子原句，<strong>先给效果不给那句话</strong>，悬念全留在片子里 —— 而观众里凡是坐过班的，读到这儿脑子里已经在猜是哪一句了，点进来是为了对答案。跟封面大字「我拉个群」唱双簧：大字把那句话抖出来，标题给它的效力，两边都不碰落点。第 2 个把三十七这个数抖在标题上，转折句就不新鲜了；第 3 个最像那句原话，但它是揭晓句，用掉之后片子里那一下就没了。</li>
-<li><strong>副标题</strong>　<code>老马 · 工位　群建得特别快，名字带日期</code></li>
-<li><strong>内容关键词</strong>　拉群 / 开会 / 微信群 / 工作群 / 打工人</li>
-<li><strong>热度关键词</strong>　工作群 / 开会 / 微信群 / 职场黑话 / 打工人日常</li>
-<li><strong>话题标签</strong>　#工作群 #开会 #职场</li>
-<li><strong>简介</strong></li>
-</ul>
-<p>  &gt; 我们开会有一句话，谁说了这句，这件事就算有人管了。</p>
-<p>  &gt;</p>
-<p>  &gt; 原话六个字：这个我拉个群。说完就散会。</p>
-<p>  &gt; 群建得特别快，名字带日期，该在的人一个不少。第一条消息是「群拉好了，后续在这里同步」。</p>
-<ul>
-<li><strong>封面大字</strong>　<code>我拉个群</code>（副标题 <code>四十一个</code>，跟台词同步改过）</li>
+<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
+<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
+<li><strong>话题标签</strong>　（？#xxx）</li>
+<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>封面大字</strong>　``</li>
 </ul>
 <h3>五、人工核对</h3>
 <ul>

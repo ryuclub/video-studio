@@ -23,6 +23,9 @@
 | `compose.mjs` | 把角色叠到任意背景上，站位用画布比例；漫符也在这一层合成 |
 | `marks.mjs` | 漫符：吃惊/汗/无语等 10 个手绘小符号 ＋ 挂到头两侧的定位器。`node render.mjs --marks` 出一览图 |
 | `objects.mjs` | 首帧物件特写库（出场档 ③ 专用）。名字不在库里 `drawObject()` 直接抛，体检也拦 |
+| `dressing.mjs` | **场景摆件**：桌上按天数号随机摆一两件（笔/纸/杯/电脑/文件夹/手机）。**稿件的 `object` 永远不摆** —— 那是图解台词 |
+| `plaque.mjs` | **标题牌匾**：木牌/贴纸/便签，或征用场景原有的屏。老马线走 `titleAbove()`，只挑字幕带以上的位 |
+| `curtain.mjs` | 开场幕布，头 0.45 秒拉开。挂在 `render.ts` 的**两处**返回点 |
 | `used-numbers.json` | 数字账本。由 `laoma:check --commit` 写 |
 | `render.mjs` | 命令行入口 |
 

@@ -1,5 +1,13 @@
 # 音色实验室 voicelab
 
+> **起它：在仓库根一条命令，不用 cd。**
+>
+> ```bash
+> npm run lab -w voice-clone        # → http://localhost:5178
+> ```
+>
+> 第一次先 `npm run doctor -w voice-clone`（见「装」）。RUNBOOK 顶上也有这条。
+
 本地跑的角色音色工作台。两段链路：
 
 ```
@@ -12,9 +20,11 @@
 ## 装
 
 ```bash
-npm install
+npm install         # ⚠ 在**仓库根**装，不要在这个子目录里装（它是 npm workspace）
 npm run doctor      # 查 ffmpeg / rubberband / Node
 ```
+
+**在根目录跑的话**：`npm i` ／ `npm run doctor -w voice-clone`。
 
 `doctor` 必须看到 **rubberband 可用**。这个滤镜是编译期可选项，很多 ffmpeg
 发行版没带。缺了会自动退化成「音高与共振峰锁死」模式，也能出声，但角色区分度
@@ -23,7 +33,7 @@ npm run doctor      # 查 ffmpeg / rubberband / Node
 ## 用
 
 ```bash
-npm run lab                          # 网页试听台 → http://localhost:5178
+npm run lab                          # 网页试听台 → http://localhost:5178（根目录：npm run lab -w voice-clone）
 npm run all -- "你的真实台词"          # 批量生成全部 27 个到 out/ + manifest.json
 npm run one -- narrator "你的台词"     # 只生成一个
 npm run voices                       # 现拉可用的基础音色清单（中文/日语）

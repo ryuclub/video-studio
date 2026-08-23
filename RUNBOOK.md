@@ -35,6 +35,23 @@ README 讲的是「这套东西怎么用」，这份讲的是「今天这条片�
 >   **它跟各线的片头首帧是两张图**，别拿一套素材两处用。
 >
 > **换机器或新人上手**：先 `npm run doctor` 自检环境，要求见 [README 的「运行环境」](README.md#运行环境)。
+>
+> **音色实验室（试新角色的声音）** —— 在**仓库根**一条命令，不用 cd：
+>
+> ```bash
+> npm run lab -w voice-clone        # → http://localhost:5178
+> ```
+>
+> 台词 →〔Edge TTS〕→ 基础人声 →〔ffmpeg 变声〕→ 角色音色。27 个预设，
+> 网页上拖「音色地图」调音高与共振峰，满意的收藏后导出 `voice-clone/out/voices.selected.json`。
+> 文档 [`voice-clone/README.md`](voice-clone/README.md)。
+>
+> ⚠ 第一次先跑 `npm run doctor -w voice-clone`，**必须看到「rubberband 滤镜：可用」**——
+> 缺了会静默退化成「音高与共振峰锁死」，还是出声，但角色区分度明显打折（本质是变速带效果）。
+>
+> ⚠ **已定稿的角色不在这儿改**：老马 / 段子 / 儿童故事那几条线的音色在
+> `joke-video/src/cast.ts` 的共享预设里，改它要跑 `npm run cast:check`。
+> 实验室是**试新角色**用的。
 
 ---
 

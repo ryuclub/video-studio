@@ -74,6 +74,24 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
   padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
 /* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
 .film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+/* 成片旁边那栏发片信息（老马线）。**成片固定 250px，剩下全给它** ——
+   关键词那串很长，给固定宽度会一直换行 */
+.film.with-pub { align-items:flex-start; gap:22px; }
+.film.with-pub .film-main { flex:0 0 auto; }
+.film.with-pub .pub { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:9px;
+  border-left:2px solid var(--line); padding-left:16px; }
+.pub-row { display:flex; gap:10px; align-items:baseline; font-size:13px; }
+.pub-row .k { flex:0 0 46px; color:var(--dim); font-size:12px; }
+.pub-row .v { flex:1 1 auto; min-width:0; word-break:break-word; }
+.pub-row .v.title { font-size:16px; font-weight:700; line-height:1.35; }
+.pub-row .v.tags { color:var(--dim); font-size:12px; line-height:1.5; }
+.pub-row .v.plat code { font-size:11px; }
+.pub-row .v.slot { font-variant-numeric:tabular-nums; }
+/* 排期那一行三种态：待发（默认）／已发（灰下去）／未排期（提示要补） */
+.pub-row .v.slot em { font-style:normal; font-size:11px; padding:1px 6px; border-radius:9px;
+  background:var(--line); color:var(--dim); }
+.pub-row .v.slot.done { color:var(--dim); }
+.pub-row .v.slot.none { color:#B0563F; }
 .film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
   background:#000; display:block; }
 .film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
@@ -166,7 +184,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     </div>
   </header>
   
-  <div class="film-none">还没出片　<code>npm run build</code></div>
+  <div class="film"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div></div>
   <div class="rows"><div class="row">
   <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">3.4s</span></div>
   <div class="talk">

@@ -212,10 +212,21 @@ function subway(s = 7) {
 function hospital(s = 8) {
   let o = head();
   o += wainscot(s);
-  // 叫号屏：1.3 人高，靠右
-  o += shape(rectPts(560, up(1.26), 470, 230), { fill: DARK, hatchGap: 0, seed: s + 1, w: 4.2 });
-  o += `<text x="795" y="${up(1.26) + 112}" font-family="Noto Sans CJK SC Black, sans-serif" font-size="70" fill="${AMBER}" text-anchor="middle">A047</text>`;
-  o += `<text x="795" y="${up(1.26) + 180}" font-family="Noto Sans CJK SC, sans-serif" font-size="40" fill="#9A9184" text-anchor="middle">前面还有 23 位</text>`;
+  // 叫号屏：1.26 人高，靠右（屏顶 y≈89，屏底 y≈241）
+  //
+  // ⚠ **屏底必须停在 y≈250 以上，这个高度是量出来的、不是随手定的。**
+  // 收尾卡的钩子字幕画死在 y=250（render.ts 的 hookStrip 调用），字号 52、居中，
+  // 「老马的第 1854 天」实测横跨 x 324–756、墨迹 y 268–313。
+  // 原来这块屏是 470×230（y 89–319），跟那行字**正好叠在一起** ——
+  // 而且屏是 DARK、钩子是藏青，字直接看不见。
+  // 电梯那块屏顶上写过同一条教训（「场景里靠上的元素跟收尾卡是同一片地」），
+  // 那次是渲出来才发现的；这次是 008 用这个场景之前先量的。
+  //
+  // 压的是高度不是位置：屏必须留在头顶那片空墙上，往下挪就撞脸，往右挪就没地方排字。
+  // 230 → 152，两行字跟着缩一档（70→64 / 40→34），上下留白 36 / 14。
+  o += shape(rectPts(560, up(1.26), 470, 152), { fill: DARK, hatchGap: 0, seed: s + 1, w: 4.2 });
+  o += `<text x="795" y="${up(1.26) + 82}" font-family="Noto Sans CJK SC Black, sans-serif" font-size="64" fill="${AMBER}" text-anchor="middle">A047</text>`;
+  o += `<text x="795" y="${up(1.26) + 130}" font-family="Noto Sans CJK SC, sans-serif" font-size="34" fill="#9A9184" text-anchor="middle">前面还有 23 位</text>`;
   // 排椅：座高 0.26，靠背 0.5
   for (let i = 0; i < 3; i++) {
     const x = 420 + i * 230;

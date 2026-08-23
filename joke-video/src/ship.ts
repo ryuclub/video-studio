@@ -28,7 +28,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { buildTimeline } from './beats/typeA.js';
 import { buildTimelineB } from './beats/typeB.js';
 import { lineText, type JokeCfg, type Timeline } from './types.js';
-import { findProjectDir, projectDir } from './preview.js';
+import { findProjectDir, projectDir, filmFile, audioFile, coverFile } from './preview.js';
 import { unfilled } from './plan.js';
 
 // 直接拿 node 跑 tsx 的入口，不走 npx + shell —— 路径里迟早出现空格，
@@ -158,7 +158,7 @@ for (const s of STEPS) {
 const dir = findProjectDir(cfg) ?? projectDir(cfg);
 const want = check
   ? [`${dir}/${cfg.id}-试听.wav`, `${dir}/方案.md`, `${dir}/index.html`, `${dir}/stills`]
-  : [`${dir}/${cfg.id}.mp4`, `${dir}/${cfg.id}-audio.wav`, `${dir}/cover/${cfg.id}-9x16.png`, `${dir}/方案.md`, `${dir}/index.html`];
+  : [`${dir}/${filmFile(cfg)}`, `${dir}/${audioFile(cfg)}`, `${dir}/${coverFile(cfg)}`, `${dir}/方案.md`, `${dir}/index.html`];
 
 console.log(`\n${'═'.repeat(58)}`);
 console.log(`完成，用时 ${((Date.now() - t0) / 1000 / 60).toFixed(1)} 分钟`);

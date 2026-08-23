@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#F4EFE6"/>
+  
+  <rect x="384" y="100.8" width="768" height="432" fill="#C4A882" opacity="0.15"/>
+  <rect x="442" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="500" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="558" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="616" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="674" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="732" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="790" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="848" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="906" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="964" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="1022" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="1080" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="1138" y="100.8" width="2" height="432" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="384" y="158.8" width="768" height="2" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="384" y="216.8" width="768" height="2" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="384" y="274.8" width="768" height="2" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="384" y="332.8" width="768" height="2" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="384" y="390.8" width="768" height="2" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="384" y="448.8" width="768" height="2" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="384" y="506.8" width="768" height="2" fill="#F4EFE6" opacity="0.85"/>
+  <rect x="377" y="93.8" width="782" height="446"
+        fill="none" stroke="#C4A882" stroke-width="14" opacity="0.45"/>
+  <g transform="translate(533.64,182.88) scale(3.72)">
+    <ellipse cx="32" cy="20" rx="26" ry="8" fill="none" stroke="#8C6A4A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 6 20 L 6 52 A 26 8 0 0 0 58 52 L 58 20" fill="none" stroke="#8C6A4A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 6 36 A 26 8 0 0 0 58 36" fill="none" stroke="#8C6A4A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="100" cy="40" r="25" fill="none" stroke="#8C6A4A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 100 15 A 25 25 0 0 0 100 65 Z" fill="#8C6A4A" stroke="none"/></g>
+    
+    <text x="168" y="184.32" font-family="Noto Serif CJK SC" font-weight="600" font-size="96" fill="#2E2A26" text-anchor="middle">第</text>
+    <text x="168" y="297.6" font-family="Noto Serif CJK SC" font-weight="600" font-size="96" fill="#2E2A26" text-anchor="middle">七</text>
+    <text x="168" y="410.88" font-family="Noto Serif CJK SC" font-weight="600" font-size="96" fill="#2E2A26" text-anchor="middle">个</text>
+    <text x="168" y="524.16" font-family="Noto Serif CJK SC" font-weight="600" font-size="96" fill="#2E2A26" text-anchor="middle">饼</text>
+    <rect x="138.24" y="572.16" width="59.52" height="59.52" rx="29.76" fill="#B33A28"/><text x="168" y="615.01" font-family="Noto Serif CJK SC" font-weight="500" font-size="36.9" fill="#F4EFE6" text-anchor="middle">醒</text>
+  <text x="384" y="629" font-family="Noto Serif CJK SC" font-weight="400" font-size="25" fill="#C4A882">他后悔的是前面六个</text>
+  <rect x="96" y="659" width="1088" height="3" rx="1.5"
+        fill="#C4A882" opacity="0.5"/>
+  <rect x="96" y="659" width="369.92" height="3" rx="1.5" fill="#8C6A4A"/>
+</svg>

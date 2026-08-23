@@ -20,7 +20,16 @@ export function buildTimeline(cfg: JokeCfg): Timeline {
 }
 
 function buildTimelineA(cfg: JokeCfg): Timeline {
-  const intro = cfg.intro ?? 2.0;
+  /**
+   * 「先出声，后出人」这一档**没有开场空镜**：`intro = 0`，
+   * 第 1 句的 `padBefore` 也压成 0 —— 音轨从 0.0 起，
+   * 黑底大字和第一个字必须同时到，差半帧就露馅（见 `types.ts` 的 `opening`）。
+   *
+   * ⚠ 写了 `cfg.intro` 也不生效，**这是有意的**：这一档里「空镜多久」
+   * 不再是一个可调的数，它恒等于零。留着那个旋钮只会让人以为还能调。
+   */
+  const voiceFirst = isVoiceFirst(cfg);
+  const intro = introOf(cfg);
   const freezeDur = cfg.freeze ?? 2.0;
   const holdDur = cfg.hold ?? 4.0;
 
@@ -32,7 +41,7 @@ function buildTimelineA(cfg: JokeCfg): Timeline {
   let punchEnd = intro;
 
   cfg.lines.forEach((line, i) => {
-    const padBefore = line.padBefore ?? (line.beat === 'punch' ? 0.4 : 0.15);
+    const padBefore = voiceFirst && i === 0 ? 0 : line.padBefore ?? (line.beat === 'punch' ? 0.4 : 0.15);
     const dur = line.dur ?? estimateDur(lineText(line));
     const padAfter = line.padAfter ?? (line.beat === 'punch' ? 0.35 : 0.2);
     const start = t + padBefore;
@@ -69,9 +78,108 @@ function buildTimelineA(cfg: JokeCfg): Timeline {
     sfx.push({ name: 'cicada', at: freezeStart + 0.25, until: duration });
   }
   // 开场的一声"嘶"（蛇专属，换成人物记得关掉）
-  if (cfg.cues?.introHiss ?? true) sfx.push({ name: 'hiss', at: intro * 0.55 });
+  // ⚠ intro 为 0 时不出：那一声本来是垫在空镜上的，没有空镜就直接压在第一个字上了
+  if ((cfg.cues?.introHiss ?? true) && intro > 0) sfx.push({ name: 'hiss', at: intro * 0.55 });
 
   return { cfg, segments, duration, punchStart, punchEnd, freezeStart, sfx };
+}
+
+/**
+ * **有效 intro**（开场空镜多长）。
+ *
+ * ⚠ **别再直接读 `cfg.intro`。** 「先出声，后出人」那一档里空镜恒等于零，
+ * 而 `cfg.intro` 里那个 1.2 还留着（稿子是从老样子改过来的，没人会记得去删）。
+ * 直接读它的地方会拿到一个跟时间轴对不上的数 —— 眨眼和眼动的排程按 1.2 起算、
+ * 实际画面 0.0 就在说话，整条错位 1.2 秒，**而且不报错**。
+ */
+export function introOf(cfg: JokeCfg): number {
+  return isVoiceFirst(cfg) ? 0 : cfg.intro ?? 2.0;
+}
+
+/**
+ * 「先出声」那两档（② 场景 / ③ 物件）。**它们的时间轴一模一样** ——
+ * 音轨 0.0 起、没有空镜、第 1 句说完人才滑进来；差别只在第 1 句期间画面上是什么。
+ *
+ * ⚠ **凡是判「是不是先出声」的地方都走这个函数，别写 `=== 'voice-first'`。**
+ * 加档 ③ 的时候就漏了两处（`introOf` 和第 1 句 padBefore 归零），
+ * 后果是 007 的音轨还是从 1.35 秒起 —— **而画面照常从 0.0 出首帧**，
+ * 字和声音差了一秒半。这种错不报错，只能靠眼睛和 ffmpeg 量出来。
+ */
+export function isVoiceFirst(cfg: JokeCfg): boolean {
+  const s = openingStyleOf(cfg);
+  return s === 'voice-first' || s === 'object-first';
+}
+
+/**
+ * **有效出场档。** 写了就按写的；没写的，看它是不是老马线。
+ *
+ * ── 为什么缺省是 ③ 而不是 ① ──
+ *
+ * 2026-08-22 翻的默认。档 ① 那 1.3 秒无声入场动画是**已知在掉数据**的东西
+ * （首帧规范 v1 开篇：2 秒跳出 50–80%），把它留在缺省位上，等于
+ * 「不特别注明就用那个已知有问题的开场」。**缺省该是当下最好的做法。**
+ *
+ * ⚠ **只对老马线翻。** 判据是 `rig === 'horse'`，跟 `cover.ts`、`yiye-publish.ts`
+ * 分流用的是同一条。段子和《一页故事》没有出场档这回事，缺省永远是 ①ted——
+ * 不加这个判断的话，那两条线会跟着变成「音轨从 0.0 起、没有空镜」，一条都跑不通。
+ *
+ * ⚠ **翻默认的同时，001–006 和 009 全部补了显式的 `figure-first`。**
+ * 那七条是靠「不写 = ①」跑的，默认一变它们就跟着变档，而且每一条都缺
+ * `frameSubject`/`frameText` —— 一次静默地把七条已出片判成不合格的改动。
+ * **改缺省值这件事，配套动作永远是「先把靠旧缺省活着的都钉死」。**
+ */
+export function openingStyleOf(cfg: JokeCfg): 'figure-first' | 'voice-first' | 'object-first' {
+  if (cfg.opening?.style) return cfg.opening.style;
+  return cfg.characters?.some((c) => c.rig === 'horse') ? 'object-first' : 'figure-first';
+}
+
+/**
+ * 「先出声，后出人」那张黑底大字卡：它盖到什么时候、上面写什么、人滑多久。
+ *
+ * **不是这一档就返回 null**，调用方按 null 走老路径 —— 老样子那条线
+ * （001–009 全部）一个分支都不进。
+ *
+ * ⚠ **下沿取第 1 句配音停的那一刻，不含 padAfter。**
+ *
+ * 先按 segment 的 end 做过（含 0.35 秒 padAfter），理由是「让那句话沉下去」。
+ * **看下来那 0.35 秒是多的**：字已经读完了，人还没进来，画面停在那儿等 ——
+ * 这条线的停顿是留给画面的（SCRIPT_GUIDE §五），而这一档在那半秒里画面上
+ * 什么都不发生。改成句尾即切之后，**他是在这半秒的静音里滑进来的**，
+ * 那半拍反而有了内容。
+ */
+export function openSpan(
+  tl: Timeline
+): { end: number; text: string; slide: number; style: 'voice-first' | 'object-first'; subject?: string } | null {
+  const style = openingStyleOf(tl.cfg);
+  if (style === 'figure-first') return null;
+  const op: NonNullable<JokeCfg['opening']> = tl.cfg.opening ?? { style };
+  const first = tl.segments.find((s) => s.kind === 'line' && s.lineIndex === 0);
+  if (!first?.line) return null;
+  const speechEnd = first.start + (first.line.dur ?? estimateDur(lineText(first.line)));
+  // ⚠ 档 ③ 的首帧字走 `frameText`（首帧规范 §一 那三条硬约束都核它），
+  // 档 ② 走 `card`。两个字段不合并 —— 它们的约束不一样：
+  // `frameText` 必须 ≤8 字、必须是第 1 句的连续子串；`card` 只是「挑一小句」。
+  const text = style === 'object-first' ? op.frameText ?? autoCard(tl.cfg) : op.card ?? autoCard(tl.cfg);
+  return { end: speechEnd, text, slide: op.slide ?? 0.9, style, subject: op.frameSubject };
+}
+
+/**
+ * 卡上写什么：**第 1 句里带数字的那一小句**。
+ *
+ * 数字是这一档的全部理由 —— 首帧要的就是一个具体的数摆在黑底上
+ * （008 挑出来是「前面还有二十三位」）。一句都不带数字就退到最后一小句，
+ * 那通常是第 1 句的落脚处。
+ *
+ * ⚠ 只挑一句、全程不换字。第 1 句常有三小句，逐屏换的话那个数就跑到后面去了，
+ * 首帧上就没有它 —— 这一档也就白做了。
+ */
+function autoCard(cfg: JokeCfg): string {
+  const first = cfg.lines[0];
+  const parts = (first.say?.map((s) => s.text) ?? [lineText(first)])
+    .map((t) => t.replace(/[，。、！？：；]+$/g, '').trim())
+    .filter(Boolean);
+  const withNum = parts.find((t) => /[\d零一二两三四五六七八九十百千万]/.test(t));
+  return withNum ?? parts[parts.length - 1] ?? lineText(first);
 }
 
 export function segAt(tl: Timeline, t: number): Segment {

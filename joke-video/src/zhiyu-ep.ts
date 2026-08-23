@@ -12,12 +12,32 @@
 // 目录长这样：`projects/治愈/<日期>_<书名拼音>/`
 // 简写匹配：`--ep makura` 或 `--ep 枕草子` 都认得出。
 
-import { OUT_ZHIYU } from './paths.js';
+import { LINES, DEFAULT_LINE, type Line } from './zhiyu-lines.js';
 import { readdirSync, existsSync, statSync, readFileSync } from 'node:fs';
 
-const ROOT = OUT_ZHIYU;
+// ── 三条线共用这条管线，靠 --line 分流 ──────────────────────────────
+//
+// 治愈（旁白书）和心理洞察（现象型/清单体）**骨架完全一样**：
+// 和纸底、木格窗框、竖排标题、印章、进度线、蜗牛，一份代码。
+// 差别只有色板和镜位集，那两样在 zhiyu-scene.ts 里按 line 取。
+//
+// **缺省是治愈**，所以既有的八个脚本一个字都不用改，命令也照旧。
+// 要心理线就多给一个 --line 心理。
+
+const lineArg = process.argv.indexOf('--line');
+export const LINE = lineArg >= 0 ? process.argv[lineArg + 1] : DEFAULT_LINE;
+if (!LINES[LINE])
+  throw new Error(`没有这条线：${LINE}
+可选：${Object.keys(LINES).join(" / ")}`);
+
+/** 当前线路的全部差异。**加第三条线只改 zhiyu-lines.ts** */
+export const DEF: Line = LINES[LINE];
+
+const ROOT = DEF.out;
 
 export interface Ep {
+  /** 哪条线。治愈 / 心理 */
+  line: string;
   /** 目录名，如 2026-08-19_hojoki */
   id: string;
   /** 相对 joke-video/ 的目录路径 */
@@ -41,7 +61,7 @@ export function listEps(): string[] {
   return readdirSync(ROOT).filter((d) => statSync(`${ROOT}/${d}`).isDirectory());
 }
 
-const asEp = (id: string): Ep => ({ id, dir: `${ROOT}/${id}`, book: bookOf(id) });
+const asEp = (id: string): Ep => ({ line: LINE, id, dir: `${ROOT}/${id}`, book: bookOf(id) });
 
 /**
  * 从命令行解析是哪一本。
@@ -54,7 +74,7 @@ export function resolveEp(argv: string[]): Ep {
   const i = argv.indexOf('--ep');
   const hint = i >= 0 ? argv[i + 1] : undefined;
   const all = listEps();
-  if (!all.length) throw new Error(`${ROOT} 下一本书都没有`);
+  if (!all.length) throw new Error(`${ROOT} 下一本书都没有（--line ${LINE}）`);
 
   if (!hint)
     throw new Error(

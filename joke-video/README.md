@@ -260,7 +260,8 @@ npm run align -- jokes/snake-poison.json     # 去首尾静音 → 回填真实�
 npm run build -- jokes/snake-poison.json     # 正式出片，一次搞定
 ```
 
-成片和音轨直接落到 `../projects/段子与儿童故事/<日期>_<id>/`，不在 `out/`：
+成片和音轨直接落到 `../projects/段子与儿童故事/<日期>_<id>/`，不在 `out/`
+（**老马那条线例外**，见下）：
 
 ```
 ../projects/段子与儿童故事/2026-08-18_snake-poison/snake-poison.mp4      成片
@@ -292,6 +293,11 @@ npm run preview                               # 汇总所有稿件到一页
 ```
 
 产物落在 `../projects/段子与儿童故事/<日期>_<id>/`。四条线的成品都收在根级 `projects/<类型>/`，见 [projects/README.md](../projects/README.md)。
+
+> ⚠ **老马（碎嘴老马）不落这儿。** 那条线的成品在
+> `../projects/老马/段子/{_待发,_已发}/<日期>_<时刻>JST_段子_<名称>_<天数号>/`，
+> 成片叫 `out.mp4`、封面叫 `thumb.png` —— **那棵树同时是发布排期账本**
+> （[horse/SCHEDULE.md](horse/SCHEDULE.md)）。汇总页也是自己一张：`projects/老马/index.html`。
 **一条片子的东西全在一个目录里**——成片、音轨、场景图、分析、留档配置：
 
 ```

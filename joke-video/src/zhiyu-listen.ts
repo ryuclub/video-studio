@@ -24,10 +24,11 @@ import {
   ROOM_TONE_DBFS, SPEECH_LUFS, BGM_LUFS, FADE_IN, FADE_OUT, CHAIN,
   stripMarks, suspectMarks,
 } from './zhiyu-audio.js';
-import { resolveEp } from './zhiyu-ep.js';
+import { resolveEp, DEF } from './zhiyu-ep.js';
 import { mkdirSync, writeFileSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { synthesizeJoke } from './tts.js';
+import { zhengyin, report, type YinTable } from './zhengyin.js';
 import { CASTS } from './cast.js';
 import { getBeat } from './zhiyu-beat.js';
 import { readWav, writeWav } from './audio/wav.js';
@@ -41,7 +42,14 @@ const arg = (k: string, d: string) => {
   const i = argv.indexOf(`--${k}`);
   return i >= 0 ? argv[i + 1] : d;
 };
-const BGM_FILE = `../zhiyu/musics/${arg('bgm', '1')}.wav`;
+/**
+ * 床音。**不写 `--bgm` 就跟成片同源**（`zhiyu-lines.ts` 的 `defaultBed`）。
+ *
+ * 原来这儿硬写 `1.wav` 当缺省 —— 治愈线碰巧就是它，所以一直没露馅；
+ * 心理和禅佛典的缺省早就不是它了，**试听过了的调性和成片不是一回事**，
+ * 正是这个文件和 `zhiyu-audio.ts` 开头都在防的那件事。
+ */
+const BGM_FILE = argv.includes('--bgm') ? `../zhiyu/musics/${arg('bgm', '1')}.wav` : DEF.defaultBed;
 const TEXT = arg('text', '幕一-三米见方.md');
 const TEXT_FILE = `${PROJ}/${TEXT}`;
 /**
@@ -53,7 +61,8 @@ const NAME = TEXT.replace(/\.md$/, '');
 const OUT = `${PROJ}/listen/${NAME}`;
 const TMP = `${OUT}/_tmp`;
 
-const CAST = '夜读';
+/** 主讲音色。**唯一出处是 zhiyu-lines.ts** —— 抄一份就会跟成片分叉 */
+const CAST = DEF.cast;
 
 // 底噪电平、后期链、响度目标、音乐床 —— **全部从 zhiyu-audio.ts 来**。
 // 这里一度各留了一份，结果整期出片改到 −40 之后，试听件还在 −42：
@@ -108,6 +117,11 @@ async function main() {
   if (!existsSync(BGM_FILE)) throw new Error(`没有这个音乐：${BGM_FILE}`);
   mkdirSync(TMP, { recursive: true });
 
+  // 试听不读 发布.json（它只要一幕），但正音表在那儿 ——
+  // **不读的话试听和成片会是两个读音**，而这正是 zhiyu-audio.ts 顶上警告过的那类分叉。
+  const PUB = `${PROJ}/发布.json`;
+  const doc = existsSync(PUB) ? (JSON.parse(readFileSync(PUB, 'utf8')) as { 正音?: YinTable }) : {};
+
   const blocks = loadScript(TEXT_FILE);
   const says = blocks.filter((b): b is { kind: 'say'; text: string } => b.kind === 'say');
   const chars = says.reduce((s, b) => s + [...b.text.replace(/\s/g, '')].length, 0);
@@ -124,12 +138,21 @@ async function main() {
 
   // ── 合成 ──
   const id = `_zhiyu/${EP}-${NAME}`;
+  // 正音：只换送给 TTS 的字，字幕和画面上的仍是原文。见 zhengyin.ts 顶上那段实测
+  const yin = says.map((b) => zhengyin(b.text, doc.正音));
+  const allHits = yin.flatMap((y) => y.hits);
+  if (allHits.length) {
+    console.log(`正音 ${allHits.length} 处（只改送给 TTS 的文本）：`);
+    for (const l of report(allHits)) console.log(l);
+    console.log('');
+  }
+
   await synthesizeJoke({
     id,
     type: 'B',
     scene: 'abstract',
     characters: [{ id: '_', rig: 'none', side: 'left', cast: CAST }],
-    lines: says.map((b) => ({ who: '_', text: b.text, beat: 'setup' as const })),
+    lines: yin.map((y) => ({ who: '_', text: y.tts, beat: 'setup' as const })),
   });
 
   const parts = says.map((_, i) => readWav(`voice/${id}/${i + 1}-_.wav`).data);

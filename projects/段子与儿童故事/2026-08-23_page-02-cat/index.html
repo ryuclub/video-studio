@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>page-02-cat 稿件预览</title>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #fffdf8; --ink: #23303d; --dim: #6b7785;
+  --line: #e0dace; --accent: #1f3a5f; --hot: #c8452e; --gold: #d8a53a;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171a1d; --card:#20252a; --ink:#e8e4da; --dim:#9aa4ae;
+          --line:#2f363d; --accent:#7fa8d8; --hot:#e2694f; --gold:#e0b954; }
+}
+* { box-sizing: border-box; }
+body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+/* 有侧栏时改成两栏；没侧栏（单条稿件页）时 .wrap 保持原样居中 */
+.layout { max-width: 1360px; margin:0 auto; display:grid;
+  grid-template-columns: 250px minmax(0,1fr); gap:34px; align-items:start; }
+.layout > .wrap { max-width:none; margin:0; }
+
+/* ── 左侧稿件导航 ── */
+.side { position:sticky; top:24px; max-height:calc(100vh - 48px);
+  display:flex; flex-direction:column; background:var(--card);
+  border:1px solid var(--line); border-radius:14px; padding:16px 12px 12px; }
+.side-head { font-size:13px; font-weight:700; color:var(--dim); letter-spacing:1px;
+  padding:0 8px 12px; border-bottom:1px solid var(--line); margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between; }
+.side-count { background:var(--accent); color:#fff; font-size:11px; font-weight:600;
+  min-width:20px; height:20px; padding:0 6px; border-radius:10px;
+  display:inline-flex; align-items:center; justify-content:center; }
+/* min-height:0 不能省：flex 子项默认不肯缩到内容高度以下，
+   少了它 overflow-y 不生效，稿件一多侧栏就会顶穿 max-height */
+.side-list { overflow-y:auto; min-height:0; display:flex; flex-direction:column; gap:4px; }
+.nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
+  text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
+.nav-item:hover { background:rgba(127,127,127,.1); }
+.nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
+/* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
+@media (prefers-color-scheme: dark) {
+  .nav-item.active { background:rgba(127,168,216,.16); }
+}
+.nav-thumb { width:34px; height:60px; object-fit:cover; border-radius:5px;
+  border:1px solid var(--line); flex:none; display:block; }
+.nav-thumb.ph { background:rgba(127,127,127,.12); }
+.nav-body { display:flex; flex-direction:column; min-width:0; gap:1px; }
+.nav-title { font-size:13px; font-weight:700; line-height:1.35;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* 序号做成小方牌：目录长了之后"第几条"比标题更快定位 */
+.nav-num { display:inline-block; min-width:15px; margin-right:5px; padding:0 3px;
+  border-radius:3px; background:var(--accent); color:#fff;
+  font-size:10px; font-weight:700; text-align:center; vertical-align:1px; }
+.nav-date { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+.nav-meta { font-size:11px; color:var(--dim); }
+.nav-cast { font-size:11px; color:var(--accent); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.side-top { margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+  font-size:12px; color:var(--dim); text-decoration:none; text-align:center; }
+.side-top:hover { color:var(--accent); }
+/* 锚点跳转时标题不被贴顶 */
+.joke { scroll-margin-top:24px; }
+h1 { font-size:26px; margin:0 0 6px; letter-spacing:.5px; }
+.sub { color:var(--dim); margin:0 0 32px; font-size:14px; }
+.joke { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:24px 26px 20px; margin-bottom:34px; }
+.joke > header { border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:20px; }
+h2 { font-size:20px; margin:0 0 8px; }
+h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
+.facts { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--dim); font-size:13px; }
+.alarm { background:rgba(200,69,46,.1); border-left:3px solid var(--hot);
+  padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
+/* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
+.film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+.film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
+  background:#000; display:block; }
+.film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
+.film-none { color:var(--dim); font-size:13px; margin-bottom:20px;
+  padding:10px 14px; border:1px dashed var(--line); border-radius:8px; }
+.rows { display:flex; flex-direction:column; gap:18px; }
+.row { display:grid; grid-template-columns:150px 1fr; gap:20px; align-items:start;
+  padding:14px; border-radius:10px; border:1px solid transparent; }
+.row.punch { border-color:var(--gold); background:rgba(216,165,58,.07); }
+.shot { position:relative; }
+.shot img { width:100%; border-radius:8px; display:block; border:1px solid var(--line); }
+.noshot { aspect-ratio:9/16; display:grid; place-items:center; color:var(--dim);
+  border:1px dashed var(--line); border-radius:8px; font-size:12px; }
+.ts { position:absolute; left:6px; bottom:6px; background:rgba(0,0,0,.6); color:#fff;
+  font-size:11px; padding:1px 6px; border-radius:4px; }
+.beat { font-size:12px; color:var(--dim); letter-spacing:1px; }
+.who { font-weight:700; color:var(--accent); margin:2px 0 6px; }
+.text { font-size:18px; margin:0 0 10px; line-height:1.6; }
+.text em { font-style:normal; color:var(--gold); font-weight:700; }
+.voice { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:4px; }
+.pill { background:var(--accent); color:#fff; font-size:12px; padding:2px 10px; border-radius:20px; }
+.pill.alt { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+.meta { color:var(--dim); font-size:12px; }
+.meta.warn { color:var(--hot); }
+.extras { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:16px; }
+.extras figure { margin:0; }
+/* 公用素材区 */
+.assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+.asset { margin:0; }
+.asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
+.asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
+.asset figcaption b { font-size:13px; color:var(--ink); }
+.asset figcaption code { font-size:10px; word-break:break-all; }
+.asset figcaption .src { opacity:.7; font-size:10px; }
+.asset.unrigged img { opacity:.72; border-style:dashed; }
+.voice-row { display:flex; align-items:center; gap:6px; margin:3px 0 1px; flex-wrap:wrap; }
+.vpill { background:var(--accent); color:#fff; font-size:10px; padding:1px 7px; border-radius:20px; white-space:nowrap; }
+.asset audio { height:26px; max-width:100%; flex:1 1 110px; min-width:100px; }
+.badge { background:var(--hot); color:#fff; font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; vertical-align:middle; margin-left:4px; }
+.assets h3:first-of-type { margin-top:6px; }
+.extras figure.is-cover img { border:2px solid var(--gold); }
+.extras figure.is-cover figcaption { color:var(--gold); font-weight:700; }
+.extras img { width:100%; border-radius:8px; border:1px solid var(--line); display:block; }
+figcaption { font-size:12px; color:var(--dim); margin-top:6px; }
+.ts-inline { opacity:.7; }
+.hook { margin-top:20px; padding:12px 16px; background:rgba(31,58,95,.08);
+  border-radius:8px; font-size:15px; }
+.analysis { margin-top:24px; border-top:1px solid var(--line); padding-top:14px; }
+summary { cursor:pointer; color:var(--dim); font-size:14px; font-weight:600; }
+.analysis h2,.analysis h3 { font-size:15px; margin:18px 0 8px; color:var(--ink); }
+.analysis p { margin:6px 0; font-size:14px; }
+.analysis ul { margin:6px 0; padding-left:22px; font-size:14px; }
+.analysis li.task { list-style:none; margin-left:-18px; }
+.analysis blockquote { margin:8px 0; padding:6px 12px; border-left:3px solid var(--line);
+  color:var(--dim); font-size:13px; }
+.analysis .note { color:var(--accent); font-style:normal; font-size:13px; }
+summary .src { float:right; font-weight:600; font-size:12px; color:var(--accent);
+  text-decoration:none; }
+/* 分镜表可能很宽，让它自己横向滚，别把整页撑出横条 */
+.tw { overflow-x:auto; margin:10px 0; }
+.tw table { border-collapse:collapse; font-size:13px; min-width:100%; }
+.tw th,.tw td { border:1px solid var(--line); padding:6px 9px; text-align:left;
+  vertical-align:top; }
+.tw th { background:rgba(127,127,127,.10); font-weight:700; white-space:nowrap; }
+.tw td:first-child { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--dim); }
+code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; font-size:13px; }
+/* 窄屏：侧栏收到顶部，横向滚动 */
+@media (max-width:900px){
+  .layout { grid-template-columns:1fr; gap:20px; }
+  .side { position:static; max-height:none; }
+  .side-list { flex-direction:row; overflow-x:auto; padding-bottom:4px; }
+  .nav-item { flex:none; width:190px; }
+  .side-top { display:none; }
+}
+@media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+</style>
+</head>
+<body id="top">
+<div class="wrap"><h1>page-02-cat</h1>
+<p class="sub">成片 · 场景图 · 对话内容 · 音色设置 · 分析思路</p>
+<section class="joke" id="page-02-cat">
+  <header>
+    <h2>page-02-cat</h2>
+    <div class="facts">
+      <span>B 类 · office</span>
+      <span>片长 206.7s</span>
+      <span>笑点 203.5s</span>
+      <span>定格 203.5s</span>
+      <span>旁白=青年女　猫=大叔　松鼠=女童　兔子=青年女</span>
+    </div>
+  </header>
+  <div class="alarm">音色撞车：旁白 / 兔子 都用了「青年女」——对话类里两个角色同音色，观众分不清谁在说话。</div>
+  <div class="film-none">还没出片　<code>npm run build</code></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">3.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">旁白</div>
+    <p class="text">猫住在一条街上，每天早上都看见有人出门</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 4.92s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">9.2s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">旁白</div>
+    <p class="text">那些人走得很快，手里拿着东西，谁也不看谁</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 5.32s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">15.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">旁白</div>
+    <p class="text">到了晚上他们回来，脸上都很累</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.52s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">19.8s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">旁白</div>
+    <p class="text">可是累完了，他们看起来是踏实的</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.98s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">24.7s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">旁白</div>
+    <p class="text">猫看了很久。他想，我大概也该有点正事</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 4.95s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">30.5s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">第一天，他准时到了</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -18% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.23s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/07-台词.png" alt="第 7 句场景" loading="lazy"><span class="ts">33.7s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">他找了个靠窗的位置坐下，把尾巴收好</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 4.24s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/08-台词.png" alt="第 8 句场景" loading="lazy"><span class="ts">38.8s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">然后他盯着窗外的鸟，盯了八个小时</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 4.42s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/09-台词.png" alt="第 9 句场景" loading="lazy"><span class="ts">44.1s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">中间他动过两次。一次是鸟飞走了，一次是鸟又飞回来了</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 6.80s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/10-台词.png" alt="第 10 句场景" loading="lazy"><span class="ts">51.8s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">下班回家，他累得话都不想说</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.59s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/11-台词.png" alt="第 11 句场景" loading="lazy"><span class="ts">56.3s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">那天晚上他睡得特别香</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.14s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/12-台词.png" alt="第 12 句场景" loading="lazy"><span class="ts">60.4s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">他从来没有这样睡过。以前他白天也睡，睡完还是想睡</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 6.47s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/13-台词.png" alt="第 13 句场景" loading="lazy"><span class="ts">67.7s</span></div>
+  <div class="talk">
+    <div class="beat">提问</div>
+    <div class="who">旁白</div>
+    <p class="text">这一觉不一样。他觉得自己是挣来的</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 5.02s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/14-台词.png" alt="第 14 句场景" loading="lazy"><span class="ts">74.7s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">第二天要开会</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -18% · 原声</span>
+    </div>
+    <div class="meta">实测配音 1.51s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/15-台词.png" alt="第 15 句场景" loading="lazy"><span class="ts">77.1s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">会开得很长。猫听不太懂，就学着把眼睛闭上</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 5.72s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/16-台词.png" alt="第 16 句场景" loading="lazy"><span class="ts">83.7s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">所有人都夸他专注</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.15s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/17-台词.png" alt="第 17 句场景" loading="lazy"><span class="ts">86.8s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">猫愣了一下。他只是困</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.90s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/18-台词.png" alt="第 18 句场景" loading="lazy"><span class="ts">90.6s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">松鼠说他沉得住气。兔子说他有大将之风</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 5.13s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/19-台词.png" alt="第 19 句场景" loading="lazy"><span class="ts">96.6s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">猫睁开眼，点了点头</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.88s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/20-台词.png" alt="第 20 句场景" loading="lazy"><span class="ts">101.4s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">第三天，有人问了他一个问题</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -18% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.99s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/21-台词.png" alt="第 21 句场景" loading="lazy"><span class="ts">105.3s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">那人问，你具体负责什么</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.98s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/22-台词.png" alt="第 22 句场景" loading="lazy"><span class="ts">109.2s</span></div>
+  <div class="talk">
+    <div class="beat">turn</div>
+    <div class="who">旁白</div>
+    <p class="text">那人问得很客气。不是刁难，就是随口一问</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 5.33s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/23-台词.png" alt="第 23 句场景" loading="lazy"><span class="ts">116.5s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">猫想了很久</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 1.47s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/24-台词.png" alt="第 24 句场景" loading="lazy"><span class="ts">118.8s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">他想到了窗台。想到了那只鸟</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.99s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/25-台词.png" alt="第 25 句场景" loading="lazy"><span class="ts">123.7s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">想到了那八个小时</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.21s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/26-台词.png" alt="第 26 句场景" loading="lazy"><span class="ts">126.9s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">可是他想不出，这些和「负责」有什么关系</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 4.49s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/27-台词.png" alt="第 27 句场景" loading="lazy"><span class="ts">132.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">第四天他没去</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -18% · 原声</span>
+    </div>
+    <div class="meta">实测配音 1.52s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/28-台词.png" alt="第 28 句场景" loading="lazy"><span class="ts">134.7s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">第五天也没去。没有人来找他</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.60s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/29-台词.png" alt="第 29 句场景" loading="lazy"><span class="ts">140.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">别人问他为什么不干了</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -18% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.36s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/30-台词.png" alt="第 30 句场景" loading="lazy"><span class="ts">144.5s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">猫不爱说话。他只说了两句</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.52s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/31-台词.png" alt="第 31 句场景" loading="lazy"><span class="ts">148.9s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">他说，我不是干不了</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.47s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/32-台词.png" alt="第 32 句场景" loading="lazy"><span class="ts">152.3s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">我是想不出干这个的理由</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.95s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/33-台词.png" alt="第 33 句场景" loading="lazy"><span class="ts">156.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">说完他转过身，往回走了</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.01s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/34-台词.png" alt="第 34 句场景" loading="lazy"><span class="ts">160.1s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">身后的灯，一格一格灭了</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.20s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/35-台词.png" alt="第 35 句场景" loading="lazy"><span class="ts">164.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">他走得不快，也没有回头</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.10s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/36-台词.png" alt="第 36 句场景" loading="lazy"><span class="ts">168.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">回到街上，天还亮着</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.71s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/37-台词.png" alt="第 37 句场景" loading="lazy"><span class="ts">171.8s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">那些人还没下班。街上很空</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 3.52s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/38-台词.png" alt="第 38 句场景" loading="lazy"><span class="ts">177.3s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">他坐回自己的窗台上。那只鸟又飞回来了</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 5.08s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/39-台词.png" alt="第 39 句场景" loading="lazy"><span class="ts">183.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">猫看着它，一直看到天黑。这一次，他一点也不累</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 6.60s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/40-台词.png" alt="第 40 句场景" loading="lazy"><span class="ts">191.5s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">有的事情，做完就很累。有的事情，做很久也不累</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -8% · 原声</span>
+    </div>
+    <div class="meta">实测配音 6.81s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/41-台词.png" alt="第 41 句场景" loading="lazy"><span class="ts">199.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">旁白</div>
+    <p class="text">猫想找的，是第二种</p>
+    <div class="voice">
+      <span class="pill">青年女</span>
+      <span class="pill alt">叙缓</span>
+      <span class="meta">zh-CN-XiaoxiaoNeural · -30% · 原声</span>
+    </div>
+    <div class="meta">实测配音 2.73s</div>
+  </div>
+</div></div>
+  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="stills/00-开场.png" alt="开场空镜" loading="lazy">
+  <figcaption>开场空镜　<span class="ts-inline">1.0s</span></figcaption></figure>
+<figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">204.0s</span></figcaption></figure>
+<figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">206.1s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>有的事情做完就很累，有的事情做很久也不累</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>猫决定去上班　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　B 类（旁白叙述，线性推进，没有笑点锚点）</li>
+<li><strong>一句话讲什么</strong>　（？）</li>
+<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
+<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
+</ul>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:03.0</td><td>开场空镜　场景 <code>office</code></td><td>—</td><td>BGM <code>happy</code></td></tr><tr><td>0:03.4–0:08.3</td><td>场景 <code>office</code>　在场 猫　单人镜<br><em class="note">开场立住「他在看别人」这个位置。猫单独在画面里，办公室的方格背景在他身后。</em></td><td><strong>旁白</strong>：猫住在一条街上，每天早上都看见有人出门</td><td>—</td></tr><tr><td>0:09.2–0:14.5</td><td>同上</td><td><strong>旁白</strong>：那些人走得很快，手里拿着东西，谁也不看谁</td><td>—</td></tr><tr><td>0:15.4–0:18.9</td><td>同上</td><td><strong>旁白</strong>：到了晚上他们回来，脸上都很累</td><td>—</td></tr><tr><td>0:19.8–0:23.8</td><td>同上</td><td><strong>旁白</strong>：可是累完了，他们看起来是踏实的</td><td>—</td></tr><tr><td>0:24.7–0:29.6</td><td>同上</td><td><strong>旁白</strong>：猫看了很久。他想，我大概也该有点正事</td><td>—</td></tr><tr><td>0:30.5–0:32.8</td><td>同上<br><em class="note">第一镜到此为止。往下换会议桌那一景。</em></td><td><strong>旁白</strong>：第一天，他准时到了</td><td>—</td></tr><tr><td>0:33.7–0:37.9</td><td>同上</td><td><strong>旁白</strong>：他找了个靠窗的位置坐下，把尾巴收好</td><td>—</td></tr><tr><td>0:38.8–0:43.2</td><td>同上</td><td><strong>旁白</strong>：然后他盯着窗外的鸟，盯了八个小时</td><td>—</td></tr><tr><td>0:44.1–0:50.9</td><td>同上</td><td><strong>旁白</strong>：中间他动过两次。一次是鸟飞走了，一次是鸟又飞回来了</td><td>—</td></tr><tr><td>0:51.8–0:55.4</td><td>同上</td><td><strong>旁白</strong>：下班回家，他累得话都不想说</td><td>—</td></tr><tr><td>0:56.3–0:59.5</td><td>同上</td><td><strong>旁白</strong>：那天晚上他睡得特别香</td><td>—</td></tr><tr><td>1:00.4–1:06.8</td><td>同上</td><td><strong>旁白</strong>：他从来没有这样睡过。以前他白天也睡，睡完还是想睡</td><td>—</td></tr><tr><td>1:07.7–1:12.7</td><td>同上</td><td><strong>旁白</strong>：这一觉不一样。他觉得自己是挣来的</td><td>—</td></tr><tr><td>1:14.7–1:16.2</td><td>场景 <code>office</code>　在场 猫 + 松鼠 + 兔子<br><em class="note">换到会议桌一景。三人同框全片只用这一段（方案第四节第 1 条），交代「一屋子人在点头」。</em></td><td><strong>旁白</strong>：第二天要开会</td><td>—</td></tr><tr><td>1:17.1–1:22.8</td><td>同上</td><td><strong>旁白</strong>：会开得很长。猫听不太懂，就学着把眼睛闭上</td><td>—</td></tr><tr><td>1:23.7–1:25.9</td><td>同上</td><td><strong>旁白</strong>：所有人都夸他专注</td><td>—</td></tr><tr><td>1:26.8–1:29.7</td><td>同上</td><td><strong>旁白</strong>：猫愣了一下。他只是困</td><td>—</td></tr><tr><td>1:30.6–1:35.7</td><td>同上</td><td><strong>旁白</strong>：松鼠说他沉得住气。兔子说他有大将之风</td><td>—</td></tr><tr><td>1:36.6–1:39.5</td><td>同上</td><td><strong>旁白</strong>：猫睁开眼，点了点头</td><td>—</td></tr><tr><td>1:41.4–1:44.4</td><td>场景 <code>office</code>　在场 猫 + 松鼠</td><td><strong>旁白</strong>：第三天，有人问了他一个问题</td><td>—</td></tr><tr><td>1:45.3–1:48.3</td><td>同上</td><td><strong>旁白</strong>：那人问，你具体负责什么</td><td>—</td></tr><tr><td>1:49.2–1:54.5</td><td>同上</td><td><strong>旁白</strong>：那人问得很客气。不是刁难，就是随口一问</td><td>—</td></tr><tr><td>1:56.5–1:57.9</td><td>场景 <code>office</code>　在场 猫　单人镜　<strong>笑点·推近</strong><br><em class="note">回到猫单独一镜。这一段是全片的停顿点，往下三句都很短。</em></td><td><strong>旁白</strong>：猫想了很久</td><td>—</td></tr><tr><td>1:58.8–2:02.8</td><td>同上</td><td><strong>旁白</strong>：他想到了窗台。想到了那只鸟</td><td>—</td></tr><tr><td>2:03.7–2:06.0</td><td>同上</td><td><strong>旁白</strong>：想到了那八个小时</td><td>—</td></tr><tr><td>2:06.9–2:11.3</td><td>同上</td><td><strong>旁白</strong>：可是他想不出，这些和「负责」有什么关系</td><td>—</td></tr><tr><td>2:12.2–2:13.8</td><td>同上</td><td><strong>旁白</strong>：第四天他没去</td><td>—</td></tr><tr><td>2:14.7–2:18.3</td><td>同上</td><td><strong>旁白</strong>：第五天也没去。没有人来找他</td><td>—</td></tr><tr><td>2:20.2–2:22.6</td><td>场景 <code>office</code>　在场 猫 + 松鼠　<strong>笑点·推近</strong></td><td><strong>旁白</strong>：别人问他为什么不干了</td><td>—</td></tr><tr><td>2:24.5–2:28.0</td><td>场景 <code>office</code>　在场 猫　单人镜　<strong>笑点·推近</strong><br><em class="note">cat rig 的嘴不能动，所以他的台词由旁白转述，并在词里写成「不爱说话」——限制变成人设（方案第四节第 4 条）。</em></td><td><strong>旁白</strong>：猫不爱说话。他只说了两句</td><td>—</td></tr><tr><td>2:28.9–2:31.4</td><td>同上</td><td><strong>旁白</strong>：他说，我不是干不了</td><td>—</td></tr><tr><td>2:32.3–2:35.3</td><td>同上</td><td><strong>旁白</strong>：我是想不出干这个的理由</td><td>—</td></tr><tr><td>2:36.2–2:39.2</td><td>同上<br><em class="note">末镜：猫背对镜头往回走，背后的方格一格一格熄灭。</em></td><td><strong>旁白</strong>：说完他转过身，往回走了</td><td>—</td></tr><tr><td>2:40.1–2:43.3</td><td>同上</td><td><strong>旁白</strong>：身后的灯，一格一格灭了</td><td>—</td></tr><tr><td>2:44.2–2:47.3</td><td>同上</td><td><strong>旁白</strong>：他走得不快，也没有回头</td><td>—</td></tr><tr><td>2:48.2–2:50.9</td><td>同上</td><td><strong>旁白</strong>：回到街上，天还亮着</td><td>—</td></tr><tr><td>2:51.8–2:55.3</td><td>同上</td><td><strong>旁白</strong>：那些人还没下班。街上很空</td><td>—</td></tr><tr><td>2:57.3–3:02.3</td><td>同上<br><em class="note">说破段第 1 句。换到 room（家里的窗台，不是 office 那扇）—— scene 一变就是换镜，padAfterShot 1.6s 自动给出说破段前那一拍。</em></td><td><strong>旁白</strong>：他坐回自己的窗台上。那只鸟又飞回来了</td><td>—</td></tr><tr><td>3:03.2–3:09.8</td><td>同上<br><em class="note">说破段第 2 句。padAfter 1.3 是「停一拍」——比同镜的 0.55 长，比换镜的 1.6 短，落点前要空但不要断。</em></td><td><strong>旁白</strong>：猫看着它，一直看到天黑。这一次，他一点也不累</td><td>—</td></tr><tr><td>3:11.5–3:18.3</td><td>同上<br><em class="note">说破段落点。<strong>这一句要跟尾字幕逐字相同</strong>（规则第 2 条）——两句不同的话会互相抢，孩子只能接住一句。</em></td><td><strong>旁白</strong>：有的事情，做完就很累。有的事情，做很久也不累</td><td>—</td></tr><tr><td>3:19.2–3:21.9</td><td>同上<br><em class="note">说破段收句。回答「猫做错了吗」——没有，他不是失败，是找到了（规则第 5 条）。</em></td><td><strong>旁白</strong>：猫想找的，是第二种</td><td>—</td></tr><tr><td>3:23.5–3:26.7</td><td>缓慢淡出 + 尾字幕「有的事情做完就很累，有的事情做很久也不累」</td><td>—</td><td>BGM 收尾</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>office</code> → <code>room</code></p>
+<p><strong>节奏</strong>　<code>bedtime</code></p>
+<p>句内 0.55/0.3s　句间 0.90s　换镜 1.95s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>旁白</td><td>只有声音</td><td><code>青年女 -8%</code></td></tr><tr><td>猫</td><td><code>cat</code>　x=206</td><td><code>大叔</code></td></tr><tr><td>松鼠</td><td><code>still</code> / <code>squirrel</code>　x=515</td><td><code>女童</code></td></tr><tr><td>兔子</td><td><code>still</code> / <code>rabbit-line</code>　x=840</td><td><code>青年女</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 206.73s　<strong>41</strong> 句　<strong>3</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. （？）</p>
+<p>  2. （？）</p>
+<p>  3. （？）</p>
+<ul>
+<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
+<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
+<li><strong>话题标签</strong>　（？#xxx）</li>
+<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>封面大字</strong>　<code>他盯了八个小时的鸟</code></li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section></div>
+
+</body>
+</html>

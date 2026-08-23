@@ -3,6 +3,12 @@
 > 这份只管**美术工具包**（角色、场景、漫符、摆拍）。
 > 怎么出片看 [../老马出片方案.md](../老马出片方案.md)，
 > 稿子怎么写看 [SCRIPT_GUIDE.md](SCRIPT_GUIDE.md)，定位与选题看 [horse_standup_plan.md](horse_standup_plan.md)。
+> 目录、命名、发布排期：[SCHEDULE.md](SCHEDULE.md)。
+> **成品树 ＝ 排期树**，在 `projects/老马/段子/{_待发,_已发}/`，
+> 校验 `npm run laoma:schedule`。
+>
+> ⚠ **2026-08-23：看盘专辑停掉了。** 那个专辑的规范、稿源、成片、排期全撤了，
+> **物件库 `objects.mjs` 留着**（它本来就是老马线的首帧工具，跟专辑无关）。
 
 全部 Node，无 Python 依赖。
 
@@ -16,6 +22,8 @@
 | `horse-pose.mjs` | 驱动：转眼珠 / 口型 / 扭头 / 上下浮动，附 `lipsync()` 与 `idleEyes()` |
 | `compose.mjs` | 把角色叠到任意背景上，站位用画布比例；漫符也在这一层合成 |
 | `marks.mjs` | 漫符：吃惊/汗/无语等 10 个手绘小符号 ＋ 挂到头两侧的定位器。`node render.mjs --marks` 出一览图 |
+| `objects.mjs` | 首帧物件特写库（出场档 ③ 专用）。名字不在库里 `drawObject()` 直接抛，体检也拦 |
+| `used-numbers.json` | 数字账本。由 `laoma:check --commit` 写 |
 | `render.mjs` | 命令行入口 |
 
 ## 用法

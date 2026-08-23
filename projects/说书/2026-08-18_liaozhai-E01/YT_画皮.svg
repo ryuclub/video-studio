@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#141C24"/>
+<g transform="translate(968,344) scale(1.24,1.03) translate(-968,-344)"><path d="M 872 600 L 872 330 Q 872 150 960 132 Q 1020 120 1032 226 Q 1038 262 1024 272 L 1062 336 Q 1068 348 1046 356 L 1026 362 Q 1040 372 1032 388 Q 1024 398 1010 400 Q 1022 412 1014 430 Q 1006 452 976 468 Q 946 484 940 512 L 946 600 Z" transform="translate(22,22)" fill="#D6452F"/><path d="M 872 600 L 872 330 Q 872 150 960 132 Q 1020 120 1032 226 Q 1038 262 1024 272 L 1062 336 Q 1068 348 1046 356 L 1026 362 Q 1040 372 1032 388 Q 1024 398 1010 400 Q 1022 412 1014 430 Q 1006 452 976 468 Q 946 484 940 512 L 946 600 Z" fill="#F2EFE8"/></g>
+<circle cx="104" cy="88" r="34" fill="#D6452F"/>
+<text x="104" y="105.12" font-family="Noto Serif CJK SC" font-weight="700" font-size="42" fill="#141C24" text-anchor="middle">醒</text>
+<text x="162" y="108.88" font-family="Noto Sans CJK SC, Source Han Sans SC, Microsoft YaHei, SimHei, sans-serif" font-weight="700" font-size="58" letter-spacing="8" fill="#D6452F">聊斋 · 画皮</text>
+<text x="34" y="373.5" font-family="Noto Serif CJK SC" font-weight="900" font-size="250" fill="#D6452F">自欺</text>
+<text x="21" y="360.5" font-family="Noto Serif CJK SC" font-weight="900" font-size="250" fill="#F2EFE8">自欺</text>
+<path d="M 72 412 L 204 423 L 204 435 L 72 424 Z" fill="#D6452F"/>
+<text x="72" y="520.88" font-family="Noto Sans CJK SC, Source Han Sans SC, Microsoft YaHei, SimHei, sans-serif" font-weight="700" font-size="58" fill="#FFFFFF">他不是没被</text>
+<text x="362" y="520.88" font-family="Noto Sans CJK SC, Source Han Sans SC, Microsoft YaHei, SimHei, sans-serif" font-weight="700" font-size="58" fill="#D6452F">提醒</text>
+<text x="136" y="597.44" font-family="Noto Sans CJK SC, Source Han Sans SC, Microsoft YaHei, SimHei, sans-serif" font-weight="700" font-size="58" fill="#FFFFFF">是没到他肯听的</text>
+<text x="542" y="597.44" font-family="Noto Sans CJK SC, Source Han Sans SC, Microsoft YaHei, SimHei, sans-serif" font-weight="700" font-size="58" fill="#D6452F">价钱</text>
+</svg>

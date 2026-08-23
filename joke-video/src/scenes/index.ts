@@ -5,6 +5,8 @@ import { piece, tornRect, tornEllipse, toPath, capsule, rng, n } from '../style/
 import { P } from '../style/palette.js';
 import { W, H, GROUND } from '../config.js';
 import { scene as horseScene, SCENES as HORSE_SCENE_TABLE, GROUND as HORSE_GROUND } from '../../horse/scenes.mjs';
+import { dressing } from '../../horse/dressing.mjs';
+import { titleAbove as plaqueTitle } from '../../horse/plaque.mjs';
 
 export interface Layers {
   far: string;
@@ -468,16 +470,48 @@ const horseInner = (name: string) => {
   return raw.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
 };
 
+/**
+ * 老马场景的适配层。
+ *
+ * ⚠ **摆件（`dressing`）跟场景画在同一层**，因为它就该跟桌面同深度 ——
+ * 单独提一层做视差的话，桌上的杯子会跟桌子分家。
+ *
+ * ⚠ **摆件要传 `skip`（稿件的 `object`）**，否则会把台词点名的那件东西摆进画面，
+ * 那正是 SCRIPT_GUIDE §五 禁的「图解台词」。这儿拿不到稿件，所以由调用方
+ * （`render.ts` 的 `sceneFor`）透传下来。
+ */
 const horseAdapter =
-  (name: string): Scene =>
+  (name: string, dress?: { seed: number; skip?: string; title?: string; sub?: string }): Scene =>
   (ink, seed) => ({
     far: '',
     // seed 不透传：那边的笔触抖动按 seed 重洗，**逐帧渲的时候每帧重洗就是满屏跳**。
     // 固定成 1，整条片子共用同一张背景（跟 horse/render.mjs 的 sequence() 同一个道理）
-    mid: horseInner(name).replace(/#[0-9a-fA-F]{6}\b/g, (c) => ink(c)),
+    //
+    // ⚠ **三样东西的画序**：场景 → 摆件 → 牌匾。都在 mid 这一层，
+    // 所以三样都在**角色之下** —— 牌匾规矩第一条：「角色挡住它时才有空间感，
+    // 画在角色之上就变回贴纸了」。
+    mid: (
+      horseInner(name) +
+      (dress ? dressing(name, dress.seed, { skip: dress.skip }) : '') +
+      (dress?.title
+        ? plaqueTitle({ text: dress.title, sub: dress.sub ?? '', scene: name, n: dress.seed })
+        : '')
+    ).replace(/#[0-9a-fA-F]{6}\b/g, (c) => ink(c)),
     near: '',
     ground: () => HORSE_GROUND,
   });
+
+/**
+ * 带摆件的老马场景。**摆件按天数号选**，所以同一个场景连发几条画面不一样 ——
+ * 那是 horse_standup_plan §六之二「防同质化」里场景那一条的补充。
+ */
+export const horseSceneDressed = (
+  name: string,
+  seed: number,
+  skip?: string,
+  title?: string,
+  sub?: string
+): Scene => horseAdapter(name, { seed, skip, title, sub });
 
 const HORSE_SCENES: Record<string, Scene> = Object.fromEntries(
   Object.keys(HORSE_SCENE_TABLE).map((k) => [k, horseAdapter(k)])

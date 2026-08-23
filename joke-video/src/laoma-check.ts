@@ -33,7 +33,7 @@
 // 而人照着结构填稿的时候，最容易漏掉的正是这些数。
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { lineText, type JokeCfg, type LineCfg } from './types.js';
+import { lineText, dayNo, type JokeCfg, type LineCfg } from './types.js';
 // ⚠ **有效 intro，不是 `cfg.intro`。** 「先出声后出人」那一档空镜恒等于零，
 // 而稿子里那个 `intro: 1.2` 通常还留着 —— 直接读它，体检报的片长会比成片多出 1.2 秒。
 import { introOf, openingStyleOf } from './beats/typeA.js';
@@ -237,17 +237,11 @@ function loadLedger(): LedgerEntry[] {
   }
 }
 
-/** 从收尾卡「老马的第 1854 天」里抠出天数。没写收尾卡的（家庭类黑场）返回 null */
-function dayOf(cfg: JokeCfg): number | null {
-  const m = cfg.hook?.match(/第\s*(\d+)\s*天/);
-  return m ? Number(m[1]) : null;
-}
-
 /** `--commit`：把这一条的显著数字写进账本 */
 export function commitNumbers(cfg: JokeCfg): void {
-  const day = dayOf(cfg);
+  const day = dayNo(cfg);
   if (day === null) {
-    console.log('  没有日子牌，不入账（家庭类黑场那一档）');
+    console.log('  读不出天数号（`day` 和收尾卡都没有），不入账');
     return;
   }
   const nums = [...new Set(extractNumbers(cfg.lines.map(lineText).join('')).filter((v) => v >= SIGNIFICANT_NUMBER))];
@@ -539,7 +533,7 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   // 取到的是**全账本最新的十条**，跟正在体检的是哪一条无关 —— 回头重跑一条老稿子，
   // 它会拿七天后写的稿子来判它撞车（实测：001 第 1847 天报「17 在第 1854 天用过」）。
   // 这条是硬伤级别的报警，假报警会让人开始无视它。
-  const day = dayOf(cfg);
+  const day = dayNo(cfg);
   const sig = [...new Set(nums.filter((v) => v >= SIGNIFICANT_NUMBER))];
   if (day !== null) {
     const recent = loadLedger()
@@ -770,6 +764,10 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     // 点名的那一句放行，**别的句子命中就是第二句配额**。
     cfg.lines.forEach((l, i) => {
       if (i === quotaIdx) return;
+      // ⚠ **落点跳过：§一之十三 那条已经报过它了。**
+      // 不跳的话同一句会报两遍（一遍「落点是反应句」、一遍「第二句配额」），
+      // 而 `gate()` 打出来的硬伤条数是人判严重程度的依据 —— 翻倍就不准了。
+      if (i === punchIdx) return;
       const m = lineText(l).match(REACTION);
       if (m)
         err(

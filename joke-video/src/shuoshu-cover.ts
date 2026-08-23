@@ -334,8 +334,20 @@ export function coverSvg(spec: CoverSpec): string {
   const cx = CW * LAYOUT.titleLeft + size / 2;
   const top = (CH - chars.length * size * LAYOUT.titleLineGap) / 2;
 
-  const hookSize = CH * FONT.hook;
   const textX = CW * LAYOUT.textLeft;
+  // ── 钩子超宽就整体缩字号 ──────────────────────────────────────────
+  //
+  // 钩子从 textLeft 起横排、每字前进一个字号，右边界是 textRight（那条细线的右端）。
+  // 1280 宽上算下来**最多六个字**：第七个字会顶出画外。
+  //
+  // **E04《促织》两行钩子各被切掉一个字**（「一隻蟲值多少錢」的錢、
+  // 「一個九歲的孩子」的子），出片、上传之后才用眼睛看出来 ——
+  // 又是一次"跑完了、文件都在、但东西是错的"。已出片的不回改，代码要堵住。
+  //
+  // 两行取同一个字号（按长的那行算）。分别缩会出现上行大下行小，比切字还难看。
+  const hookMaxW = CW * LAYOUT.textRight - textX;
+  const hookLen = Math.max([...spec.hook1].length, [...spec.hook2].length);
+  const hookSize = Math.min(CH * FONT.hook, hookMaxW / hookLen);
   const spacing = /[A-Z]/.test(series.label) ? 4 : 0;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CW}" height="${CH}" viewBox="0 0 ${CW} ${CH}">

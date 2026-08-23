@@ -27,7 +27,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { OUT_JOKE } from './paths.js';
-import { projectDir } from './preview.js';
+import { projectDir, findProjectDir, filmFile, coverFile } from './preview.js';
 import type { JokeCfg } from './types.js';
 import { buildTimeline } from './beats/typeA.js';
 
@@ -48,9 +48,10 @@ const id = cfg.id;
  * 目录不存在时 `方案.md` 也不存在，下面解析 §四 会给出该跑哪一步的提示。
  */
 function projDir(): string {
-  const hit = readdirSync(OUT_JOKE).filter((d) => d.endsWith(`_${id}`));
-  if (hit.length > 1) throw new Error(`${id} 对上了好几个目录：${hit.join(' / ')}`);
-  return hit.length ? `${OUT_JOKE}/${hit[0]}` : projectDir(cfg);
+  // ⚠ **别再在这儿自己 readdir。** 老马那条线的成品目录 2026-08-23 搬进了
+  // `projects/老马/段子/{_待发,_已发}/`，目录名也换了（`…_段子-1851`）——
+  // 反查规则只有 `findProjectDir` 一份，这儿抄一份出来就是第二套说法。
+  return findProjectDir(cfg) ?? projectDir(cfg);
 }
 
 const DIR = projDir();
@@ -72,7 +73,7 @@ const mmss = (d: number) => `${Math.floor(d / 60)}:${String(Math.round(d % 60)).
  * **出片后再跑一次**，片长自动换成实测 —— 编码按帧量化，估算跟文件能差一两秒。
  */
 function videoLen(): { text: string; measured: boolean } {
-  const f = `${DIR}/${id}.mp4`;
+  const f = `${DIR}/${filmFile(cfg)}`;
   if (existsSync(f)) {
     const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], {
       encoding: 'utf8',
@@ -180,7 +181,7 @@ const allTags = [...new Set([...tagList, ...ownList, ...hotList])];
 const coverTitle = cfg.cover?.title ?? '（未设）';
 const dur = videoLen();
 /** 成片那一格。还没出片时不给文件名 —— 给了人会去找一个不存在的文件 */
-const fileCell = dur.measured ? '`' + id + '.mp4`' : '（还没出片）';
+const fileCell = dur.measured ? '`' + filmFile(cfg) + '`' : '（还没出片）';
 
 // ── 说破段：这条线每一篇都必须有（出片方案 §四 第 7 条）──
 //
@@ -400,7 +401,7 @@ ${ch.intros.map((i) => `### ${i.name}　${i.where}\n\n\`\`\`\n${i.text}\n\`\`\`\
 | 用途 | 文件 |
 |---|---|
 | 成片 | ${fileCell}　${dur.text} |
-| 竖版封面 | \`cover/${id}-9x16.png\` |
+| 竖版封面 | \`${coverFile(cfg)}\` |
 | 预览页 | \`index.html\` |
 
 封面大字：\`${coverTitle}\`
@@ -415,12 +416,21 @@ ${
         '- [ ] **回头看，转折的线索在前面出现过吗**（§一之三）—— 靠隐瞒信息制造的反转只会让人生气',
         '- [ ] **落点之后还有话吗**（§一之八）—— 有就删掉，不解释、不补刀、不升华',
         `- [ ] **这句话，老马会用感叹号说吗**（§二）—— 会的话就重写。这一期的落点：\`${shuopoLines.join(' / ')}\``,
+        // ── §一之十二到十四，2026-08-22 加的三条「像不像真事」 ──
+        // 前两条体检查得了一半（prop 有没有 declare、落点有没有反应词），
+        // 判断那一半和第三条整条都只有人能做，所以三条都留在这张表上。
+        cfg.object
+          ? `- [ ] **删掉物件「${cfg.object}」，真的有句子说不通吗**（§一之十二）—— 说得通就是装饰，另找一个。体检只数得出它出现在几句里`
+          : '- [ ] **有没有一个承担叙事功能的物件**（§一之十二）—— 写进稿件的 `object` 字段，判据是「删掉它至少有一句话说不通」',
+        `- [ ] **落点说的是「发生了什么」还是「我怎么了」？里面有具体名词或数字吗**（§一之十三）`,
+        '- [ ] **回收句里有钩子句的原词吗**（§一之十四）—— 换了同义词不算，观众没法回看',
+        '- [ ] **通篇有没有一句在解释**（§二「通篇四不」）',
         '- [ ] 简介第一句能不能单独立住（列表页只显示第一行）',
         '- [ ] **标签是不是控制在三到五个**（§五）—— 固定那三个之外，只留跟这一条真实相关的',
         '- [ ] 封面大字在手机缩略图尺寸下读得出',
         '',
         `> 形式项（落点字数、铺垫个数、热词、模糊量词…）已经由 \`npx tsx src/laoma-check.ts ${arg}\` 查过。`,
-        '> **体检全绿不等于好笑**，上面这五条才是决定好不好笑的，只有人能判。',
+        '> **体检全绿不等于好笑**，上面这几条才是决定好不好笑、像不像真事的，只有人能判。',
       ].join('\n')
     : [
         '- [ ] **说破段念出来了吗**（不是只有尾字幕）—— 出片方案 §四 第 1 条',

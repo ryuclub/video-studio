@@ -1,6 +1,16 @@
 {
   "seal": "聊斋",
   "_说明": "no = 从第几段开始用这张图，时长由 audio/全片.manifest.json 的时间轴自动算。comp 见 shuoshu-scene.ts 的 COMPOSITIONS。title 是右侧竖排题字，只写一句。cover 是封面图，出片时顶在第一帧。",
+  "yt": {
+    "kicker": "聊斋 · 画皮",
+    "big": "自欺",
+    "hook": [
+      "他不是没被{提醒}",
+      "是没到他肯听的{价钱}"
+    ],
+    "motif": "face",
+    "palette": "ink"
+  },
   "cover": {
     "series": "liaozhai",
     "title": "畫皮",

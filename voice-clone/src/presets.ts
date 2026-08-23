@@ -97,6 +97,22 @@ export const PRESETS: Preset[] = [
   { id: "kid-little", name: "儿童 · 年幼", group: "儿童", base: "zh-CN-YunxiaNeural", pitch: 1.26, formant: 1.20, tempo: 1.00, tone: TONE.bright, prosody: { rate: "-10%" }, note: "五六岁，再高就开始失真了" },
   { id: "kid-girl", name: "女童", group: "儿童", base: "zh-CN-XiaoyiNeural", pitch: 1.14, formant: 1.16, tempo: 1.00, tone: [...TONE.bright, ...TONE.thin], prosody: { rate: "-10%" }, note: "晓伊打底，formant 抬得比 pitch 多才像小女孩不像女声" },
 
+
+  // ── 老马（段子独白线）· 候选，未定稿 ─────────────────────────
+  //
+  // 判据只有一个：**像「讲」不像「念」**。所以云扬（播音底）不在候选里 ——
+  // 它的 F0 范围最宽（246Hz），那不是有感情，是播报腔的抑扬顿挫。
+  //
+  // 甲乙丙是一条路（找三十出头男的本色），丁戊是另一条路（做一个不像本色的
+  // 细嗓子，靠反差当识别点）。**不是同一条线上的深浅，要整条选。**
+  // 参数与 joke-video/src/cast.ts 的「老马甲…戊」一一对应，调完抄回去。
+  { id: "laoma-a", name: "老马甲 · 云希本色", group: "老马候选", base: "zh-CN-YunxiNeural", pitch: 1.00, formant: 1.00, tempo: 1.00, prosody: { rate: "-6%" }, note: "不变声。F0 最平（sd 6Hz），没有 rubberband 痕迹" },
+  { id: "laoma-b", name: "老马乙 · 云希压低", group: "老马候选", base: "zh-CN-YunxiNeural", pitch: 0.93, formant: 0.95, tempo: 1.00, prosody: { rate: "-6%" }, note: "往「累」上挪半档，169→159Hz。再压就是大叔了" },
+  { id: "laoma-c", name: "老马丙 · 云健本色", group: "老马候选", base: "zh-CN-YunjianNeural", pitch: 0.97, formant: 0.97, tempo: 1.00, prosody: { rate: "-4%" }, note: "解说底，自带推进感。116Hz，偏大叔" },
+  { id: "laoma-d", name: "老马丁 · 云健细声", group: "老马候选", base: "zh-CN-YunjianNeural", pitch: 1.18, formant: 1.16, tempo: 1.00, tone: TONE.thin, prosody: { rate: "-4%" }, note: "克制档。还听得出是成年人，只是嗓子细" },
+  { id: "laoma-e", name: "老马戊 · 云健尖档", group: "老马候选", base: "zh-CN-YunjianNeural", pitch: 1.28, formant: 1.24, tempo: 1.00, tone: [...TONE.thin, "highpass=f=200"], prosody: { rate: "-4%" }, note: "顶着 1.30 上限，这条路的天花板。再高辅音碎" },
+  { id: "laoma-f", name: "老马己 · 云希青年", group: "老马候选", base: "zh-CN-YunxiNeural", pitch: 1.20, formant: 1.20, tempo: 1.00, prosody: { rate: "-6%" }, note: "地图上拖出来的：从乙往右上到 1.20/1.20 等比。高而平 —— F0 188Hz 是全组最高，但标准差 6Hz 跟本色一样" },
+
   // ── 特色角色 ─────────────────────────────────────────────
   { id: "sprite", name: "尖细精灵", group: "特色角色", base: "zh-CN-XiaoyiNeural", pitch: 1.60, formant: 1.42, tempo: 1.12, tone: [...TONE.bright, "highpass=f=220", "treble=g=4:f=5000"], note: "极限高音，做旁白吐槽的小声音" },
   { id: "burly", name: "憨厚大块头", group: "特色角色", base: "zh-CN-YunjianNeural", pitch: 0.80, formant: 0.80, tempo: 0.90, tone: [...TONE.thick, "asubboost=dry=0.9:wet=0.4"], note: "笨重、慢半拍，适合捧哏" },

@@ -18,7 +18,7 @@ import { sfx, type SfxName } from './audio/sfx.js';
 import { makeBgm } from './audio/bgm.js';
 import { trimSilence, frameEnvelope } from './audio/align.js';
 import { mixdown } from './audio/mix.js';
-import { buildTimeline, estimateDur } from './beats/typeA.js';
+import { buildTimeline, estimateDur, openSpan } from './beats/typeA.js';
 import { renderFrame, type RenderCtx, type VoiceTrack } from './render.js';
 import { svgToPng, renderVideo } from './video.js';
 import { lineText, type JokeCfg } from './types.js';
@@ -26,11 +26,13 @@ import { add, normalize } from './audio/dsp.js';
 import { synthesizeJoke, listVoices, resolveLineVoice } from './tts.js';
 import { CASTS, CAST_NAMES, DELIVERIES, resolveCast } from './cast.js';
 import { morphToWav, isIdentity } from './audio/morph.js';
+import { filmFile, draftFile, audioFile, coverFile } from './preview.js';
 import { renderStills, jokeSection, page, navEntry, navPanel, projectDir, findProjectDir, syncProjects, buildVoiceSamples } from './preview.js';
 import { coverSvg, checkTitle, safeZoneOverlaySvg } from './cover.js';
 import { buildVoiceDoc } from './voicedoc.js';
 import { unfilled, ensurePlan } from './plan.js';
 import { report } from './preflight.js';
+import { gate as laomaGate } from './laoma-check.js';
 import { buildShotDoc } from './shotdoc.js';
 import { SCENE_NAMES, getScene } from './scenes/index.js';
 import { report as layoutReport, solve as layoutSolve } from './layout.js';
@@ -46,6 +48,35 @@ const cmd = argv[0];
 function loadCfg(p?: string): { cfg: JokeCfg; path: string } {
   if (!p) throw new Error('请指定配置文件，例如 jokes/snake-poison.json');
   return { cfg: JSON.parse(readFileSync(p, 'utf8')) as JokeCfg, path: p };
+}
+
+/**
+ * 老马线的稿件体检闸。**只对老马线生效**，别的线一个字都不变。
+ *
+ * ── 为什么要接进来 ──
+ *
+ * `laoma-check.ts` 顶上抄了心理线那句「**文档拦不住人，体检才拦得住**」，
+ * 可它自己在 2026-08-22 之前只是个要人**记得跑**的独立命令 ——
+ * 治愈线的 `zhiyu-check` 被 `zhiyu-episode` 调、拦在 TTS 之前，老马这条没有。
+ * 于是同一句话反过来也成立：**要人记得跑的体检，一样拦不住人。**
+ * 写完稿不跑体检直接 voice → build，一条带硬伤的稿子能一路出片。
+ *
+ * ── 为什么拦在这两处 ──
+ *
+ * `voice`：TTS 之前。稿子有硬伤就得改，改完配音全作废，先拦住省一轮。
+ * `build`：渲染之前。四分钟的渲染，不值得为一条已知有硬伤的稿子花。
+ *
+ * **`draft` / `still` / `layout` 不拦** —— 那几个是看画面的工具，
+ * 稿子还在改的时候正该用它们，拦了等于逼人先把文字弄干净才能看构图。
+ */
+function laomaOk(cfg: JokeCfg, argv: string[], act: string): boolean {
+  if (!cfg.characters?.some((c) => c.rig === 'horse')) return true;
+  console.log('\n稿件体检（老马线）');
+  if (laomaGate(cfg)) return true;
+  console.log('');
+  console.log(`改完再${act}。要强行${act}加 --anyway。`);
+  console.log('');
+  return argv.includes('--anyway');
 }
 
 function voiceDir(cfg: JokeCfg) {
@@ -311,10 +342,10 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     const dir = findProjectDir(cfg) ?? projectDir(cfg);
     mkdirSync(`${dir}/cover`, { recursive: true });
     const png = svgToPng(svg);
-    writeFileSync(`${dir}/cover/${cfg.id}-9x16.png`, png);
+    writeFileSync(`${dir}/${coverFile(cfg)}`, png);
 
     // 九宫格裁 3:4（居中 1080×1440）
-    const crop = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', `${dir}/cover/${cfg.id}-9x16.png`,
+    const crop = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', `${dir}/${coverFile(cfg)}`,
       '-vf', 'crop=1080:1440:0:240', `${dir}/cover/${cfg.id}-3x4.png`], { encoding: 'utf8' });
     if (crop.status !== 0) console.log(`3:4 裁切失败：${crop.stderr?.slice(0, 200)}`);
 
@@ -323,7 +354,7 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     writeFileSync(`${dir}/cover/${cfg.id}-安全区.png`, svgToPng(withGuides));
 
     console.log(`封面大字：「${title}」　取帧 ${at.toFixed(2)}s（彩色，非定格灰帧）`);
-    console.log(`  ${dir}/cover/${cfg.id}-9x16.png     发布用`);
+    console.log(`  ${dir}/${coverFile(cfg)}     发布用`);
     console.log(`  ${dir}/cover/${cfg.id}-3x4.png      个人主页九宫格的样子`);
     console.log(`  ${dir}/cover/${cfg.id}-安全区.png    检查有没有被平台 UI 盖住`);
     console.log(`\n出片时会自动把它嵌成第一帧（"cover": { "asFirstFrame": false } 可关）`);
@@ -333,6 +364,7 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
   // ── 本地 TTS 生成配音 ──
   if (cmd === 'voice') {
     if (!report(cfg, '配音')) return;
+    if (!laomaOk(cfg, argv, '配音')) return;
     const n = await synthesizeJoke(cfg);
     console.log(`\n生成 ${n} 句到 voice/${cfg.id}/`);
     console.log(`接着跑：npm run align -- ${path} && npm run build -- ${path}`);
@@ -381,6 +413,44 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
       return;
     }
     layoutReport(cfg);
+    return;
+  }
+
+  /**
+   * 首帧 —— 出场档 ②／③ 的第一帧，单出一张，**外带 120px 缩略图**。
+   *
+   *   npm run frame -- jokes/laoma-008.json
+   *
+   * ⚠ **缩略图那张是验收项，不是附赠。** 首帧规范 §四 写着：
+   * 把首帧缩到 120px 宽、眯眼看 —— 物件还认得出吗？那个数字还看得见吗？
+   * 两条都过才算合格。**信息流里观众得到的分辨率就是这个量级，大屏上好看不算数。**
+   *
+   * 所以这个命令一次出两张，**并排看**。只出大的那张，人一定只看大的。
+   */
+  if (cmd === 'frame') {
+    const tl = buildTimeline(cfg);
+    const open = openSpan(tl);
+    if (!open) {
+      console.log('这条稿子没开出场档（`opening` 没写），首帧就是开场空镜 —— 用 npm run still 看。');
+      return;
+    }
+    const { tracks } = loadVoices(cfg);
+    const ctx: RenderCtx = { tl, voices: tracks };
+    mkdirSync(`${OUT}/stills`, { recursive: true });
+    const big = `${OUT}/stills/${cfg.id}-首帧.png`;
+    const png = svgToPng(renderFrame(ctx, 0));
+    writeFileSync(big, png);
+    // 缩略图走 ffmpeg 缩放，跟平台一个路子（不是把 svg 按小尺寸重渲 ——
+    // 重渲会按小画布重新算字号，那就不是"缩略"了，是另一张图）
+    const thumb = `${OUT}/stills/${cfg.id}-首帧-120px.png`;
+    const r = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', big, '-vf', 'scale=120:-1', thumb], { encoding: 'utf8' });
+    if (r.status !== 0) console.log(`  ⚠ 缩略图没出来：${r.stderr?.trim()}`);
+    console.log(`  ${big}`);
+    if (r.status === 0) console.log(`  ${thumb}   ← 首帧规范 §四：眯眼看，物件认得出吗？数字看得见吗？`);
+    console.log(
+      `出场档 ${open.style === 'object-first' ? '③ 先出声 · 物件' : '② 先出声 · 场景'}　` +
+        `首帧字「${open.text}」　${open.subject ? `物件「${open.subject}」　` : ''}第 ${open.end.toFixed(2)}s 撤，人滑 ${open.slide}s`
+    );
     return;
   }
 
@@ -470,6 +540,7 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
 
   if (cmd === 'draft' || cmd === 'build') {
     if (!report(cfg, '出片')) return;
+    if (cmd === 'build' && !laomaOk(cfg, argv, '出片')) return;
     // 发布文案没填就别渲。**这不是洁癖**——封面大字要跟标题一起定，
     // 而封面是从成片里取帧的，等渲完才发现该换，就得再渲一次 37 分钟。
     if (cmd === 'build') {
@@ -519,7 +590,7 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
       coverFrames = Math.max(1, Math.round((cfg.cover?.hold ?? 0) * FPS));
       // 顺手把封面也存一份，省得再跑一次 npm run cover
       mkdirSync(`${dir}/cover`, { recursive: true });
-      writeFileSync(`${dir}/cover/${cfg.id}-9x16.png`, coverPng);
+      writeFileSync(`${dir}/${coverFile(cfg)}`, coverPng);
       console.log(`封面已嵌为第一帧：「${cv.title}」${coverFrames > 1 ? `，停留 ${(coverFrames / FPS).toFixed(2)}s` : '（1 帧）'}`);
     }
 
@@ -532,10 +603,10 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
       mix = padded;
     }
 
-    const audioPath = `${dir}/${cfg.id}-audio.wav`;
+    const audioPath = `${dir}/${audioFile(cfg)}`;
     writeWav(audioPath, mix, SR);
 
-    const outPath = `${dir}/${cfg.id}${withVoice ? '' : '-draft'}.mp4`;
+    const outPath = `${dir}/${withVoice ? filmFile(cfg) : draftFile(cfg)}`;
     console.log(`片长 ${tl.duration.toFixed(2)}s / ${Math.ceil(tl.duration * FPS) + coverFrames} 帧`);
     await renderVideo(ctx, audioPath, outPath, {
       crf: withVoice ? 19 : 24,

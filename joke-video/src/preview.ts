@@ -11,9 +11,11 @@
 // 跑 `npm run preview` 不带参数则汇总所有稿件到 projects/段子与儿童故事/index.html。
 // 页面是纯静态的，直接双击打开，不依赖任何外部资源。
 
-import { OUT_JOKE } from './paths.js';
+import { OUT_JOKE, OUT_LAOMA } from './paths.js';
+// 栏目从场景反查（每个场景在 horse/scenes.mjs 里声明了自己属于哪个栏目）
+import { SCENES as HORSE_SCENE_TABLE } from '../horse/scenes.mjs';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
-import { basename } from 'node:path';
+import { basename, relative, sep } from 'node:path';
 import { FPS } from './config.js';
 import { buildTimeline, openSpan } from './beats/typeA.js';
 import { renderFrame, type RenderCtx, type VoiceTrack } from './render.js';
@@ -41,20 +43,123 @@ export interface PreviewShot {
   lineIndex: number | null;
 }
 
-/** projects/段子与儿童故事/<日期>_<id> */
+/** 这一条是不是老马线。判据跟 `cover.ts`、`yiye-publish.ts`、`cli.ts` 的体检闸是同一条 */
+export const isLaoma = (cfg: JokeCfg): boolean => !!cfg.characters?.some((c) => c.rig === 'horse');
+
+/**
+ * 天数号：老马的**身份**。目录名、排期、数字账本都用它。
+ *
+ * ⚠ **优先读 `day` 字段，收尾卡只是兜底。** 家庭类的条目不出收尾卡
+ * （`laoma-002`），但**日子照样占一格**（CHANNEL_LAOMA §五之二）——
+ * 只认 `hook` 的话那种条目就没有身份了。
+ */
+export function dayNo(cfg: JokeCfg): number | null {
+  if (typeof cfg.day === 'number') return cfg.day;
+  const m = cfg.hook?.match(/第\s*(\d+)\s*天/);
+  return m ? Number(m[1]) : null;
+}
+
+/** 老马的排期树：`projects/老马/段子/{_待发,_已发}/` */
+export const LAOMA_TREE = `${OUT_LAOMA}/段子`;
+const BUCKETS = ['_待发', '_已发'] as const;
+
+/**
+ * 目录名里那一截**栏目**：工位 / 一个人住 / 众目睽睽 / 回家。
+ *
+ * ⚠ **从场景反查，不另开一个字段。** 栏目和场景本来就是绑死的
+ * （`horse/scenes.mjs` 每个场景都声明了 `column`），再让稿件写一遍
+ * 就有了第二个说法 —— 改了场景忘了改栏目，目录名会一直说着旧的那个。
+ *
+ * 场景不在 horse 那张表里（别的线的场景）就返回空，目录名里那一截跟着省掉。
+ */
+export const dirColumn = (cfg: JokeCfg): string => HORSE_SCENE_TABLE[cfg.scene]?.column ?? '';
+
+/**
+ * 目录名里那一截标题。
+ *
+ * ⚠ **文件名里不能出现的字要滤掉**（`\/:*?"<>|` 和空格）——
+ * 标题是人手写的，迟早会写进一个问号或者冒号，那时候 `mkdir` 在 Windows 上
+ * 直接失败，而失败的地方离「你写了个问号」很远。
+ *
+ * ⚠ **反查不认这一截**（见 `findProjectDir`）：标题是可以改的，
+ * 改了标题目录名就变了，**但身份是尾巴上那个天数号**。
+ */
+export const dirTitle = (cfg: JokeCfg): string =>
+  (cfg.cover?.title ?? cfg.id).replace(/[\\/:*?"<>|\s]/g, '').slice(0, 24) || cfg.id;
+
+/**
+ * 期次目录名的**身份那一半**：`段子_<栏目>_<稿件内容>_<天数号>`。
+ *
+ * 完整的目录名是 `<日期>_<时刻>JST_` ＋ 这一半，前缀归排期
+ * （`horse/SCHEDULE.md` §二）。**出片的时候还没定发布日**，所以这儿出的是
+ * `未排期_` ＋ 这一半。
+ *
+ * ⚠ **反查只认最后那个天数号**，中间三截都会变。
+ */
+export const laomaDirName = (cfg: JokeCfg, no: number): string =>
+  ['未排期', '段子', dirColumn(cfg), dirTitle(cfg), String(no)].filter(Boolean).join('_');
+
+/**
+ * 成品目录。老马走排期树，其余线照旧 `<日期>_<id>`。
+ *
+ * ⚠ **新建的老马目录叫 `未排期_段子-<天数号>`。**
+ * 发布日是排期那头的事，出片的时候还没定 —— **不替人挑一个日期**，
+ * 那种日期日后没人记得是谁定的。定了之后 `mv` 成
+ * `<日期>_<时刻>JST_段子-<天数号>` 就行（`horse/SCHEDULE.md` §二），
+ * 校验会一直提醒还有几条没排期。
+ */
 export function projectDir(cfg: JokeCfg, date?: string): string {
+  if (isLaoma(cfg)) {
+    const no = dayNo(cfg);
+    if (no === null)
+      throw new Error(
+        `${cfg.id} 读不出天数号：\`day\` 和收尾卡 \`hook\` 都没有。\n` +
+          `天数号是老马这条线的身份（目录名、排期、数字账本都用它），` +
+          `不出收尾卡的条目也要写 \`"day": 1848\`（CHANNEL_LAOMA §五之二）。`
+      );
+    return `${LAOMA_TREE}/_待发/${laomaDirName(cfg, no)}`;
+  }
   const d = date ?? new Date().toISOString().slice(0, 10);
   return `${OUT_JOKE}/${d}_${cfg.id}`;
 }
 
-/** 已经建过的项目目录（同一条段子不重复建新日期的目录） */
+/** 已经建过的项目目录（同一条稿子不重复建新目录） */
 export function findProjectDir(cfg: JokeCfg): string | null {
+  if (isLaoma(cfg)) {
+    const no = dayNo(cfg);
+    if (no === null) return null;
+    // ⚠ **只认尾巴上那个天数号。**
+    // 目录名是 `<日期>_<时刻>JST_段子_<名称>_<天数号>` —— 前面三截都会变
+    // （改期改前缀、改标题改名称），**只有天数号是身份**。
+    // 拿标题去反查的话，改一次标题就找不到自己的目录了，然后建一个新的。
+    for (const b of BUCKETS) {
+      const dir = `${LAOMA_TREE}/${b}`;
+      if (!existsSync(dir)) continue;
+      const hit = readdirSync(dir).filter((f) => f.endsWith(`_${no}`)).sort();
+      if (hit.length) return `${dir}/${hit[hit.length - 1]}`;
+    }
+    return null;
+  }
   if (!existsSync(OUT_JOKE)) return null;
   const hit = readdirSync(OUT_JOKE)
     .filter((f) => f.endsWith(`_${cfg.id}`))
     .sort();
   return hit.length ? `${OUT_JOKE}/${hit[hit.length - 1]}` : null;
 }
+
+// ── 成品文件叫什么 ────────────────────────────────────────────────
+//
+// **老马的目录名已经带了身份**（`…_段子-1851`），文件名再重复一遍 id 是噪音；
+// 而且规范 §2 点名要 `out.mp4` / `thumb.png`。别的线沿用 `<id>` 前缀不动。
+//
+// ⚠ **要改文件名就改这四个函数**，别在各处拼字符串 —— 上一次拼字符串的结果是
+// 「封面在 cover/ 下、预览页找的是根目录」这种只有出片才发现的错。
+
+export const filmFile = (cfg: JokeCfg): string => (isLaoma(cfg) ? 'out.mp4' : `${cfg.id}.mp4`);
+export const draftFile = (cfg: JokeCfg): string => (isLaoma(cfg) ? 'draft.mp4' : `${cfg.id}-draft.mp4`);
+export const audioFile = (cfg: JokeCfg): string => (isLaoma(cfg) ? 'audio.wav' : `${cfg.id}-audio.wav`);
+/** 发布用的那张竖版封面。老马放在目录根上叫 `thumb.png`，别的线在 `cover/` 里 */
+export const coverFile = (cfg: JokeCfg): string => (isLaoma(cfg) ? 'thumb.png' : `cover/${cfg.id}-9x16.png`);
 
 /**
  * 出场景图：每句台词一张（取这句的中点），外加开场、定格、钩子。
@@ -329,8 +434,8 @@ export function navPanel(items: string[]): string {
 
 /** 一条稿件的预览页 + 留档配置。汇总页和单条页共用这一段 */
 function writeProjectPage(cfg: JokeCfg, dir: string, shots: PreviewShot[], analysis: string) {
-  const film = existsSync(`${dir}/${cfg.id}.mp4`) ? `${cfg.id}.mp4` : undefined;
-  const cover = existsSync(`${dir}/cover/${cfg.id}-9x16.png`) ? `cover/${cfg.id}-9x16.png` : undefined;
+  const film = existsSync(`${dir}/${filmFile(cfg)}`) ? filmFile(cfg) : undefined;
+  const cover = existsSync(`${dir}/${coverFile(cfg)}`) ? coverFile(cfg) : undefined;
   writeFileSync(
     `${dir}/index.html`,
     page(
@@ -439,8 +544,12 @@ export function syncProjects(
 ): number {
   if (!existsSync('jokes')) return 0;
   const files = readdirSync('jokes').filter((f) => f.endsWith('.json')).sort();
-  const sections: string[] = [];
-  const navItems: string[] = [];
+
+  // ⚠ **两张汇总页，不是一张。** 老马的成品 2026-08-23 搬进了排期树
+  // （`projects/老马/段子/{_待发,_已发}/`），跟段子与儿童故事不在一个根下 ——
+  // 页里的图片链接是**相对汇总页**的，混在一张里那半边全是死链。
+  const sections: Record<string, string[]> = { joke: [], laoma: [] };
+  const navItems: Record<string, string[]> = { joke: [], laoma: [] };
 
   for (const f of files) {
     const cfg = JSON.parse(readFileSync(`jokes/${f}`, 'utf8')) as JokeCfg;
@@ -451,24 +560,36 @@ export function syncProjects(
     const analysis = ensurePlan(cfg, dir);
     const { film, cover } = writeProjectPage(cfg, dir, shots, analysis);
 
-    const prefix = `${basename(dir)}/`;
-    sections.push(jokeSection(cfg, shots, analysis, prefix, film, cover));
-    navItems.push(navEntry(cfg, shots, prefix, navItems.length + 1));
+    const laoma = isLaoma(cfg);
+    const k = laoma ? 'laoma' : 'joke';
+    // 相对汇总页的路径：老马那张页在 `projects/老马/`，条目在 `段子/_待发/<名>/`
+    const prefix = laoma ? `${relative(OUT_LAOMA, dir).split(sep).join('/')}/` : `${basename(dir)}/`;
+    sections[k].push(jokeSection(cfg, shots, analysis, prefix, film, cover));
+    navItems[k].push(navEntry(cfg, shots, prefix, navItems[k].length + 1));
     if (!opts.quiet) console.log(`  ${cfg.id}${reuse ? '（复用已有场景图）' : ` ${shots.length} 张场景图`}`);
   }
 
+  // 段子与儿童故事：公用素材区摆在所有稿件前面（写新稿件先看这里有什么现成的）
   mkdirSync(OUT_JOKE, { recursive: true });
-  // 公用素材区摆在所有稿件前面：写新稿件先看这里有什么现成的
   const gallery = assetGallery();
   const body = `<h1>段子稿件预览</h1>
-<p class="sub">共 ${files.length} 条 · 每句台词一张场景图，配对话内容与音色设置</p>
+<p class="sub">共 ${sections.joke.length} 条 · 每句台词一张场景图，配对话内容与音色设置</p>
 ${gallery}
-${sections.join('\n')}`;
+${sections.joke.join('\n')}`;
   const galleryNav = `<a class="nav-item" href="#_assets" data-target="_assets">
   <span class="nav-thumb ph"></span>
   <span class="nav-body"><span class="nav-title">公用素材</span><span class="nav-meta">${ROSTER.length} 角色 · ${SCENE_NAMES.length} 场景</span></span>
 </a>`;
-  writeFileSync(`${OUT_JOKE}/index.html`, page('段子稿件预览', body, navPanel([galleryNav, ...navItems])));
+  writeFileSync(`${OUT_JOKE}/index.html`, page('段子稿件预览', body, navPanel([galleryNav, ...navItems.joke])));
+
+  // 老马：没有公用素材区（它的角色和场景是外挂的 `horse/`），直接列条目
+  if (sections.laoma.length) {
+    mkdirSync(OUT_LAOMA, { recursive: true });
+    const lbody = `<h1>老马 · 稿件与成片</h1>
+<p class="sub">共 ${sections.laoma.length} 条 · 目录名带发布日和时刻，排期见 joke-video/horse/SCHEDULE.md</p>
+${sections.laoma.join('\n')}`;
+    writeFileSync(`${OUT_LAOMA}/index.html`, page('老马 · 稿件与成片', lbody, navPanel(navItems.laoma)));
+  }
   return files.length;
 }
 

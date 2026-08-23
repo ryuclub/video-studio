@@ -10,6 +10,9 @@ README 讲的是「这套东西怎么用」，这份讲的是「今天这条片�
 > 另外五条线各有各的手册，管线完全不同，别串着看：
 > · **说书线**（`shuoshu/` + `joke-video/src/shuoshu-*.ts`）→ [`shuoshu/出片手册.md`](shuoshu/出片手册.md)
 > · **段子线**（`joke-video/`）→ [`joke-video/README.md`](joke-video/README.md)
+>   老马（独白 deadpan）走 [`joke-video/老马出片方案.md`](joke-video/老马出片方案.md)；
+>   写稿规范 [`horse/SCRIPT_GUIDE.md`](joke-video/horse/SCRIPT_GUIDE.md)、
+>   排期 [`horse/SCHEDULE.md`](joke-video/horse/SCHEDULE.md)
 > · **儿童故事线**（`joke-video/`，旁白叙述型）→ [`joke-video/儿童故事出片方案.md`](joke-video/儿童故事出片方案.md)
 >   一条命令：`npm run ship -- jokes/<稿件>.json`
 > · **治愈系旁白线**（`zhiyu/` + `joke-video/src/zhiyu-*.ts`）→ [`zhiyu/治愈系出片方案.md`](zhiyu/治愈系出片方案.md)
@@ -23,9 +26,13 @@ README 讲的是「这套东西怎么用」，这份讲的是「今天这条片�
 >   整期拼装、发布文案写法全部共用，**主手册就是上面那份治愈系的**。
 >   心理洞察那份只是一张差异表（多一道体检闸、五个现代空镜、另一套封面）
 >
-> **跨线的写稿规范只有一份**：[`说破层规范.md`](说破层规范.md) —— 管的是「一期稿子的落点」。
-> 说书、心理洞察、禅佛典三条线适用（用法各不同），**治愈系旁白线是反着来的，不适用**，
-> 段子与儿童故事线不在范围内。动笔前先读它的第六节。
+> **跨线的规范有两份，管两头：**
+> · 写稿那头 —— [`说破层规范.md`](说破层规范.md)，管「一期稿子的落点」。
+>   说书、心理洞察、禅佛典三条线适用（用法各不同），**治愈系旁白线是反着来的，不适用**，
+>   段子与儿童故事线不在范围内。动笔前先读它的第六节。
+> · 出图那头 —— [`YouTube封面规范.md`](YouTube封面规范.md)，管「传 YouTube 的那张缩略图」。
+>   说书 / 心理洞察 / 治愈 / 禅佛典四条线共用一套版式，只换配色档。
+>   **它跟各线的片头首帧是两张图**，别拿一套素材两处用。
 >
 > **换机器或新人上手**：先 `npm run doctor` 自检环境，要求见 [README 的「运行环境」](README.md#运行环境)。
 

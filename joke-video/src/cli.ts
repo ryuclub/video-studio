@@ -26,6 +26,7 @@ import { add, normalize } from './audio/dsp.js';
 import { synthesizeJoke, listVoices, resolveLineVoice } from './tts.js';
 import { CASTS, CAST_NAMES, DELIVERIES, resolveCast } from './cast.js';
 import { morphToWav, isIdentity } from './audio/morph.js';
+import { filmFile, draftFile, audioFile, coverFile } from './preview.js';
 import { renderStills, jokeSection, page, navEntry, navPanel, projectDir, findProjectDir, syncProjects, buildVoiceSamples } from './preview.js';
 import { coverSvg, checkTitle, safeZoneOverlaySvg } from './cover.js';
 import { buildVoiceDoc } from './voicedoc.js';
@@ -341,10 +342,10 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     const dir = findProjectDir(cfg) ?? projectDir(cfg);
     mkdirSync(`${dir}/cover`, { recursive: true });
     const png = svgToPng(svg);
-    writeFileSync(`${dir}/cover/${cfg.id}-9x16.png`, png);
+    writeFileSync(`${dir}/${coverFile(cfg)}`, png);
 
     // 九宫格裁 3:4（居中 1080×1440）
-    const crop = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', `${dir}/cover/${cfg.id}-9x16.png`,
+    const crop = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', `${dir}/${coverFile(cfg)}`,
       '-vf', 'crop=1080:1440:0:240', `${dir}/cover/${cfg.id}-3x4.png`], { encoding: 'utf8' });
     if (crop.status !== 0) console.log(`3:4 裁切失败：${crop.stderr?.slice(0, 200)}`);
 
@@ -353,7 +354,7 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     writeFileSync(`${dir}/cover/${cfg.id}-安全区.png`, svgToPng(withGuides));
 
     console.log(`封面大字：「${title}」　取帧 ${at.toFixed(2)}s（彩色，非定格灰帧）`);
-    console.log(`  ${dir}/cover/${cfg.id}-9x16.png     发布用`);
+    console.log(`  ${dir}/${coverFile(cfg)}     发布用`);
     console.log(`  ${dir}/cover/${cfg.id}-3x4.png      个人主页九宫格的样子`);
     console.log(`  ${dir}/cover/${cfg.id}-安全区.png    检查有没有被平台 UI 盖住`);
     console.log(`\n出片时会自动把它嵌成第一帧（"cover": { "asFirstFrame": false } 可关）`);
@@ -589,7 +590,7 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
       coverFrames = Math.max(1, Math.round((cfg.cover?.hold ?? 0) * FPS));
       // 顺手把封面也存一份，省得再跑一次 npm run cover
       mkdirSync(`${dir}/cover`, { recursive: true });
-      writeFileSync(`${dir}/cover/${cfg.id}-9x16.png`, coverPng);
+      writeFileSync(`${dir}/${coverFile(cfg)}`, coverPng);
       console.log(`封面已嵌为第一帧：「${cv.title}」${coverFrames > 1 ? `，停留 ${(coverFrames / FPS).toFixed(2)}s` : '（1 帧）'}`);
     }
 
@@ -602,10 +603,10 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
       mix = padded;
     }
 
-    const audioPath = `${dir}/${cfg.id}-audio.wav`;
+    const audioPath = `${dir}/${audioFile(cfg)}`;
     writeWav(audioPath, mix, SR);
 
-    const outPath = `${dir}/${cfg.id}${withVoice ? '' : '-draft'}.mp4`;
+    const outPath = `${dir}/${withVoice ? filmFile(cfg) : draftFile(cfg)}`;
     console.log(`片长 ${tl.duration.toFixed(2)}s / ${Math.ceil(tl.duration * FPS) + coverFrames} 帧`);
     await renderVideo(ctx, audioPath, outPath, {
       crf: withVoice ? 19 : 24,

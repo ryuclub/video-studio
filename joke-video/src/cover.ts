@@ -64,6 +64,7 @@ export function checkTitle(cfg: JokeCfg, title: string): string[] {
     // **整行都在裁切线外面**。规范 §一 写着「关键内容必须落在 3:4 区域里」，
     // 但 §七之六 的自检表没有这一条，于是没人拦。这儿把它算出来。
     for (const w of laomaTitleClip(title, cfg.cover?.titleLow === true)) warn.push(w);
+    for (const w of laomaSubFit(title, cfg.cover?.sub)) warn.push(w);
   }
   const punch = cfg.lines.find((l) => l.beat === 'punch');
   const spoiler = punch?.highlight;
@@ -150,6 +151,25 @@ const T = {
   lowBaselineK: 0.4,
   subFsK: 0.5,
   subGapK: 0.4,
+  /** 副标题两行之间的行距（占副标题字号）。比主标题的 1.12 松一点 —— 它是小字，行距紧了糊成一块 */
+  subLineH: 1.3,
+  /**
+   * 副标题字号的下限（占主标题字号）。**再小就读不清了**，
+   * 所以装不下的时候先换行、不再往下压 —— 压到看不清等于没写。
+   */
+  subMinFsK: 0.32,
+  /**
+   * 副标题**一行**的宽度上限，占画布宽。
+   *
+   * ⚠ **这不是「排不排得下画布」，是「压不压到角色」。**
+   * 角色站左三分之一，墨迹外沿量出来在 x≈465；副标题挂右边距（x=1013）往左长，
+   * 到 0.52W ≈ 562px 就顶到他身上了 —— 9:16 上压在胳膊和杯子上还能忍，
+   * **3:4 裁完横在下巴上**，而 §七之三 那条写着「绝不压脸」。
+   *
+   * 007 / 008 / 009 的副标题都是六个字，全都在线内，所以这条一直没人撞上；
+   * 010 写了十八个字才炸出来。**六个字是量出来的上限，不是审美偏好。**
+   */
+  subMaxWK: 0.52,
   /**
    * 中日韩字面的上伸量（占字号的比例，实测量的）。
    * 规范里的「副标题位置＝主标题末行基线下方 字号 × 0.4」按字面实现会**压在主标题上**：
@@ -234,6 +254,80 @@ export function laomaTitleClip(title: string, low = false): string[] {
   ];
 }
 
+/** 副标题一行的宽度单位（含字间距） */
+const subUnits = (t: string): number => units(t) + T.trackK * Math.max(0, [...t].length - 1);
+
+/**
+ * 副标题折行。**分段符是全角空格**，不是标点。
+ *
+ * 写法约定：`老马 · 工位　单子到我这儿，一般放三天` —— 前一段是栏目牌，
+ * 后一段是这一条的一句话。一行排得开就排一行（007/008/009 那种六个字的短副标题
+ * 一个字都不会变）；排不开就**栏目牌单独一行**，剩下的合成第二行。
+ *
+ * ⚠ **只折一次。** 折两次就是三行小字压在角色身上，那不叫封面叫说明书 ——
+ * 真的写到三段还排不开，该改的是副标题不是排版（`checkTitle` 会报）。
+ */
+function wrapSub(sub: string, avail: number, fs: number): string[] {
+  const one = [sub];
+  // ⚠ **判据是「会不会压到角色」，不是「排不排得进画布」。**
+  //
+  // 头一版写的是「按 0.5 倍主标题字号排不下才折」—— 那条太松：
+  // 「老马 · 工位　刷了八天」十个单位，按满字号排出来 910px，**排得进画布，
+  // 但横穿角色**（上限 562px，见 T.subMaxWK）。于是它不折行，直接压脸。
+  // 换成按宽度上限判：超过 562px 就折。
+  const fsIfOneLine = Math.min(fs * T.subFsK, avail / subUnits(sub));
+  if (fsIfOneLine * subUnits(sub) <= W * T.subMaxWK) return one;
+  const segs = sub.split(/\u3000+/).map((t) => t.trim()).filter(Boolean);
+  if (segs.length < 2) return one;
+  return [segs[0], segs.slice(1).join('　')];
+}
+
+/**
+ * 副标题排不排得下。
+ *
+ * ⚠ **这一条 2026-08-23 才有。** 在那之前主标题有字数闸、副标题一个都没有 ——
+ * 而副标题是 `text-anchor="end"` 挂右边距的，**写长了往左顶出画布**：
+ * 010 那张封面上「老马」两个字掉在画布外面，只剩一个「马」。
+ * 渲染不报错，缩略图上看着就像渲坏了。
+ */
+export function laomaSubFit(title: string, sub: string | undefined): string[] {
+  if (!sub || sub === 'none') return [];
+  const margin = W * T.marginK;
+  const avail = W - margin * 2;
+  const lines = splitTitle(title);
+  const widest = Math.max(...lines.map((l) => units(l) + T.trackK * Math.max(0, [...l].length - 1)));
+  const fs = Math.min(T.maxFs, avail / widest);
+  const wrapped = wrapSub(sub, avail, fs);
+  const widestSub = Math.max(...wrapped.map(subUnits));
+  const subFs = Math.max(fs * T.subMinFsK, Math.min(fs * T.subFsK, avail / widestSub));
+  const out: string[] = [];
+
+  // ① 排得下画布吗
+  if (subFs * widestSub > avail) {
+    const over = Math.round(subFs * widestSub - avail);
+    const longest = wrapped.reduce((a, b) => (subUnits(a) >= subUnits(b) ? a : b));
+    out.push(
+      `副标题「${longest}」排不下，会**往左顶出画布 ${over}px**（不是被裁，是掉出去）。` +
+        (wrapped.length > 1
+          ? '已经折成两行还是不够 —— **砍字，别指望排版救**'
+          : '加一个**全角空格**分段就能折行（写成「老马 · 工位　后半句」），或者直接砍字')
+    );
+  }
+
+  // ② 压到角色了吗。**排得下 ≠ 不压人** —— 这一条才是 010 那张封面真正的病
+  const maxW = W * T.subMaxWK;
+  for (const l of wrapped) {
+    const w = subFs * subUnits(l);
+    if (w > maxW)
+      out.push(
+        `副标题这一行「${l}」宽 ${Math.round(w)}px，超过 ${Math.round(maxW)}px，` +
+          `**会压到角色身上**（3:4 裁完横在他脸上，§七之三「绝不压脸」）。` +
+          `一行留六个字左右 —— 007/008/009 都是六个字`
+      );
+  }
+  return out;
+}
+
 /**
  * 出老马线的封面标题块。
  *
@@ -283,14 +377,22 @@ export function laomaTitle(
     //
     // ⚠ 它是 `text-anchor="end"` 挂在右边距上的：写长了不会在右边被裁掉，
     // 而是**往左顶出画布**，看着像渲染坏了而不是「这句写太长」。
-    // 主标题有 `checkTitle` 管字数，副标题一直没人管。
-    // 0.5 是上限不是定值 —— 装不下就往下压，压到主标题的 0.32 为止（再小就读不清了）。
-    const subUnits = units(sub) + T.trackK * Math.max(0, [...sub].length - 1);
-    const subFs = Math.max(fs * 0.32, Math.min(fs * T.subFsK, avail / subUnits));
+    // 010 那条就是这么撞上的：「老马 · 工位　单子到我这儿，一般放三天」18 个字，
+    // 压到下限也还差一大截，**「老马」两个字直接掉出了画布左边**。
+    //
+    // 所以：**先换行，再压字号**（2026-08-23 改）。
+    // 全角空格是分段符 —— 副标题写成「老马 · 工位　这一条一句话」，
+    // 排不开的时候前一段单独一行。压字号只是最后的余地，压到 0.32 为止。
+    const subLines = wrapSub(sub, avail, fs);
+    const widestSub = Math.max(...subLines.map(subUnits));
+    const subFs = Math.max(fs * T.subMinFsK, Math.min(fs * T.subFsK, avail / widestSub));
     const subY = y0 + (lines.length - 1) * lh + fs * T.subGapK + subFs * T.cjkAscent;
     const so = { fill: T.subFill, line: T.subLine, strokeK: T.subStrokeK, anchor };
-    strokes.push(inkedLine(sub, x, subY, subFs, 'stroke', so));
-    fills.push(inkedLine(sub, x, subY, subFs, 'fill', so));
+    subLines.forEach((l, i) => {
+      const yy = subY + i * subFs * T.subLineH;
+      strokes.push(inkedLine(l, x, yy, subFs, 'stroke', so));
+      fills.push(inkedLine(l, x, yy, subFs, 'fill', so));
+    });
   }
 
   // 描边全画完，再画填充。见 inkedLine 的注释。

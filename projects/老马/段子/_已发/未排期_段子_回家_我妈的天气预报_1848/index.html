@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>laoma-002 稿件预览</title>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #fffdf8; --ink: #23303d; --dim: #6b7785;
+  --line: #e0dace; --accent: #1f3a5f; --hot: #c8452e; --gold: #d8a53a;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171a1d; --card:#20252a; --ink:#e8e4da; --dim:#9aa4ae;
+          --line:#2f363d; --accent:#7fa8d8; --hot:#e2694f; --gold:#e0b954; }
+}
+* { box-sizing: border-box; }
+body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+/* 有侧栏时改成两栏；没侧栏（单条稿件页）时 .wrap 保持原样居中 */
+.layout { max-width: 1360px; margin:0 auto; display:grid;
+  grid-template-columns: 250px minmax(0,1fr); gap:34px; align-items:start; }
+.layout > .wrap { max-width:none; margin:0; }
+
+/* ── 左侧稿件导航 ── */
+.side { position:sticky; top:24px; max-height:calc(100vh - 48px);
+  display:flex; flex-direction:column; background:var(--card);
+  border:1px solid var(--line); border-radius:14px; padding:16px 12px 12px; }
+.side-head { font-size:13px; font-weight:700; color:var(--dim); letter-spacing:1px;
+  padding:0 8px 12px; border-bottom:1px solid var(--line); margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between; }
+.side-count { background:var(--accent); color:#fff; font-size:11px; font-weight:600;
+  min-width:20px; height:20px; padding:0 6px; border-radius:10px;
+  display:inline-flex; align-items:center; justify-content:center; }
+/* min-height:0 不能省：flex 子项默认不肯缩到内容高度以下，
+   少了它 overflow-y 不生效，稿件一多侧栏就会顶穿 max-height */
+.side-list { overflow-y:auto; min-height:0; display:flex; flex-direction:column; gap:4px; }
+.nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
+  text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
+.nav-item:hover { background:rgba(127,127,127,.1); }
+.nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
+/* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
+@media (prefers-color-scheme: dark) {
+  .nav-item.active { background:rgba(127,168,216,.16); }
+}
+.nav-thumb { width:34px; height:60px; object-fit:cover; border-radius:5px;
+  border:1px solid var(--line); flex:none; display:block; }
+.nav-thumb.ph { background:rgba(127,127,127,.12); }
+.nav-body { display:flex; flex-direction:column; min-width:0; gap:1px; }
+.nav-title { font-size:13px; font-weight:700; line-height:1.35;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* 序号做成小方牌：目录长了之后"第几条"比标题更快定位 */
+.nav-num { display:inline-block; min-width:15px; margin-right:5px; padding:0 3px;
+  border-radius:3px; background:var(--accent); color:#fff;
+  font-size:10px; font-weight:700; text-align:center; vertical-align:1px; }
+.nav-date { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+.nav-meta { font-size:11px; color:var(--dim); }
+.nav-cast { font-size:11px; color:var(--accent); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.side-top { margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+  font-size:12px; color:var(--dim); text-decoration:none; text-align:center; }
+.side-top:hover { color:var(--accent); }
+/* 锚点跳转时标题不被贴顶 */
+.joke { scroll-margin-top:24px; }
+h1 { font-size:26px; margin:0 0 6px; letter-spacing:.5px; }
+.sub { color:var(--dim); margin:0 0 32px; font-size:14px; }
+.joke { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:24px 26px 20px; margin-bottom:34px; }
+.joke > header { border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:20px; }
+h2 { font-size:20px; margin:0 0 8px; }
+h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
+.facts { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--dim); font-size:13px; }
+.alarm { background:rgba(200,69,46,.1); border-left:3px solid var(--hot);
+  padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
+/* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
+.film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+.film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
+  background:#000; display:block; }
+.film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
+.film-none { color:var(--dim); font-size:13px; margin-bottom:20px;
+  padding:10px 14px; border:1px dashed var(--line); border-radius:8px; }
+.rows { display:flex; flex-direction:column; gap:18px; }
+.row { display:grid; grid-template-columns:150px 1fr; gap:20px; align-items:start;
+  padding:14px; border-radius:10px; border:1px solid transparent; }
+.row.punch { border-color:var(--gold); background:rgba(216,165,58,.07); }
+.shot { position:relative; }
+.shot img { width:100%; border-radius:8px; display:block; border:1px solid var(--line); }
+.noshot { aspect-ratio:9/16; display:grid; place-items:center; color:var(--dim);
+  border:1px dashed var(--line); border-radius:8px; font-size:12px; }
+.ts { position:absolute; left:6px; bottom:6px; background:rgba(0,0,0,.6); color:#fff;
+  font-size:11px; padding:1px 6px; border-radius:4px; }
+.beat { font-size:12px; color:var(--dim); letter-spacing:1px; }
+.who { font-weight:700; color:var(--accent); margin:2px 0 6px; }
+.text { font-size:18px; margin:0 0 10px; line-height:1.6; }
+.text em { font-style:normal; color:var(--gold); font-weight:700; }
+.voice { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:4px; }
+.pill { background:var(--accent); color:#fff; font-size:12px; padding:2px 10px; border-radius:20px; }
+.pill.alt { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+.meta { color:var(--dim); font-size:12px; }
+.meta.warn { color:var(--hot); }
+.extras { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:16px; }
+.extras figure { margin:0; }
+/* 公用素材区 */
+.assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+.asset { margin:0; }
+.asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
+.asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
+.asset figcaption b { font-size:13px; color:var(--ink); }
+.asset figcaption code { font-size:10px; word-break:break-all; }
+.asset figcaption .src { opacity:.7; font-size:10px; }
+.asset.unrigged img { opacity:.72; border-style:dashed; }
+.voice-row { display:flex; align-items:center; gap:6px; margin:3px 0 1px; flex-wrap:wrap; }
+.vpill { background:var(--accent); color:#fff; font-size:10px; padding:1px 7px; border-radius:20px; white-space:nowrap; }
+.asset audio { height:26px; max-width:100%; flex:1 1 110px; min-width:100px; }
+.badge { background:var(--hot); color:#fff; font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; vertical-align:middle; margin-left:4px; }
+.assets h3:first-of-type { margin-top:6px; }
+.extras figure.is-cover img { border:2px solid var(--gold); }
+.extras figure.is-cover figcaption { color:var(--gold); font-weight:700; }
+.extras img { width:100%; border-radius:8px; border:1px solid var(--line); display:block; }
+figcaption { font-size:12px; color:var(--dim); margin-top:6px; }
+.ts-inline { opacity:.7; }
+.hook { margin-top:20px; padding:12px 16px; background:rgba(31,58,95,.08);
+  border-radius:8px; font-size:15px; }
+.analysis { margin-top:24px; border-top:1px solid var(--line); padding-top:14px; }
+summary { cursor:pointer; color:var(--dim); font-size:14px; font-weight:600; }
+.analysis h2,.analysis h3 { font-size:15px; margin:18px 0 8px; color:var(--ink); }
+.analysis p { margin:6px 0; font-size:14px; }
+.analysis ul { margin:6px 0; padding-left:22px; font-size:14px; }
+.analysis li.task { list-style:none; margin-left:-18px; }
+.analysis blockquote { margin:8px 0; padding:6px 12px; border-left:3px solid var(--line);
+  color:var(--dim); font-size:13px; }
+.analysis .note { color:var(--accent); font-style:normal; font-size:13px; }
+summary .src { float:right; font-weight:600; font-size:12px; color:var(--accent);
+  text-decoration:none; }
+/* 分镜表可能很宽，让它自己横向滚，别把整页撑出横条 */
+.tw { overflow-x:auto; margin:10px 0; }
+.tw table { border-collapse:collapse; font-size:13px; min-width:100%; }
+.tw th,.tw td { border:1px solid var(--line); padding:6px 9px; text-align:left;
+  vertical-align:top; }
+.tw th { background:rgba(127,127,127,.10); font-weight:700; white-space:nowrap; }
+.tw td:first-child { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--dim); }
+code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; font-size:13px; }
+/* 窄屏：侧栏收到顶部，横向滚动 */
+@media (max-width:900px){
+  .layout { grid-template-columns:1fr; gap:20px; }
+  .side { position:static; max-height:none; }
+  .side-list { flex-direction:row; overflow-x:auto; padding-bottom:4px; }
+  .nav-item { flex:none; width:190px; }
+  .side-top { display:none; }
+}
+@media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+</style>
+</head>
+<body id="top">
+<div class="wrap"><h1>laoma-002</h1>
+<p class="sub">成片 · 场景图 · 对话内容 · 音色设置 · 分析思路</p>
+<section class="joke" id="laoma-002">
+  <header>
+    <h2>laoma-002</h2>
+    <div class="facts">
+      <span>A 类 · street-night</span>
+      <span>片长 31.1s</span>
+      <span>笑点 25.0s</span>
+      <span>定格 27.1s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film">
+    <video src="out.mp4" controls preload="metadata" playsinline></video>
+    <div class="film-note">成片　<code>out.mp4</code></div>
+  </div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">1.3s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我妈每天给我发天气预报</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.60s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">3.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">不是转发的那种，是她自己一个字一个字打的</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.06s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">6.8s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">明天降温，加衣服。有雨，带伞。风大，别骑车</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 5.85s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">13.1s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我住的这个城市她没来过，但她每天都知道那儿几度</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 4.34s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">18.0s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">有一次我跟她说，妈，手机上都有</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.01s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">21.6s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">她说，我知道啊</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.52s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/07-台词.png" alt="第 7 句场景" loading="lazy"><span class="ts">25.0s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">第二天，她<em>还是发了</em></p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.11s</div>
+  </div>
+</div></div>
+  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="thumb.png" alt="封面" loading="lazy">
+  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="stills/00-开场.png" alt="开场空镜" loading="lazy">
+  <figcaption>开场空镜　<span class="ts-inline">1.0s</span></figcaption></figure>
+<figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">27.6s</span></figcaption></figure></div>
+  
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>laoma-002　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　我妈每天一个字一个字手打天气预报发给我；我说手机上都有，她说她知道，第二天照发。</li>
+<li><strong>为什么这么分镜</strong></li>
+</ul>
+<p>  钩子 → <strong>三条原话</strong> → 距离 → 转折（扭头）→ 她的回答 → <strong>张嘴无声</strong> → 落点，七句。</p>
+<p>  这条稿子跟稿 1 是两种东西：稿 1 是段子，靠一句 punch 把前面全部作废；</p>
+<p>  这条<strong>没有可笑的地方，靠的是「拦不住」</strong>。所以结构也不一样 ——</p>
+<p>  - <strong>铺垫必须是妈妈的原话</strong>（明天降温加衣服 / 有雨带伞 / 风大别骑车）。</p>
+<p>    复述成「她会提醒我加衣服」就完了：<strong>原话是证据，复述是评论</strong>，</p>
+<p>    而这条片子一旦开始评论就变成朋友圈鸡汤</p>
+<p>  - 三条是递进的：加衣服 → 带伞 → 别骑车，一条比一条管得宽。</p>
+<p>    §一之二 要三个例子，两个认不出规律，四个开始不耐烦</p>
+<p>  - <strong>落点前那 1.6 秒是全片的核心</strong>，见下</p>
+<ul>
+<li><strong>不能动的地方</strong></li>
+</ul>
+<p>  - <strong><code>openMouth: 1.6</code></strong> —— 她说「我知道啊」，他张嘴想反驳，没话说。</p>
+<p>    前面二十多秒观众已经学会「嘴在动＝有话」，这一下嘴动了没声音，那个空是响的。</p>
+<p>    方案 §六 原话：「它把口型开但不出声用成了叙事手段 —— <strong>画面的限制反过来变成了表达</strong>」。</p>
+<p>    <strong>这条片子就是为这 1.6 秒存在的</strong>，压缩它等于把片子拆了</p>
+<p>  - <strong>没有收尾卡，黑场收</strong>（<code>fadeOut: 1.4</code>，不写 <code>hook</code>）。</p>
+<p>    固定收尾「老马，今天也没辞职。」是段子的 CTA，往这条后面一贴</p>
+<p>    就成了「刚才那是个段子」—— 而它不是</p>
+<p>  - <strong>不垫 BGM。</strong> 这条稿子最容易犯的错就是垫一段温情钢琴，</p>
+<p>    那等于替观众定调，而这条线全部的力气都花在「只陈述，判断留给你」上</p>
+<p>  - <strong>一个漫符都不放，也不挂说话放射。</strong> 黄色尖刺是喜剧记号；</p>
+<p>    符号是画面在替观众下判断 —— 这条片子最忌讳的就是替观众判断</p>
+<p>  - <strong>落点 9 字，说完就完。</strong> 不解释、不总结、后面不再有话</p>
+<p>  - <strong>定格是闭眼</strong>（<code>endPose.eyes: "closed"</code>）。全片唯一一次闭目，</p>
+<p>    §五：超过 0.5 秒的闭眼读作「忍耐/认命」，很重，所以只能有一次</p>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>street-night</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:02.9</td><td>场景 <code>street-night</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我妈每天给我发天气预报</td><td>—</td></tr><tr><td>0:03.4–0:06.5</td><td>同上</td><td><strong>ma</strong>：不是转发的那种，是她自己一个字一个字打的</td><td>—</td></tr><tr><td>0:06.8–0:12.7</td><td>同上</td><td><strong>ma</strong>：明天降温，加衣服。有雨，带伞。风大，别骑车</td><td>—</td></tr><tr><td>0:13.1–0:17.4</td><td>同上</td><td><strong>ma</strong>：我住的这个城市她没来过，但她每天都知道那儿几度</td><td>—</td></tr><tr><td>0:18.0–0:21.1</td><td>同上</td><td><strong>ma</strong>：有一次我跟她说，妈，手机上都有</td><td>—</td></tr><tr><td>0:21.6–0:23.1</td><td>同上</td><td><strong>ma</strong>：她说，我知道啊</td><td>—</td></tr><tr><td>0:23.2–0:24.8</td><td><strong>张嘴，不出声</strong> 1.6s　<em class="note">他想说什么，说不出来</em></td><td>—</td><td>静音</td></tr><tr><td>0:25.0–0:27.1</td><td>同上</td><td><strong>ma</strong>：第二天，她还是发了</td><td>—</td></tr><tr><td>0:27.1–0:31.1</td><td>定格去色 + 黑场 1.4s　<strong>不出收尾卡</strong></td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>street-night</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 31.09s　<strong>7</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. <code>我妈每天给我发天气预报</code> ←主选</p>
+<p>  2. <code>我说手机上都有，她说我知道啊</code></p>
+<p>  3. <code>她没来过我这座城，却天天知道几度</code></p>
+<p>  选 1 的理由：<strong>「回家」这个栏目靠共鸣，不靠悬念。</strong></p>
+<p>  转发的动机是「这就是我妈」，不是「我想知道结局」——</p>
+<p>  所以标题要让人<strong>一眼认出自己家那位</strong>，而不是抛个谜。</p>
+<p>  - 「妈」「天气预报」都是强命中词，而且是<strong>具体的东西</strong>，不是「关心」这种形容（§一之四）</p>
+<p>  - 11 字，竖屏一行不折行</p>
+<p>  - 落点（第二天她还是发了）没剧透</p>
+<p>  2 把转折整个放出来了，钩子更强，但<strong>它是一句对白，得读两遍才知道谁在说话</strong>；</p>
+<p>  3 最像文案，也最不像老马 —— 「却天天知道几度」是在替观众感慨，</p>
+<p>  而这条线的全部力气都花在不感慨上。</p>
+<ul>
+<li><strong>副标题</strong>　<code>老马 · 回家　不愤怒，只是看得比谁都清楚</code></li>
+<li><strong>内容关键词</strong>　妈妈 / 天气预报 / 异地 / 家人 / 微信</li>
+<li><strong>热度关键词</strong>　妈妈 / 父母 / 异地 / 想家 / 亲情 / 打工人</li>
+<li><strong>话题标签</strong>　#老马 #回家 #妈妈 #异地 #家人</li>
+<li><strong>简介</strong></li>
+</ul>
+<p>  &gt; 我妈每天给我发天气预报。</p>
+<p>  &gt;</p>
+<p>  &gt; 不是转发的那种，是她自己一个字一个字打的。</p>
+<p>  &gt; 明天降温加衣服，有雨带伞，风大别骑车。</p>
+<p>  &gt; 我住的这个城市她没来过，但她每天都知道那儿几度。</p>
+<p>  <strong>写到「那儿几度」为止，不许往下写。</strong> 转折（妈，手机上都有）和落点</p>
+<p>  （第二天她还是发了）是这条片子仅有的两下，写进简介就是自己先剧透 ——</p>
+<p>  列表页那一行的任务是让人点开，不是让人看完。</p>
+<ul>
+<li><strong>封面大字</strong>　<code>我妈的天气预报</code></li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section></div>
+
+</body>
+</html>

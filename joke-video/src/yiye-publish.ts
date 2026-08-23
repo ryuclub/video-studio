@@ -27,7 +27,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { OUT_JOKE } from './paths.js';
-import { projectDir } from './preview.js';
+import { projectDir, findProjectDir, filmFile, coverFile } from './preview.js';
 import type { JokeCfg } from './types.js';
 import { buildTimeline } from './beats/typeA.js';
 
@@ -48,9 +48,10 @@ const id = cfg.id;
  * 目录不存在时 `方案.md` 也不存在，下面解析 §四 会给出该跑哪一步的提示。
  */
 function projDir(): string {
-  const hit = readdirSync(OUT_JOKE).filter((d) => d.endsWith(`_${id}`));
-  if (hit.length > 1) throw new Error(`${id} 对上了好几个目录：${hit.join(' / ')}`);
-  return hit.length ? `${OUT_JOKE}/${hit[0]}` : projectDir(cfg);
+  // ⚠ **别再在这儿自己 readdir。** 老马那条线的成品目录 2026-08-23 搬进了
+  // `projects/老马/段子/{_待发,_已发}/`，目录名也换了（`…_段子-1851`）——
+  // 反查规则只有 `findProjectDir` 一份，这儿抄一份出来就是第二套说法。
+  return findProjectDir(cfg) ?? projectDir(cfg);
 }
 
 const DIR = projDir();
@@ -72,7 +73,7 @@ const mmss = (d: number) => `${Math.floor(d / 60)}:${String(Math.round(d % 60)).
  * **出片后再跑一次**，片长自动换成实测 —— 编码按帧量化，估算跟文件能差一两秒。
  */
 function videoLen(): { text: string; measured: boolean } {
-  const f = `${DIR}/${id}.mp4`;
+  const f = `${DIR}/${filmFile(cfg)}`;
   if (existsSync(f)) {
     const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], {
       encoding: 'utf8',
@@ -180,7 +181,7 @@ const allTags = [...new Set([...tagList, ...ownList, ...hotList])];
 const coverTitle = cfg.cover?.title ?? '（未设）';
 const dur = videoLen();
 /** 成片那一格。还没出片时不给文件名 —— 给了人会去找一个不存在的文件 */
-const fileCell = dur.measured ? '`' + id + '.mp4`' : '（还没出片）';
+const fileCell = dur.measured ? '`' + filmFile(cfg) + '`' : '（还没出片）';
 
 // ── 说破段：这条线每一篇都必须有（出片方案 §四 第 7 条）──
 //
@@ -400,7 +401,7 @@ ${ch.intros.map((i) => `### ${i.name}　${i.where}\n\n\`\`\`\n${i.text}\n\`\`\`\
 | 用途 | 文件 |
 |---|---|
 | 成片 | ${fileCell}　${dur.text} |
-| 竖版封面 | \`cover/${id}-9x16.png\` |
+| 竖版封面 | \`${coverFile(cfg)}\` |
 | 预览页 | \`index.html\` |
 
 封面大字：\`${coverTitle}\`

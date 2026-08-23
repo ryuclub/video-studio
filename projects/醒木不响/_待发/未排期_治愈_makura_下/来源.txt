@@ -1,5 +1,0 @@
-这个包里的文件是硬链接，跟项目目录里那份是同一份数据（改哪边都一样）。
-项目目录：E:\ryu\project\vidgen\projects\治愈\2026-08-20_makura
-重建：npm run deliver
-排期：给这个目录改前缀（未排期_ → 2026-08-25_1800JST_），改完 npm run schedule 就认得
-发完：把整个目录挪进 ../_已发/

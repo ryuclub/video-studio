@@ -8,6 +8,10 @@
 // ⚠ **它不只是个命令，`voice` 和 `build` 之前会自动跑一遍**（cli.ts），
 // 有硬伤直接停。要强行过加 `--anyway`，跟「方案.md 没填完」那道闸同一个开关。
 //
+// ⚠ **2026-08-23 起按写稿规范 v3 查「一句配额」**（原来的四禁令拆成
+// 两条硬禁令 ＋ 一句配额）。配额句在哪一句由稿件的 `emotionLine` 点名 ——
+// **机器不判断一句话有没有情绪，只判断你点的那句合不合规矩**。
+//
 // ── 为什么要有这个东西 ──
 //
 // `horse/SCRIPT_GUIDE.md` §六 有一张十一条的发布前自检表，写着「逐条过，
@@ -33,6 +37,9 @@ import { lineText, type JokeCfg, type LineCfg } from './types.js';
 // ⚠ **有效 intro，不是 `cfg.intro`。** 「先出声后出人」那一档空镜恒等于零，
 // 而稿子里那个 `intro: 1.2` 通常还留着 —— 直接读它，体检报的片长会比成片多出 1.2 秒。
 import { introOf, openingStyleOf } from './beats/typeA.js';
+// 出场档 ③ 的首帧要画物件。**库里有没有那个画法，体检就该知道** ——
+// 不然人要等到渲染起来才被 `drawObject()` 抛一次。
+import { OBJECTS, hasObject } from '../horse/objects.mjs';
 
 export interface Issue {
   level: 'error' | 'warn';
@@ -80,6 +87,37 @@ const REACTION = /差点|几乎|居然|竟然|忍不住|莫名|才发现|原来|
  * ⚠ 跟 `REACTION` 是两张表：那张只管落点句，这张**管全篇**。
  */
 const EXPLAIN = /其实|说明|意味着|大概是因为|可见|也就是说|这就是|所谓/;
+
+/**
+ * **v3 §1 硬禁令一「不解释」的词表。**
+ *
+ * 跟 `EXPLAIN` 是两批：那批拦的是「其实／也就是说」这类**逻辑连接**，
+ * 这批拦的是**替观众下结论的成品句**——「太真实了」「打工人都懂」
+ * 「这就是职场」「多少人中招」。
+ *
+ * ⚠ 这一条是 v2 四禁令里**唯一没被改成配额的两条之一**（另一条是不堆形容词）：
+ * 它买到的是「挡住自杀式收尾」，代价几乎为零，所以永不放开。
+ */
+const V3_EXPLAIN = /真实|都懂|就是这样|扎心|中招|大概就是|多少人/;
+
+/**
+ * **配额句里不许出现的人称**（v3 §2 约束②）。
+ *
+ * **配额句必须是老马自己的处境，不能是对观众说话。**
+ *
+ *   ✓ 十五年了，有些词他一直是猜的。      ← 他的处境
+ *   ✗ 谁没遇到过这种事呢。                ← 对观众说话
+ *
+ * > **这条是防止老马变成第一千零一个账号的唯一闸门。**
+ *
+ * ⚠ **只查配额句那一句。** 别的句子里「我们公司」是正常说法
+ * （v3 §9 的示例第 1 句就是「我们公司有个词」），全篇拦会把它一起拦掉。
+ */
+const V3_SECOND_PERSON = /你们|你|谁|大家|我们/;
+
+/** v3 §8：一个名词带 ≥2 个修饰。判据是连着两个「…的」，其中至少一个是形容词 */
+const ADJ_CHAIN = /([一-龥]{1,3}的){2,}/;
+const ADJ_WORDS = /^(大|小|新|旧|老|长|短|高|低|多|少|好|坏|快|慢|难|累|轻|重|厚|薄|干净|漂亮|奇怪|安静|吵|空|满|粉|红|橙|黄|绿|青|蓝|紫|灰|白|黑|银|金)/;
 
 /**
  * §一之十二：**纯外观描述不能单独充当物件。**
@@ -183,8 +221,11 @@ export function extractNumbers(text: string): number[] {
 const LEDGER = 'horse/used-numbers.json';
 
 interface LedgerEntry {
+  /** 收尾卡上那个天数（1847…） */
   day: number;
   nums: number[];
+  /** 入账日期。只是给人看的，校验不用它排序 —— 排序永远按天数 */
+  at?: string;
 }
 
 function loadLedger(): LedgerEntry[] {
@@ -211,7 +252,7 @@ export function commitNumbers(cfg: JokeCfg): void {
   }
   const nums = [...new Set(extractNumbers(cfg.lines.map(lineText).join('')).filter((v) => v >= SIGNIFICANT_NUMBER))];
   const ledger = loadLedger().filter((e) => e.day !== day);
-  ledger.push({ day, nums });
+  ledger.push({ day, nums, at: new Date().toISOString().slice(0, 10) });
   ledger.sort((a, b) => a.day - b.day);
   writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + '\n', 'utf8');
   console.log(`  第 ${day} 天入账：${nums.length ? nums.join('、') : '（无显著数字）'} → ${LEDGER}`);
@@ -232,8 +273,9 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
 
   const roles = cfg.lines.map((_, i) => role(cfg.lines, i));
   const punchIdx = roles.lastIndexOf('punch');
+  /** 配额句的下标（0 起算）。稿件里的 `emotionLine` 是 1 起算的，这儿换算过 */
+  const quotaIdx = typeof cfg.emotionLine === 'number' ? cfg.emotionLine - 1 : -1;
   const punch = punchIdx >= 0 ? cfg.lines[punchIdx] : null;
-
   // ── §二：落点之后还有话 → 废稿重写，不要抢救 ──
   if (punchIdx >= 0 && punchIdx !== cfg.lines.length - 1)
     err(
@@ -323,6 +365,18 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
             `首帧规范 §一：**首帧要拍物件本身** —— 不另想画面，物件已经定过了，跟着它走，系列视觉一致性是白捡的`
         );
 
+      // ⚠ **物件库里有没有这个画法，在这儿拦，不要等到渲染。**
+      //
+      // `horse/objects.mjs` 的 `drawObject()` 名字不在库里就抛、不回退 —— 那是对的，
+      // 但它抛在渲染第 0 帧，而那时候 TTS 已经跑完、渲染线程池已经起来了。
+      // 一条稿子写完先跑体检，缺画法这件事该在那时候就说。
+      if (op.frameSubject && !hasObject(op.frameSubject))
+        err(
+          `物件库里没有「${op.frameSubject}」的特写画法（现有：${Object.keys(OBJECTS).join(' / ')}）。` +
+            `去 horse/objects.mjs 加一个，或者把这一条改走 \`figure-first\`／\`voice-first\`。` +
+            `**加完必过 120px 缩略图测试**：\`npm run frame -- <稿件> --thumb\``
+        );
+
       if (!op.frameText)
         err(
           '缺 `opening.frameText`（首帧上那行字）。首帧规范 §一：≤8 字、第 1 句的连续子串、含一个数 —— ' +
@@ -346,13 +400,21 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     }
   }
 
-  // ── §一之十三：落点必须是事实，不是反应 ──
+  // ── §一之十三：落点是事实句，**或者那一句配额** ──
+  //
+  // ⚠ **v3 把这一条松了半格。** v2 是「落点必须是事实句」，v3 改成
+  // 「落点是事实句，或那一句配额」——因为配额句最好的位置就是落点
+  // （规范 §9 的示例：「十五年了，有些词他一直是猜的。」）。
+  //
+  // 松的只有这半格：**没点名成配额句的落点，照旧不许是反应句。**
+  // 反应句把这件事替观众归好了档（「这是个可笑的反应」），他只剩点头的份。
   {
     const m = pt.match(REACTION);
-    if (m)
+    if (m && quotaIdx !== punchIdx)
       err(
         `落点是反应句：命中「${m[0]}」。§一之十三：落点说「发生了什么」，不说「我怎么了」——` +
-          `写出反应等于替观众把这件事归了档，他只剩点头的份。**反应挪到定格那一下的脸上去**（瞪眼/张嘴/一滴汗）`
+          `写出反应等于替观众把这件事归了档，他只剩点头的份。**反应挪到定格那一下的脸上去**（瞪眼/张嘴/一滴汗）；` +
+          `真要留着这句情绪，就把它点成配额句（\`emotionLine\`）`
       );
   }
 
@@ -472,13 +534,14 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     warn('全片没有一个「不圆」的数（二十三／三十七／十一那种）。§一之十六：整十整百听起来像编的');
 
   // 近 10 条内不得复用同一个显著数字。**重复的数字是最明显的模板痕迹**
+  //
+  // ⚠ **必须是 `< day` 不是 `!== day`。** 账本按天升序存，写成 `!==` 再 slice(-10)
+  // 取到的是**全账本最新的十条**，跟正在体检的是哪一条无关 —— 回头重跑一条老稿子，
+  // 它会拿七天后写的稿子来判它撞车（实测：001 第 1847 天报「17 在第 1854 天用过」）。
+  // 这条是硬伤级别的报警，假报警会让人开始无视它。
   const day = dayOf(cfg);
   const sig = [...new Set(nums.filter((v) => v >= SIGNIFICANT_NUMBER))];
   if (day !== null) {
-    // ⚠ **必须是 `< day` 不是 `!== day`。** 账本按天升序存，写成 `!==` 再 slice(-10)
-    // 取到的是**全账本最新的十条**，跟正在体检的是哪一条无关 —— 回头重跑一条老稿子，
-    // 它会拿七天后写的稿子来判它撞车（实测：001 第 1847 天报「17 在第 1854 天用过」）。
-    // 这条是硬伤级别的报警，假报警会让人开始无视它。
     const recent = loadLedger()
       .filter((e) => e.day < day)
       .slice(-NUMBER_WINDOW);
@@ -642,7 +705,8 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   });
 
   const turns = cfg.lines.filter((l) => roles[cfg.lines.indexOf(l)] === 'turn').length;
-  if (turns === 0) warn('没有转折句（beat: reply/ask）。§四 的四段结构里，转折是落点的助跑');
+  if (turns === 0)
+    warn('没有转折句（beat: reply/ask）。§四 的四段结构里，转折是落点的助跑');
 
   // ── 收尾卡：日子牌的字样 ──
   //
@@ -651,10 +715,105 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   //
   // 校验字样是因为它错得看不出来：「老马第1847天」「老马的第 1847 天。」
   // 单独看一条都通顺，四条片子排在一起才露馅，而那时候片子已经发出去了。
+  // ── 写稿规范 v3：两条硬禁令 ＋ 一句配额 ────────────────────────────
+  //
+  // v2 的四禁令（不解释／不堆形容词／不评论／不抒情）是四条价值完全不同的规则
+  // 被捆在了一起。前两条代价几乎为零，**保留为硬禁令**；后两条买到的是
+  // 「老马不油腻」，代价是**他不能有立场、不能有感情** —— 一个不想要任何东西、
+  // 不怕任何事、什么都不争取的角色，观众没法站在他那边，
+  // **也没有任何一句值得截图转发**。
+  //
+  // 但全放开就是那一千个「说出了我的心声」账号里的第一千零一个。
+  // 所以改成配额：**稀缺才有力量，一集一句。**
+  //
+  // ⚠ **机器不判断一句话有没有情绪** —— 那是 v3 §2 那条「删掉它信息量有没有变少」
+  // 的人工判定。机器只查：你点的那句在不在该在的位置、有没有对观众说话、
+  // 有没有第二句偷偷带情绪。**让脚本卡死，别靠自律**（配额制最容易滑坡成
+  // 「反正能抒情」，一集两句三句，两个月后就变回那一千个账号）。
+  {
+    const last = cfg.lines.length; // 1 起算：落点
+    if (cfg.emotionLine === undefined) {
+      warn(
+        '没写 `emotionLine`。v3 §2：**每集有且只有一句可以带情绪或立场** —— ' +
+          '用了就写下标（1 起算），**不用就写 `null`**。' +
+          '写出来的意思是「这一条动没动用那一句」是想过的，不是漏了'
+      );
+    } else if (cfg.emotionLine !== null) {
+      if (!Number.isInteger(cfg.emotionLine) || cfg.emotionLine < 1 || cfg.emotionLine > last)
+        err(`\`emotionLine\` 是 ${cfg.emotionLine}，越界（共 ${last} 句，1 起算）`);
+      else if (cfg.emotionLine === 1)
+        err(
+          '配额句是开场句。v3 §2 约束①：**开场句永远是设定/钩子，不许带情绪** —— ' +
+            '观众还没进来，煽不动'
+        );
+      else if (cfg.emotionLine !== last && cfg.emotionLine !== last - 1)
+        err(
+          `配额句在第 ${cfg.emotionLine} 句。v3 §2 约束①：**只能放在落点（第 ${last} 句）` +
+            `或落点前一句（第 ${last - 1} 句）** —— 放在中间，它既不承担落点，也不给落点助跑`
+        );
+
+      // 约束②：不能对观众说话
+      const qt = quotaIdx >= 0 && cfg.lines[quotaIdx] ? lineText(cfg.lines[quotaIdx]) : '';
+      const p = qt.match(V3_SECOND_PERSON);
+      if (p)
+        err(
+          `配额句里有「${p[0]}」：「${qt}」。v3 §2 约束②：配额句必须是**老马自己的处境**，` +
+            `不能是对观众说话 —— 「你/谁/大家」一出现，他就从「在过自己的日子」变成了「在跟你搭话」。` +
+            `**这是防止老马变成第一千零一个账号的唯一闸门**`
+        );
+    }
+
+    // 约束③：数量 ≤1。
+    //
+    // ⚠ **机器判不了「哪句带情绪」，但判得了「哪句是心里活动」** ——
+    // `REACTION` 那张表（差点/居然/忍不住/我觉得…）拦的正是这个。
+    // 点名的那一句放行，**别的句子命中就是第二句配额**。
+    cfg.lines.forEach((l, i) => {
+      if (i === quotaIdx) return;
+      const m = lineText(l).match(REACTION);
+      if (m)
+        err(
+          `第 ${i + 1} 句是情绪句：命中「${m[0]}」。v3 §2 约束③：**一集只有一句配额**` +
+            (quotaIdx >= 0 ? `，而配额已经给了第 ${quotaIdx + 1} 句` : `，而这一条一句都没点名（\`emotionLine\`）`) +
+            `。要么改成事实句，要么把配额挪过来`
+        );
+    });
+
+    // 硬禁令一：不解释（v3 的成品结论词表，全篇）
+    cfg.lines.forEach((l, i) => {
+      const m = lineText(l).match(V3_EXPLAIN);
+      if (m)
+        err(
+          `第 ${i + 1} 句在替观众下结论：命中「${m[0]}」。v3 §1 硬禁令「不解释」——` +
+            `不写「太真实了」「打工人都懂」「这就是职场」，不给结论贴标签`
+        );
+    });
+
+    // 硬禁令二：不堆形容词。一个名词最多带一个修饰
+    cfg.lines.forEach((l, i) => {
+      const t = lineText(l);
+      const m = t.match(ADJ_CHAIN);
+      if (m && ADJ_WORDS.test(m[0]))
+        warn(
+          `第 ${i + 1} 句「${m[0]}」像是一个名词带了两个修饰。v3 §1 硬禁令「不堆形容词」：` +
+            `**删掉后句子还成立的形容词，删掉**`
+        );
+    });
+
+    // v3 §5：身体锚点
+    if (!cfg.bodyAnchor)
+      warn(
+        '没写 `bodyAnchor`。v3 §5：**这件事有没有一个身体动作或具体物件，' +
+          '是几乎所有人都做过的？** —— 已发四条的播放量排下来，越具体越身体的越好' +
+          '（电梯里看哪儿 1385 / 外卖备注 448 / 天气预报 384 / 对齐了三次 50）。' +
+          '**写不出来就换选题**'
+      );
+  }
+
   if (cfg.hook !== undefined && !/^老马的第 \d+ 天$/.test(cfg.hook))
     err(
       `收尾卡「${cfg.hook}」不是日子牌的字样。写成 \`老马的第 1847 天\`：` +
-        `数字前后各一个空格、结尾不加标点。数字照 horse/CHANNEL_LAOMA.md §五之二 的分配表，一稿一天往下加`
+        `数字前后各一个空格、结尾不加标点。数字照 horse/CHANNEL_LAOMA.md §五之二 的分配表`
     );
 
   return out;

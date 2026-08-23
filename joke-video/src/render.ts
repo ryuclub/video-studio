@@ -2,7 +2,7 @@
 
 import { W, H, GROUND, SLOT, SNAKE, SNAKE_DY, WIDE, FPS } from './config.js';
 import { P, makeInk } from './style/palette.js';
-import { getScene } from './scenes/index.js';
+import { getScene, horseSceneDressed } from './scenes/index.js';
 import { PROPS } from './props/index.js';
 import { serpentine } from './rigs/serpentine.js';
 import { human, speedOf } from './rigs/human.js';
@@ -12,11 +12,12 @@ import { cat } from './rigs/cat.js';
 import { still } from './rigs/still.js';
 import type { CharState } from './rigs/state.js';
 import { dialogueStrip, hookStrip, seriesCard, sideText, openLineSvg, openFrameSvg } from './subtitle.js';
+import { curtain, CURTAIN_SEC } from '../horse/curtain.mjs';
 import { drawObject } from '../horse/objects.mjs';
 import { breathe, blinking, clamp, easeOut, lerp, shake, smoothstep, talkBob, track, type Key } from './anim.js';
 import { getPace } from './pace.js';
 import { segAt, speakingAt, subtitleAt, estimateDur, partAt, partSpans, openSpan, introOf } from './beats/typeA.js';
-import { subtitleText, lineText, type Timeline } from './types.js';
+import { dayNo, subtitleText, lineText, type Timeline } from './types.js';
 import { mouthFrom } from './audio/align.js';
 import { horse as horseRig, horseBox } from './rigs/horse.js';
 import { place as placeMark, speechBurst } from '../horse/marks.mjs';
@@ -609,6 +610,40 @@ export function toScreen(cam: { zoom: number; tx: number; ty: number }, px: numb
   };
 }
 
+/**
+ * 开场幕布：**头 0.45 秒（30fps 下 14 帧）两片赭红幕布往两边拉开。**
+ *
+ * ── 为什么它不占时间 ──
+ *
+ * **配音在幕布还没拉开时就开始。** 前三秒定生死，幕布是在花钱买仪式感；
+ * 声音先到、画面后到，它才不占时间。**拉到一秒以上就是纯亏。**
+ *
+ * ── ⚠ 它跟首帧规范那条「无片头」是有冲突的，这是有意让的 ──
+ *
+ * 首帧规范写着「0.000 出声、无片头、无标题卡、无静默前摇」，而档 ③ 的全部意义
+ * 就是**首帧即物件特写**。幕布盖住头 14 帧 —— 观众第一眼看到的是幕布，不是物件。
+ * 2026-08-23 用户定的：**两个出场档都开**（当时列的三档里的 A）。
+ * 换句话说「无片头」现在的意思是「不占时间的片头可以有」，不是「什么都不许有」。
+ *
+ * ── ⚠ 别改成 ffmpeg 位移合成 ──
+ *
+ * 素材包的 README 主张「不要逐帧渲整张画面」，改用 `curtainPanel()` 导出两张 PNG、
+ * 位移交给 ffmpeg。**那条建议对这个仓库不成立**：这儿本来就逐帧渲整片
+ * （25 秒的片子 756 帧全渲），头 14 帧渲不渲幕布都要渲，多画两片布几乎不要钱。
+ * 换成 ffmpeg 合成反而要多一个合成阶段、两张外部 PNG 和一条 overlay 表达式。
+ *
+ * ⚠ **但 README 里另一条警告要记住**：CSS / SMIL 动画 SVG 在 resvg 里**不执行**，
+ * 只会静态渲 t=0 那一帧 —— 真那么做会得到 14 张一模一样的全闭画面，而且不报错。
+ * 所以幕布必须像现在这样**按帧算进度、每帧重画**。
+ */
+function curtainAt(tl: Timeline, t: number): string {
+  if (t >= CURTAIN_SEC) return '';
+  // 只给老马线。判据跟别处一样是 rig === 'horse'
+  if (!tl.cfg.characters?.some((c) => c.rig === 'horse')) return '';
+  if (tl.cfg.curtain === false) return '';
+  return curtain(t / CURTAIN_SEC);
+}
+
 export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {}): string {
   const { tl } = ctx;
   const t = frame / FPS;
@@ -642,7 +677,14 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
           '要么写 "opening": { "style": "figure-first" } 退回老样子。'
       );
     const art = drawObject(card0.subject, 1);
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${openFrameSvg(art, card0.text, { height: H })}</svg>`;
+    // ⚠ **幕布要挂两处。** 这儿是档 ③ 的早返回，下面正常路径的收尾是另一处 ——
+    // 只挂后者的话，恰恰是老马缺省那一档没有幕布，而且没人会报错。
+    return (
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
+      openFrameSvg(art, card0.text, { height: H }) +
+      curtainAt(tl, t) +
+      `</svg>`
+    );
   }
 
   // 定格：整帧去色（不用 SVG 滤镜，直接换色，快很多）
@@ -657,7 +699,34 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
   const cam = ov.cam ?? camera(ctx, t);
   // 逐镜换场景：跟 stageAt 同一套归属规则（句间空白归下一镜），
   // 两者不一致的话会出现"人已经换镜了但背景还是上一个"
-  const scene = getScene(sceneAt(tl, Math.min(t, tl.freezeStart - 0.001)))(ink, 41);
+  /**
+   * 老马线的场景**带摆件**（桌上一两件跟这个场所本来就该有的东西）。
+   *
+   * ⚠ **摆件按天数号选，不是每帧随机** —— 每帧随机的话桌上那支笔会满屏跳。
+   * ⚠ **必须把稿件的 `object` 传成 `skip`**：那件东西是台词点名的，
+   *    摆进画面就是 SCRIPT_GUIDE §五 禁的「图解台词」。判据是
+   *    「删掉这件摆件，有没有哪句台词变得不好懂」—— 有就是错了。
+   * ⚠ 没台面的场景（电梯、地铁、街道、候诊区）池子是空的，返回空串。
+   */
+  const sceneName = sceneAt(tl, Math.min(t, tl.freezeStart - 0.001));
+  const isHorse = !!tl.cfg.characters?.some((c) => c.rig === 'horse');
+  const dressSeed = dayNo(tl.cfg) ?? 0;
+  /**
+   * 标题牌匾：**把标题做成场景里的物件，不是浮在画面上的 UI**（`horse/plaque.mjs`）。
+   *
+   * 文案走 `plaque` 字段，不写就退到封面大字 —— 两者本来就是同一条规矩：
+   * **不能剧透落点**，牌匾说的是「他在哪儿、在说什么话题」。
+   *
+   * ⚠ **载体按天数号轮换**（`slotFor(场景, n)`）：同一个场景连发几条，
+   * 这一条挂木牌、下一条贴便签、再下一条征用显示器 —— 跟摆件一个用途，防同质化。
+   * ⚠ 写 `"plaque": false` 单条关掉。
+   */
+  const pl = tl.cfg.plaque;
+  const plTitle = pl === false ? undefined : (typeof pl === 'object' ? pl.text : undefined) ?? tl.cfg.cover?.title;
+  const plSub = pl === false ? undefined : typeof pl === 'object' ? pl.sub : undefined;
+  const scene = (
+    isHorse ? horseSceneDressed(sceneName, dressSeed, tl.cfg.object, plTitle || undefined, plSub) : getScene(sceneName)
+  )(ink, 41);
 
   const layer = (content: string, k: number) =>
     `<g transform="translate(${(cam.tx * k).toFixed(2)},${(cam.ty * k * 0.3).toFixed(2)}) scale(${(1 + (cam.zoom - 1) * k).toFixed(4)}) translate(${(
@@ -919,7 +988,9 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
       // 竖直中心落在头和肩之间：字跟脸平齐才像「他在说」，落到脚边像旁白
       cy: box ? box.y + box.h * 0.34 : H * 0.42,
       ink,
-      fontSize: 48,
+      // 档位跟着 beat 走：落点整屏琥珀 ＋ 大 25%（字幕规范 §三）。
+      // ⚠ **不再写死 fontSize** —— 写死的话规范那三档就等于没接。
+      tier: sub.line.beat === 'punch' ? 'punch' : 'setup',
       // 高亮只在**包含它的那一屏**上给，别的屏原样出
       highlight: sub.line.highlight && shown.includes(sub.line.highlight) ? sub.line.highlight : undefined,
     });
@@ -945,7 +1016,9 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
     // 钩子是 CTA，不跟着定格去色，让它在灰调画面里跳出来
     // 侧边字幕那条线全程无衬底，收尾卡也不挂色块 —— 它正好落在定格去色那一帧上，
     // 全屏都灰了就它一块藏青，是整片里唯一一处「装饰」
-    hook = hookStrip(tl.cfg.hook, 250, makeInk(0), 777, prog, tl.cfg.subtitleStyle === 'side');
+    // 老马线（`subtitleStyle: 'side'`）的收尾卡是日子牌，字号单独一档 —— 见 hookStrip
+    const sideStyle = tl.cfg.subtitleStyle === 'side';
+    hook = hookStrip(tl.cfg.hook, 250, makeInk(0), 777, prog, sideStyle, sideStyle ? 72 : 52);
   }
 
   // 片头卡：只在 intro 那段空镜上。放在字幕之后画，**不跟着推镜走**——
@@ -981,6 +1054,7 @@ ${card}
 ${hook}
 ${ov.overlay ?? ''}
 ${veil}
+${curtainAt(tl, t)}
 </svg>`;
 }
 

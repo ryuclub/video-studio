@@ -65,7 +65,7 @@ function main() {
     const i = argv.indexOf(name);
     return i < 0 ? undefined : argv[i + 1];
   };
-  const { id: EP, dir } = resolveEp(argv);
+  const { id: EP, dir, slug } = resolveEp(argv);
   const tag = '全片';
   const audioDir = `${dir}/audio`;
   const sceneDir = `${dir}/scenes`;
@@ -150,14 +150,15 @@ function main() {
       burnSrt = '_burn.srt';
       const shifted = shiftSrt(readFileSync(`${audioDir}/${srt}`, 'utf8'), coverHold);
       writeFileSync(`${audioDir}/${burnSrt}`, shifted);
-      writeFileSync(`${dir}/${EP}.srt`, shifted);
+      writeFileSync(`${dir}/${slug}.srt`, shifted);
     }
     // **相对路径 + cwd**：subtitles 滤镜里的 Windows 盘符冒号要三重转义，
     // 与其跟转义较劲，不如把工作目录切到音频目录，只传文件名
     vf.push(`subtitles=${burnSrt}:force_style='${SUB_STYLE}'`);
   }
 
-  const out = `${dir}/${EP}.mp4`;
+  // **按 slug 命名，不按 EP** —— EP 的前缀是档期，挪档就变；slug 是身份，永不变
+  const out = `${dir}/${slug}.mp4`;
   const args = [
     '-y', '-v', 'warning', '-stats',
     '-f', 'concat', '-safe', '0', '-i', resolve(listPath).replace(/\\/g, '/'),

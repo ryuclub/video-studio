@@ -29,9 +29,12 @@
     "shuoshu:preview": "tsx src/shuoshu-build.ts --preview",
     "shuoshu:ship": "tsx src/shuoshu-ship.ts",
     "laoma:check": "tsx src/laoma-check.ts",
+    "laoma:schedule": "tsx src/laoma-schedule.ts",
     "plan": "tsx src/cli.ts plan",
     "laoma:publish": "tsx src/yiye-publish.ts",
-    "frame": "tsx src/cli.ts frame"
+    "frame": "tsx src/cli.ts frame",
+    "schedule": "tsx src/schedule.ts",
+    "deliver": "tsx src/deliver.ts"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

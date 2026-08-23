@@ -1,9 +1,0 @@
-{
-  "title": "端到端音频自检",
-  "lines": [
-    { "text": "1997年\n11月17日 | 清晨", "style": "chip", "speech": "", "pauseAfterMs": 1800, "clip": "test_a" },
-    { "text": "北海道拓殖银行的营业厅还没开门", "style": "sub", "clip": "test_b" },
-    { "text": "门外已经排起了看不到头的长队", "style": "sub" },
-    { "text": "这是战后第一家倒闭的都市银行", "style": "sub", "clip": "test_c", "pauseAfterMs": 500 }
-  ]
-}

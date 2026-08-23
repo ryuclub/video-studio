@@ -22,7 +22,7 @@
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { COMPOSITION_NAMES } from './shuoshu-scene.js';
-import { MOTIFS, SERIES } from './shuoshu-cover.js';
+import { YT_MOTIFS, PALETTES as YT_PALETTES } from './yt-cover.js';
 import { BEAT_NAMES } from './shuoshu-beat.js';
 import { CAST_NAMES } from './cast.js';
 import { resolveEp } from './shuoshu-ep.js';
@@ -152,7 +152,9 @@ export function preflightShuoshu(dir: string): Issue[] {
     return out;
   }
   const doc = JSON.parse(readFileSync(scenesPath, 'utf8')) as {
+    /** 旧版式留档，ship 已经不读了 */
     cover?: Record<string, string>;
+    yt?: { kicker?: string; big?: string; hook?: string[]; motif?: string; palette?: string };
     scenes?: { no: number; comp: string; title: string }[];
   };
   const scenes = doc.scenes ?? [];
@@ -169,22 +171,47 @@ export function preflightShuoshu(dir: string): Issue[] {
   for (let i = 1; i < nos.length; i++)
     if (nos[i] <= nos[i - 1]) err(`场景段号不是递增的：第 ${nos[i - 1]} 段之后又出现第 ${nos[i]} 段`);
 
-  // ── 封面 ──
-  const cover = doc.cover;
-  if (!cover) err('scenes.json 里没有 cover 那一段，封面出不来（而出片会因为找不到 cover.png 直接停）');
+  // ── 封面 ────────────────────────────────────────────────────────────
+  //
+  // **2026-08-23 起只有一种版式。** 成片第一帧、上传横版、微信 1:1
+  // 全部由 `yt-cover.ts` 出，数据是 scenes.json 的 `yt` 块。
+  // 旧版式（`shuoshu-cover.ts` + `cover` 块）ship 已经不调了，这里也就不再查它 ——
+  // E01–E04 那几期的 `cover` 块留着不碍事，是留档。
+  //
+  // 这一段**必须拦在 TTS 之前**：yt 块写错的话，音频白跑十几分钟才炸在封面那一步。
+  const yt = doc.yt;
+  if (!yt)
+    err(
+      'scenes.json 里没有 yt 那一块 —— 封面出不来，而封面就是成片第一帧。\n' +
+        '    照这个写（跟 scenes 并排）：\n' +
+        '    "yt": { "kicker": "聊斋 · 婴宁", "big": "不笑",\n' +
+        '            "hook": ["压垮她的不是{官司}", "是婆婆那句{好话}"],\n' +
+        '            "motif": "smile_flat", "palette": "ink" }'
+    );
   else {
-    for (const k of ['title', 'hook1', 'hook2', 'accent', 'seal', 'epLabel', 'motif'])
-      if (!cover[k]) err(`封面缺 ${k}`);
-    if (cover.motif && !MOTIFS[cover.motif]) err(`封面符号「${cover.motif}」不存在。可用：${Object.keys(MOTIFS).join(' / ')}`);
-    if (cover.series && !SERIES[cover.series]) err(`书系「${cover.series}」不存在。可用：${Object.keys(SERIES).join(' / ')}`);
-    if (cover.accent && cover.hook1 && cover.hook2 && !(cover.hook1 + cover.hook2).includes(cover.accent))
-      warn(`强调字「${cover.accent}」在两句钩子里都找不到，等于没有强调色`);
-    if (cover.title && ([...cover.title].length < 2 || [...cover.title].length > 6))
-      warn(`篇名「${cover.title}」${[...cover.title].length} 字，字号表只覆盖 2–6 字`);
-    // 微信那张显示出来只有 120–200px，篇名是全图唯一读得出的东西。
-    // 五字以上在这个尺寸上糊成一竖条——横版还撑得住，方版撑不住
-    if (cover.title && [...cover.title].length >= 5)
-      warn(`篇名「${cover.title}」${[...cover.title].length} 字，微信 1:1 那张在 200px 上会糊。先看 cover/check-square-200.png`);
+    for (const k of ['kicker', 'big', 'motif', 'palette'] as const) if (!yt[k]) err(`封面缺 yt.${k}`);
+    if (yt.motif && !YT_MOTIFS[yt.motif])
+      err(`封面图形「${yt.motif}」不存在。可用：${Object.keys(YT_MOTIFS).join(' / ')}`);
+    if (yt.palette && !YT_PALETTES[yt.palette])
+      err(`配色档「${yt.palette}」不存在。可用：${Object.keys(YT_PALETTES).join(' / ')}`);
+    // 主字：两个字。三字要降到 190px，高度会跌破画面的三分之一（规范 §五）
+    const bigLen = [...(yt.big ?? '')].length;
+    if (bigLen > 3) err(`主字「${yt.big}」${bigLen} 字。规范 §五：两个字，三字只在图形让位时才允许`);
+    else if (bigLen === 3) warn(`主字「${yt.big}」3 字，字号要降到 190px，高度会跌到画面的 26%`);
+    // **主字不能照抄篇名。** 规范 §五 点名说这是说书线最容易搞错的一处：
+    // 篇名是书名（畫皮 / 促織），主字要的是钩子或诊断词
+    if (yt.big && doc.cover?.title && [...doc.cover.title].some((c) => yt.big!.includes(c)))
+      warn(`主字「${yt.big}」跟篇名「${doc.cover.title}」有重字 —— 主字是钩子不是书名（§五）`);
+    if (!Array.isArray(yt.hook) || yt.hook.length !== 2) err('yt.hook 要两行，不多不少（规范 §五：绝不三行）');
+    else {
+      let hot = 0;
+      for (const [i, line] of yt.hook.entries()) {
+        const len = [...line.replace(/[{}]/g, '')].length;
+        if (len > 10) warn(`副标第 ${i + 1} 行「${line.replace(/[{}]/g, '')}」${len} 字，超过 10 字（§五）`);
+        hot += (line.match(/\{[^}]*\}/g) ?? []).length;
+      }
+      if (hot > 2) warn(`副标圈了 ${hot} 处重点词，两行合计最多两处 —— 多了就没有落点了（§五末）`);
+    }
   }
 
   // ── 有音频之后才能查的：画面密度 ──

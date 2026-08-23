@@ -10,16 +10,27 @@
 // 简写匹配：`--ep E01` 认得出上面那个目录，不用敲全名。
 
 import { OUT_SHUOSHU } from './paths.js';
-import { readdirSync, existsSync, mkdirSync, statSync } from 'node:fs';
+import { nextSlot, slugOf } from './schedule.js';
+import { readdirSync, existsSync, mkdirSync, statSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
 const ROOT = OUT_SHUOSHU;
 
 export interface Ep {
-  /** 目录名，如 2026-08-18_liaozhai-E01 */
+  /** 目录名，如 2026-08-25_1800JST_婴宁-E05 */
   id: string;
   /** 相对 joke-video/ 的目录路径 */
   dir: string;
+  /**
+   * 目录名里**不变的那一半**（身份），如 `婴宁-E05`。
+   *
+   * 成片、字幕按它命名，不按 `id` —— 因为 `id` 的前缀是档期，**档期是会挪的**。
+   * 按 `id` 命名的话，挪一次档就得把 mp4/srt 一起改名，发布文案里的文件名也跟着断。
+   * 见 `schedule.ts` 顶上那条「别把可变状态编进不可变标识里」。
+   *
+   * 老目录（`2026-08-18_liaozhai-E01`）没有档期前缀，去掉日期就是身份。
+   */
+  slug: string;
 }
 
 export function listEps(): string[] {
@@ -27,7 +38,7 @@ export function listEps(): string[] {
   return readdirSync(ROOT).filter((d) => statSync(`${ROOT}/${d}`).isDirectory());
 }
 
-const asEp = (id: string): Ep => ({ id, dir: `${ROOT}/${id}` });
+const asEp = (id: string): Ep => ({ id, dir: `${ROOT}/${id}`, slug: slugOf(id) });
 
 /**
  * 从命令行解析期号。
@@ -58,8 +69,19 @@ export function resolveEp(argv: string[]): Ep {
 /**
  * 从稿件路径推期号，没有对应目录就建一个。
  *
- * `liaozhai-E02-nie.md` → 找带 `E02` 的目录 → 没有就建 `<今天>_liaozhai-E02`。
+ * `liaozhai-E05-yingning.md` → 找带 `E05` 的目录 → 没有就建一个。
  * 解析是一期的第一步，这时候目录本来就还不存在，所以只有这里允许创建。
+ *
+ * ── 新目录名（2026-08-23 起）──
+ *
+ *     2026-08-25_1800JST_说书_婴宁-E05
+ *     └── 下一个空的说书档 ──┘ └类型┘ └篇名-期号┘
+ *
+ * **档期是自动挑的**：`schedule.ts` 按周二/周四/周六 18:00 往后找第一个没被占的档。
+ * 排满了就往下一周走，一档只发一条 —— 判据是目录名，没有第二本账。
+ * 要挪档，直接给目录改前缀，别改后半截。
+ *
+ * 篇名从稿件第一行的 `# 第 5 期《婴宁》` 里取。取不到就退回文件名里的拼音段。
  */
 export function epFromScript(scriptPath: string): Ep {
   const stem = basename(scriptPath).replace(/\.md$/, '');
@@ -70,11 +92,15 @@ export function epFromScript(scriptPath: string): Ep {
   if (hit.length > 1) throw new Error(`${tag} 对上了好几个目录：${hit.join(' / ')}`);
   if (hit.length === 1) return asEp(hit[0]);
 
-  const d = new Date();
-  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  const series = /^([a-z]+)-/i.exec(stem)?.[1] ?? 'shuoshu';
-  const id = `${today}_${series}-${tag}`;
+  // 篇名：稿件第一行 `# 第 5 期《婴宁》`。**用中文篇名不用拼音** ——
+  // 目录名是给人看的，`婴宁-E05` 一眼知道是哪一期，`liaozhai-E05` 要去查
+  const title = /《([^》]+)》/.exec(readFileSync(scriptPath, 'utf8').split('\n')[0] ?? '')?.[1];
+  const name = title ?? /^[a-z]+-E\d+-(.+)$/i.exec(stem)?.[1] ?? stem;
+  const slot = nextSlot('说书');
+  // 目录名：日期 _ 时刻JST _ 类型 _ 稿件名-序号
+  const id = `${slot.tag}_说书_${name}-${tag}`;
   mkdirSync(`${ROOT}/${id}`, { recursive: true });
   console.log(`新建期号目录：${ROOT}/${id}`);
+  console.log(`  档期：${slot.tag.replace('_', ' ').replace('JST', ' JST')}（说书线下一个空档）`);
   return asEp(id);
 }

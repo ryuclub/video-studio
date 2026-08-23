@@ -18,6 +18,16 @@
 //           └ 右侧竖排题字 + 朱红印
 //
 // 留白是主角。**主体占满画面就成了插画，不是水墨。**
+//
+// ⚠ **右边那一栏是禁区：x > 1680、y 560–980，不要放深墨的东西。**
+//
+// 题字从 (1740, 150) 往下竖排，朱印跟在题字末尾 —— 印的 y 是
+// `150 + 字数 × 字号 × 1.18 + 30`，所以**题字越长，印越往下**，
+// 一句 6 字的印在 y≈576，一句 11 字的印在 y≈906。整段都要空出来。
+//
+// E05 撞了三次才发现：灯市 / 满阶花 / 灯下 的屋顶伸到 x≈1750，
+// 印章正好压在瓦上。**这不是渲染报错，是出片之后用眼睛才看得见的那类问题** ——
+// 加新构图时右边留够，比事后一张张挑出来便宜。
 
 import { mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
@@ -387,6 +397,144 @@ function pot(cx: number, baseY: number, w: number, seed: number, empty = false):
   );
 }
 
+/**
+ * 一枝花。**E05《婴宁》新增，这一期的主母题。**
+ *
+ * 婴宁全篇是「笑」和「花」两样东西撑起来的，笑在音轨上，花只能在画面上。
+ * 画法上有一条要守住：**花瓣用淡墨的点，不用轮廓线。**
+ * 描了轮廓就成了工笔花鸟，跟这套写意的山、屋、人不是一路，摆在一张纸上会打架。
+ *
+ * 一枝 = 一根主干 + 两根侧枝 + 四朵点花。再多就腻。
+ */
+function blossom(x: number, footY: number, h: number, seed: number, alpha = 0.8): string {
+  const r = rng(seed);
+  const tipX = x + (r() - 0.5) * h * 0.55;
+  const tipY = footY - h;
+  let out = `<path d="${brush(
+    [
+      [x, footY],
+      [x + (r() - 0.5) * h * 0.22, footY - h * 0.45],
+      [tipX, tipY],
+    ],
+    h * 0.022,
+    h * 0.005
+  )}" fill="${INK.ink}" opacity="${alpha}" filter="url(#wetNear)"/>`;
+
+  /**
+   * 一朵。**小、深、不匀。**
+   *
+   * 第一版是五个等大的淡墨圆排成正五边形，渲出来是卡通雏菊 —— 均匀、发白、比枝子还宽。
+   * 水墨的梅点不是花的形状，是**比枝子略粗的一撮墨点**：大小各不相同，位置有偏，
+   * 中间那点最重。规矩跟人影"不画脸"是同一条：给提示，不给图样。
+   */
+  const flower = (cx: number, cy: number, rr: number) => {
+    let o = '';
+    const k = 4 + Math.floor(r() * 2);
+    for (let i = 0; i < k; i++) {
+      const a = (i / k) * Math.PI * 2 + r() * 1.2;
+      const d = rr * (0.7 + r() * 0.5);
+      o += `<circle cx="${n(cx + Math.cos(a) * d)}" cy="${n(cy + Math.sin(a) * d)}" r="${n(rr * (0.38 + r() * 0.26))}" fill="${INK.ink}" opacity="${n(alpha * (0.4 + r() * 0.24))}"/>`;
+    }
+    return o + `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(rr * 0.3)}" fill="${INK.ink}" opacity="${n(alpha * 0.85)}"/>`;
+  };
+
+  // 侧枝三根，梢头各缀一撮；主干上再零星点几撮 —— 花要沿着枝走，不是挂在枝头当灯笼
+  for (const t of [0.34, 0.58, 0.8]) {
+    const bx = x + (tipX - x) * t;
+    const by = footY - h * t;
+    const dir = t === 0.58 ? -1 : 1;
+    const ex = bx + dir * h * (0.16 + r() * 0.1);
+    const ey = by - h * (0.1 + r() * 0.07);
+    out += `<path d="${brush([[bx, by], [ex, ey]], h * 0.013, h * 0.004)}" fill="${INK.ink}" opacity="${n(alpha * 0.85)}"/>`;
+    out += flower(ex, ey, h * 0.032);
+    out += flower(bx + (r() - 0.5) * h * 0.05, by - h * 0.03, h * 0.026);
+  }
+  out += flower(tipX, tipY, h * 0.034);
+  out += flower(tipX - h * 0.06, tipY + h * 0.07, h * 0.024);
+  return out;
+}
+
+/**
+ * 一段院墙。**E05 新增。** 婴宁那一笑是在墙头上出的事，墙必须画得出来。
+ *
+ * 跟 house() 的墙不是一回事：那一面是屋子的一部分，这一段是**隔断** ——
+ * 墙里是她的院子，墙外是别人的世道，这一期的祸就出在她不知道有这条线。
+ * 所以墙要横着长、墙脚要压出画外，墙头那道瓦是整段唯一的浓墨。
+ *
+ * **墙身只能是极淡的一层。** 第一版给了 0.46，渲出来是半张画的灰板 ——
+ * 留白是这套水墨的主角（见文件头），一块实心矩形直接把它吃掉了。
+ */
+function wall(cx: number, baseY: number, w: number, h: number, seed: number): string {
+  const r = rng(seed);
+  const wob = (v: number) => v + (r() - 0.5) * h * 0.05;
+  const x0 = cx - w / 2;
+  const x1 = cx + w / 2;
+  const top = baseY - h;
+  return (
+    `<path d="${path([[x0, wob(top)], [x1, wob(top)], [x1, baseY], [x0, baseY]])}" fill="${INK.wash}" opacity="0.2" filter="url(#wetMid)"/>` +
+    `<path d="${brush([[x0 - h * 0.1, top], [cx, top - h * 0.045], [x1 + h * 0.1, top]], h * 0.1, h * 0.045)}" fill="${INK.ink}" opacity="0.78" filter="url(#wetMid)"/>`
+  );
+}
+
+/** 一块大石。**E05 新增。** 就是坟包去掉那块碑 —— 王子服在门外的石头上坐了一整天 */
+function rock(cx: number, baseY: number, w: number, seed: number): string {
+  const r = rng(seed);
+  const pts: [number, number][] = [];
+  for (let i = 0; i <= 9; i++) {
+    const t = i / 9;
+    pts.push([cx - w / 2 + w * t, baseY - Math.sin(t * Math.PI) * w * (0.34 + (r() - 0.5) * 0.14)]);
+  }
+  pts.push([cx + w / 2, baseY]);
+  pts.push([cx - w / 2, baseY]);
+  return `<path d="${path(pts)}" fill="${INK.ink}" opacity="0.5" filter="url(#wetMid)"/>`;
+}
+
+/**
+ * 灯笼。**E05 新增。** 上元节和拜堂各用一次，是这一期仅有的两处亮面。
+ *
+ * 第一版是"细线椭圆 + 一根垂穗"，渲出来是个放大镜。灯笼认得出来靠三样：
+ * **上下两道横杠夹住的鼓肚子、肚子上的竖棱、以及一根从上面吊下来的绳。**
+ * 灯身要填淡墨（是纸糊的，不是铁丝框），光晕压在最底下一层。
+ */
+function lantern(cx: number, cy: number, rr: number, seed: number): string {
+  const r = rng(seed);
+  const w = rr;
+  const h = rr * 1.12;
+  let out = `<ellipse cx="${n(cx)}" cy="${n(cy)}" rx="${n(rr * 2)}" ry="${n(rr * 2.1)}" fill="${INK.wash}" opacity="0.12" filter="url(#stainBlur)"/>`;
+  // 吊绳：从画面上方垂下来，灯才是挂着的不是浮着的
+  out += `<path d="${brush([[cx, cy - h - rr * 1.5], [cx + (r() - 0.5) * rr * 0.2, cy - h * 1.02]], 4, 3)}" fill="${INK.ink}" opacity="0.4"/>`;
+  out += `<ellipse cx="${n(cx)}" cy="${n(cy)}" rx="${n(w)}" ry="${n(h)}" fill="${INK.wash}" opacity="0.4" filter="url(#wetMid)"/>`;
+  // 竖棱三道，两边的压扁 —— 鼓肚子是这么看出来的
+  for (const f of [-0.62, 0, 0.62]) {
+    out += `<path d="${brush([[cx + w * f * 0.86, cy - h * 0.82], [cx + w * f, cy], [cx + w * f * 0.86, cy + h * 0.82]], 3, 2)}" fill="${INK.ink}" opacity="0.3"/>`;
+  }
+  out += `<path d="${brush([[cx - w * 0.62, cy - h * 0.86], [cx + w * 0.62, cy - h * 0.86]], 9, 6)}" fill="${INK.ink}" opacity="0.78"/>`;
+  out += `<path d="${brush([[cx - w * 0.62, cy + h * 0.86], [cx + w * 0.62, cy + h * 0.86]], 9, 6)}" fill="${INK.ink}" opacity="0.78"/>`;
+  out += `<path d="${brush([[cx, cy + h * 0.9], [cx + (r() - 0.5) * rr * 0.3, cy + h * 1.5]], 5, 2)}" fill="${INK.ink}" opacity="0.5"/>`;
+  return out;
+}
+
+/**
+ * 一段立着的枯木。**E05 新增。**
+ *
+ * 顶上那个纸色的口子是这张图的全部：**木头是空的。**
+ * 蝎子藏在里面，人把手伸了进去。不画蝎子 —— 画出来就成了昆虫图，
+ * 而这一段的规矩是克制（见稿件头部那一行）。
+ */
+function stump(cx: number, baseY: number, h: number, seed: number): string {
+  const r = rng(seed);
+  const w = h * 0.28;
+  const wob = (v: number) => v + (r() - 0.5) * w * 0.16;
+  return (
+    `<path d="${path([
+      [wob(cx - w * 0.5), baseY - h],
+      [wob(cx + w * 0.46), baseY - h * 1.02],
+      [wob(cx + w * 0.54), baseY],
+      [wob(cx - w * 0.48), baseY],
+    ])}" fill="${INK.ink}" opacity="0.86" filter="url(#wetNear)"/>` +
+    `<ellipse cx="${n(cx)}" cy="${n(baseY - h)}" rx="${n(w * 0.5)}" ry="${n(w * 0.17)}" fill="${INK.paperDeep}" opacity="0.92" filter="url(#wetNear)"/>`
+  );
+}
 // ── 构图 ──────────────────────────────────────────────────────────────
 //
 // 一个构图 = 一句话能说清的画面。名字用中文，scenes.json 里直接写。
@@ -679,6 +827,130 @@ export const COMPOSITIONS: Record<string, Draw> = {
     house(1080, 880, 1000, s + 1, { wall: true }) +
     door(1080, 880, 300, 420, s + 3) +
     figure(430, 940, 190, '走', s + 7, 0.6),
+
+  // ── E05《婴宁》新增。**上面的一张都没动** ─────────────────────────────
+  //
+  // 前四期的画面骨架是「山 / 屋 / 人」，这一期多两样：**花，和墙。**
+  // 两样都不是装饰，是情节本身 —— 婴宁爱花成癖，而她那一笑出事，出在墙头上。
+  //
+  // 亮面只给两处：上元的灯，和拜堂的灯。婚后一路到收束，一点亮都没有。
+  // 这跟 E03 那轮纸月是同一个手法 —— 落差靠"后面没有了"做出来，不靠"前面多亮"。
+
+  /** 上元灯市。人要小、要多、要挤 —— 她是从一堆人里被看见的 */
+  灯市: (s) =>
+    house(1400, 905, 440, s + 1) +
+    house(280, 912, 420, s + 4) +
+    lantern(700, 296, 46, s + 2) +
+    lantern(972, 232, 56, s + 5) +
+    lantern(1236, 318, 42, s + 8) +
+    figure(760, 952, 244, '走', s + 6, 0.86) +
+    figure(872, 958, 228, '走', s + 9, 0.62) +
+    figure(1010, 950, 236, '走', s + 12, 0.74) +
+    figure(1118, 960, 214, '走', s + 15, 0.46),
+
+  /** 拈梅。全篇的第一眼。**人和花之间要留出空**，那段空白就是他没敢走过去的距离 */
+  拈梅: (s) =>
+    mountains(620, s, 2) +
+    lantern(520, 268, 44, s + 9) +
+    figure(1210, 910, 300, '立', s + 3) +
+    blossom(1000, 880, 300, s + 6),
+
+  /** 落花。花掉在地上，人已经走远。**人不要朝着花** —— 她没有回头 */
+  落花: (s) =>
+    mountains(640, s, 2) +
+    blossom(700, 960, 170, s + 3, 0.5) +
+    splatter(720, 950, 130, 9, s + 6, 2) +
+    figure(1460, 935, 235, '走', s + 9, 0.38),
+
+  /** 枕花。他病在榻上，那枝花压在枕头底下。榻边这一枝是画给听众看的，不是他能看见的 */
+  枕花: (s) =>
+    couch(880, 820, 700) +
+    figure(880, 806, 240, '伏', s + 2) +
+    blossom(1320, 836, 150, s + 6, 0.45),
+
+  /** 花村。谷底那十几户。**花要漫过屋顶的高度**，村子才像是长在花里的 */
+  花村: (s) =>
+    mountains(470, s, 3) +
+    house(1120, 900, 600, s + 2, { wall: true }) +
+    blossom(700, 935, 270, s + 5) +
+    blossom(1540, 945, 215, s + 8, 0.6) +
+    blossom(430, 955, 195, s + 11, 0.42),
+
+  /** 柳门。门朝北开，门前一排柳 —— 原文交代得极细，画面上只取"柳垂到地"这一笔 */
+  柳门: (s) =>
+    wall(1060, 1090, 1000, 400, s + 1) +
+    door(1080, 1080, 250, 330, s + 3) +
+    tree(540, 945, 430, s + 6, 0.38) +
+    blossom(1400, 690, 185, s + 9, 0.62),
+
+  /** 石上等。他在门外那块石头上从早坐到日头偏西。**人和墙分在两边**，中间是他不敢过去的那道线 */
+  石上等: (s) =>
+    wall(1170, 1090, 900, 400, s + 1) +
+    rock(540, 955, 310, s + 4) +
+    figure(548, 890, 250, '坐', s + 7, 0.85) +
+    blossom(1480, 688, 170, s + 10, 0.55),
+
+  /** 花院。豆棚花架满庭。这一期唯一"什么事也没发生"的一张，给足留白 */
+  花院: (s) =>
+    wall(1080, 1090, 1060, 380, s + 1) +
+    house(400, 905, 440, s + 3) +
+    blossom(770, 945, 250, s + 6) +
+    blossom(1010, 955, 205, s + 9, 0.68) +
+    blossom(1420, 948, 225, s + 12, 0.52),
+
+  /** 墙头。**这一期的题眼。** 她站在墙上笑，墙外的人抬头看见了。人只给 250px —— 站得高，但小 */
+  墙头: (s) =>
+    wall(760, 1090, 1780, 380, s + 1) +
+    blossom(600, 716, 215, s + 4, 0.66) +
+    blossom(1330, 706, 200, s + 7, 0.56) +
+    figure(960, 706, 250, '立', s + 10),
+
+  /** 拜堂。全篇第二处、也是最后一处亮面。两个人都站着 —— 那礼行到一半就散了 */
+  拜堂: (s) =>
+    house(960, 890, 880, s + 1, { wall: true }) +
+    lantern(560, 300, 52, s + 3) +
+    lantern(1370, 300, 52, s + 6) +
+    figure(806, 960, 275, '立', s + 8) +
+    figure(1122, 958, 262, '立', s + 11, 0.76),
+
+  /** 满阶花。台阶墙根全是花。**五枝，一枝比一枝淡** —— 数量本身就是"成癖"两个字 */
+  满阶花: (s) =>
+    house(1330, 900, 470, s + 1) +
+    blossom(360, 946, 262, s + 4) +
+    blossom(452, 968, 190, s + 7, 0.62) +
+    blossom(604, 952, 224, s + 10, 0.8) +
+    blossom(690, 972, 158, s + 13, 0.5) +
+    blossom(838, 944, 268, s + 16, 0.68) +
+    blossom(936, 966, 182, s + 19, 0.45) +
+    blossom(1078, 956, 206, s + 22, 0.56) +
+    blossom(1186, 974, 146, s + 25, 0.36),
+
+  /** 枯木。月下，墙根立着一段空心的木头。**不画蝎子**，也不画人 */
+  枯木: (s) =>
+    moon(1530, 240, 76) +
+    wall(740, 1090, 1720, 380, s + 1) +
+    stump(690, 950, 245, s + 5) +
+    blossom(1280, 706, 178, s + 8, 0.44),
+
+  /** 空墙。同一堵墙，墙头上没有人了。跟「墙头」并排看才有意思 */
+  空墙: (s) =>
+    wall(760, 1090, 1780, 380, s + 1) +
+    blossom(640, 726, 198, s + 5, 0.4) +
+    splatter(1120, 880, 230, 12, s + 9, 3),
+
+  /** 灯下。夜里两个人坐着，她哭了。灯挪到画面深处 —— 这一张的亮是余光，不是光源 */
+  灯下: (s) =>
+    lantern(1300, 350, 58, s + 2) +
+    house(1380, 908, 440, s + 4) +
+    figure(700, 935, 280, '坐', s + 6) +
+    figure(982, 932, 268, '坐', s + 9, 0.72),
+
+  /** 抱子。最后一张。**花要退到最淡** —— 这个家里现在笑的是那个孩子 */
+  抱子: (s) =>
+    house(1330, 898, 460, s + 2) +
+    figure(716, 935, 288, '坐', s + 5) +
+    splatter(786, 838, 66, 6, s + 9, 2) +
+    blossom(1080, 950, 196, s + 12, 0.42),
 };
 
 export const COMPOSITION_NAMES = Object.keys(COMPOSITIONS);

@@ -41,7 +41,7 @@ const flag = (k: string) => {
 };
 const has = (k: string) => argv.includes(k);
 
-const { id: EP, dir: DIR } = resolveEp(argv);
+const { id: EP, dir: DIR, slug: SLUG } = resolveEp(argv);
 const coverSec = flag('--cover-sec');
 
 interface Step {
@@ -51,23 +51,36 @@ interface Step {
   args?: string[];
   /** 这一步产出什么，用来做交付物核对 */
   out: string[];
+  /** 失败只提醒、不掐断整条线。用于"缺了它片子照样能发，但该补"的那种步骤 */
+  soft?: boolean;
 }
 
 const STEPS: Step[] = [
   { key: '音频', name: '整期合成', script: 'src/shuoshu-build.ts', out: ['audio/全片.wav', 'audio/全片.manifest.json', 'audio/全片.srt'] },
   { key: '场景', name: '场景图', script: 'src/shuoshu-scene.ts', out: ['scenes'] },
   {
+    // ── 2026-08-23：两种封面版式并成一种 ──────────────────────────────
+    //
+    // 以前这一步跑 `shuoshu-cover.ts`（渐变靛青底 + 繁体竖排篇名），出七个文件；
+    // YouTube 缩略图是另一套版式、另一个脚本、还得人工上传。**现在只留一种。**
+    //
+    // 成片第一帧、B站/西瓜横版、微信 1:1，全部由 `yt-cover.ts` 那套版式出。
+    //
+    // ⚠ **代价记在这儿**：规范 §〇 本来把两张图分开，因为它们任务不同 ——
+    // 缩略图要在信息流里让人点，首帧要接住已经点进来的人。并成一张之后，
+    // **片子第一帧是主字（如「不笑」）不再是篇名（「嬰寧」）**，
+    // 篇名只剩眉标那一行小字。这是知情的取舍，不是疏漏。
+    //
+    // `shuoshu-cover.ts` **留在仓库里没删** —— E01–E04 是用它出的，
+    // 那几期已经发布，不回改。它只是不再被 ship 调用了。
     key: '封面',
-    name: '封面图（16:9 + 1:1）',
-    script: 'src/shuoshu-cover.ts',
+    name: '封面（第一帧 + 上传 + 微信 1:1，一种版式）',
+    script: 'src/yt-cover.ts',
     out: [
       'cover.png',
-      'cover/upload-1280x720.png',
-      'cover/check-320.png',
-      'cover/cover.svg',
-      // 1:1，微信。**跟横版一起出**，不是事后补的——补的东西迟早有一期会忘
       'cover/wechat-1080x1080.png',
       'cover/check-square-200.png',
+      'cover/cover.svg',
       'cover/cover-square.svg',
     ],
   },
@@ -76,17 +89,29 @@ const STEPS: Step[] = [
     name: '出视频',
     script: 'src/shuoshu-video.ts',
     args: coverSec ? ['--cover-sec', coverSec] : [],
-    out: [`${EP}.mp4`, `${EP}.srt`],
+    out: [`${SLUG}.mp4`, `${SLUG}.srt`],
+  },
+  {
+    // 收进交付包。**扫的是三条线全部**，不只这一期 —— 幂等，重跑不会重复。
+    // soft：包没收上也不该拦住出片，片子是好的。
+    key: '交付',
+    name: '交付包（醒木不响/_待发）',
+    script: 'src/deliver.ts',
+    out: [],
+    soft: true,
   },
 ];
 
-function run(label: string, script: string, args: string[] = []): void {
+function run(label: string, script: string, args: string[] = [], soft = false): void {
   console.log(`\n${'─'.repeat(58)}\n▸ ${label}\n${'─'.repeat(58)}`);
   const r = spawnSync(process.execPath, [TSX, script, '--ep', EP, ...args], { stdio: 'inherit' });
-  if (r.status !== 0) {
-    console.error(`\n✗ ${label} 失败（退出码 ${r.status}）。\n  修完之后从这一步接着跑：--from ${label}`);
-    process.exit(1);
+  if (r.status === 0) return;
+  if (soft) {
+    console.log(`\n! ${label} 没出来，先跳过。补完再单跑：npm run yt:cover -- --ep ${EP}`);
+    return;
   }
+  console.error(`\n✗ ${label} 失败（退出码 ${r.status}）。\n  修完之后从这一步接着跑：--from ${label}`);
+  process.exit(1);
 }
 
 /** 体检。有错就停——这条线最贵的失败是"跑完了但东西是错的" */
@@ -125,7 +150,7 @@ function main() {
       continue;
     }
     started = true;
-    run(`${s.key}｜${s.name}`, s.script, s.args);
+    run(`${s.key}｜${s.name}`, s.script, s.args, s.soft);
     // 音频出来之后画面密度才查得了，所以这里再体检一次
     if (s.key === '音频') {
       console.log('');
@@ -155,6 +180,11 @@ function main() {
     const size = st.isDirectory() ? `${readdirSync(p).length} 个文件` : `${(st.size / 1024 / 1024).toFixed(1)} MB`;
     console.log(`  ✓ ${f.padEnd(30)} ${size}`);
   }
+  // 上传用那张：文件名带篇名（YT_<篇名>.png），扫目录不按固定名字找
+  const yt = readdirSync(DIR).filter((f) => /^YT_.+\.png$/.test(f) && f !== 'YT_预览210.png');
+  if (yt.length) for (const f of yt) console.log(`  ✓ ${f.padEnd(30)} ${(statSync(`${DIR}/${f}`).size / 1024 / 1024).toFixed(1)} MB`);
+  else console.log('  ! 没有 YT_<篇名>.png——上传用的横版就是它（见 YouTube封面规范.md）');
+
   for (const f of ['发布文案.md']) {
     if (!existsSync(`${DIR}/${f}`)) {
       console.log(`  ! 没有 ${f}——发布文案跟封面一样是频道规范，不是可选项`);
@@ -162,7 +192,7 @@ function main() {
   }
 
   // 字幕平移对不对：跟成片对齐那份的第一条应该正好等于封面时长
-  const srt = `${DIR}/${EP}.srt`;
+  const srt = `${DIR}/${SLUG}.srt`;
   if (existsSync(srt)) {
     const m = /(\d\d):(\d\d):(\d\d),(\d\d\d)/.exec(readFileSync(srt, 'utf8'));
     if (m) {
@@ -186,6 +216,9 @@ function main() {
       `  · 整片听一遍，尤其台词最多的那个角色——音色撑不撑得住长段\n` +
       `  · 人名前后一致，全片不能换叫法\n` +
       `  · 封面 check-320.png（横版）和 check-square-200.png（微信 1:1）认不认得出篇名\n` +
+      `  · YouTube 缩略图看 YT_预览210.png——210px 是唯一的验收标准
+` +
+      `  · YouTube 缩略图看 YT_预览210.png——210px 是唯一的验收标准\n` +
       `清单在 ${DIR}/发布文案.md 第四节。\n${'═'.repeat(58)}`
   );
 }

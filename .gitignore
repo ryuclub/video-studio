@@ -29,8 +29,21 @@ out/
 assets/cache/
 assets/manual/test_*.mp4
 
-# 字体 162M。Noto Serif CJK 是 OFL 协议可自由下载，见 fonts/README.md
-fonts/
+# ── 字体 ────────────────────────────────────────────────────────────
+#
+# 整个 fonts/ 162M，大头是 Noto Serif CJK（七个字重，可自由下载，见 fonts/README.md）。
+#
+# ⚠ **但出片真正依赖的那两个必须进版本库**：得意黑（字幕）和站酷快乐体（牌匾）。
+# 两个都是 SIL OFL，可自由分发，加起来 3.4M。
+# 不提交的话，别的机器上 `FONT_FILES` 那条 `existsSync` 过滤掉它们，
+# resvg **静默回退到系统字体** —— 字幕规范 §二 专门警告过这个坑：
+# 不报错，你只会觉得「字怎么没变」。
+fonts/*
+!fonts/README.md
+!fonts/ZCOOLKuaiLe-Regular.ttf
+!fonts/smiley-sans-v2.0.1/
+fonts/smiley-sans-v2.0.1/*
+!fonts/smiley-sans-v2.0.1/SmileySans-Oblique.otf
 
 # ── 成品目录 projects/ ──
 #

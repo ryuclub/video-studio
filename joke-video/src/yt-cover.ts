@@ -28,6 +28,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { resolveEp } from './shuoshu-ep.js';
+import { resolveEp as resolveZhiyuEp, LINE as ZHIYU_LINE } from './zhiyu-ep.js';
 
 // ── §一 画布与安全区 ──────────────────────────────────────────────────
 const W = 1280;
@@ -81,6 +82,8 @@ const SQ_HOOK_Y1 = 880;
 export interface YtPalette {
   bg: string;
   ink: string;
+  /** 副标字色。不给就是白（深底档）*/
+  hook?: string;
   acc: string;
   mute: string;
   seal: string;
@@ -90,8 +93,31 @@ export const PALETTES: Record<string, YtPalette> = {
   ink: { bg: '#141C24', ink: '#F2EFE8', acc: '#D6452F', mute: '#5C6B75', seal: '#D6452F' },
   /** 治愈 / 助眠 / 古典随笔 / 禅佛典。错位影用暖月色，**不用朱砂** */
   night: { bg: '#142234', ink: '#F1EDE3', acc: '#E8C87A', mute: '#3A4E66', seal: '#C4432F' },
+  /**
+   * `paper` —— **治愈线保留自己的和纸画风，只借 V3 的版式**（2026-08-24 用户定）。
+   *
+   * 色值原样搬自 `zhiyu-cover.ts`：纸 #F6F2E8、远景墨绿 #2F4A3F、暖带 #E8A95E、印 #C0503C。
+   * 所以它跟片内画面、片头首帧仍是同一套颜色，只有排版换成了 V3。
+   *
+   * ⚠ **这一档是知情地违反 §二 的。** 规范把治愈线定在 `night`（深靛底），
+   * 理由写在 §〇：浅米白封面在 YouTube 的白界面里没有边界、直接融进背景，
+   * 那是点击率被压住的直接原因。选 `paper` 等于把那条结论换成「风格统一」优先。
+   * **要验就看 210 试样贴在白底上像不像一块**，不是看 1280 好不好看。
+   *
+   * 朱砂只留在印章里（这条跟 night 档一致）：错位影和副标重点词都走暖带色 `acc`。
+ *
+ * ⚠ **`mute` 在这一档是「副标的字色」，不是「远山的淡色」。** 第一版给了 #AEBFB0，
+ * 山画得挺好看，副标在米白纸上白花花一片读不出来 —— 深底档是灰蓝配纸白字，
+ * 浅底档整个反过来。要更淡的层次只能在 motif 里靠形状叠，不能靠再要一个色。
+   */
+  paper: { bg: '#E8DFCB', ink: '#2F4A3F', acc: '#E8A95E', mute: '#7E9184', seal: '#C0503C', hook: '#5B6F63' },
 };
 /** 副标固定纯白：比主字的纸白更实，压在错位影上不会被拖糊（§二末） */
+/**
+ * 副标字色的**兜底**。深底档就是纸白，浅底档必须在色板里另给一个（`YtPalette.hook`）——
+ * 写死白色的时候，`paper` 档的副标在米白纸上整行看不见，而四项自动检测全绿：
+ * 它们查的是位置、宽度、安全区，**没有一项在查「看不看得见」**。
+ */
 const HOOK_FILL = '#FFFFFF';
 
 // ── §三 字体 ─────────────────────────────────────────────────────────
@@ -126,6 +152,43 @@ const n = (v: number) => Math.round(v * 100) / 100;
 export type Motif = (C: YtPalette) => string;
 
 export const YT_MOTIFS: Record<string, Motif> = {
+  /**
+   * `snow_boat` —— **治愈 taoan-E01《痴人夜行》。** 一轮暖月、两层山影、一道湖面、
+   * 湖上一条小得几乎看不见的船。出处是这一期的原文：「舟中人两三粒而已」。
+   *
+   * 跟 ink / night 那几个 motif 不一样，这一档要的是**这条线自己的插画语气**
+   * （层叠山影、暖日轮），不是三色平涂的符号。但下面两条仍旧照 §六 守：
+   *
+   * ① **只用色板里的色，一个都不外加。** 探针那一步靠「把五个色全换成纯蓝、再量蓝色外接框」
+   *    定眉标右界；motif 里出现色板之外的颜色，那一块就量不到，眉标会压上去。
+   * ② **不用半透明。** 同理：opacity < 1 的地方在探针图里不是纯蓝，一样量不到。
+   *    所以三层深浅只能靠 ink / mute 两个实色 ＋ 暖月 acc 来分。
+   *
+   * ⚠ 船只有 150×34。**210px 下它只剩 25×6 像素**，读出来的是"湖上有个小东西"，
+   * 不是"一条船" —— 这是知情的：这一期要的就是"两三粒"，看不清正是那句原文的意思。
+   * 真觉得不行就把船去掉，只留月和山，别把它放大到看得清（放大就不是那句话了）。
+   */
+  snow_boat: (C) => {
+    const cx = MOTIF_CX;
+    // 暖月：压在山后只露上半个。**别画大** —— 它是月不是太阳，大了整张的重心就跑到右边去
+    const moon = `<circle cx="${cx + 112}" cy="178" r="62" fill="${C.acc}"/>`;
+    // 远山：连绵的缓峰，不是孤立三角。**峰要多、要不等高**，那是这条线插画的语气
+    const far =
+      `<path d="M 758 430 L 830 340 L 884 380 L 952 302 L 1020 372 L 1082 326 L 1178 430 Z" fill="${C.mute}"/>`;
+    // 近山：深的一层压在前面。**山脚停在 430**，下面留一条纸的空当给船
+    const near =
+      `<path d="M 758 430 L 852 368 L 918 410 L 1002 352 L 1064 406 L 1178 430 Z" fill="${C.ink}"/>`;
+    // 水平线：一道细带，是雪面不是水，用中间那一色
+    const lake = `<rect x="758" y="486" width="420" height="10" fill="${C.mute}"/>`;
+    // 小船：坐在水平线上，**整条落在山脚与线之间那块纸上** ——
+    // 第一版把它画在山脚同一高度、又是同色，等于没画（1280 上都找不着）
+    const bx = cx - 74, by = 486;
+    const boat =
+      `<path d="M ${bx - 60} ${by - 22} L ${bx + 60} ${by - 22} L ${bx + 42} ${by} L ${bx - 42} ${by} Z" fill="${C.ink}"/>` +
+      `<rect x="${bx - 22}" y="${by - 42}" width="44" height="20" fill="${C.ink}"/>`;
+    return moon + far + near + lake + boat;
+  },
+
   /**
    * `smile_flat` —— **E05《婴宁》新增。**
    *
@@ -249,7 +312,7 @@ export interface YtSpec {
   /** 副标两行，各 ≤10 字。用 {} 圈重点词，圈对照关系的两端（§五末） */
   hook: [string, string];
   motif: string;
-  palette: 'ink' | 'night';
+  palette: 'ink' | 'night' | 'paper';
   /** 副标重点词提示。默认 color；主字笔画少、影子红得整时换 underline（§九） */
   mark?: 'none' | 'color' | 'underline';
   /** 印章那个字 */
@@ -274,7 +337,7 @@ function hookLine(line: string, x: number, cy: number, size: number, C: YtPalett
   let cx = x;
   const out: string[] = [];
   for (const [text, hot] of marks(line)) {
-    const fill = hot && mark === 'color' ? C.acc : HOOK_FILL;
+    const fill = hot && mark === 'color' ? C.acc : C.hook ?? HOOK_FILL;
     out.push(
       `<text x="${n(cx)}" y="${n(cy + size * 0.36)}" font-family="${SANS_FAMILY}" font-weight="700" font-size="${n(size)}" fill="${fill}">${esc(text)}</text>`
     );
@@ -515,7 +578,87 @@ export function renderYt(spec: YtSpec): YtOut {
 // 数据放在期目录 `scenes.json` 的 `yt` 块里，跟 `cover` 并排 ——
 // 加一期只写一次数据，跟封面那边是同一条纪律。
 
+/**
+ * 治愈 / 心理洞察 / 小故事大道理 那三条线的封面。
+ *
+ * **跟说书线是两条路，因为项目结构不一样**：那边一期一个目录、数据在 `scenes.json`；
+ * 这边一本书一个目录、一本书可能有上下两期，数据在 `发布.json` 的 `parts[].yt`。
+ *
+ * **不碰片头首帧。** 规范 §〇：缩略图和首帧是两回事，这条线的首帧是和纸插画那张
+ * （`zhiyu-cover.ts` 出的 `first-frame-1920x1080.png`），成片认的也是它。
+ * 说书线 2026-08-23 把两张并成一张是那条线知情的例外，不推广到这儿。
+ *
+ * **但方版和横版要一起换。** 同一期两种版式并存，等于频道有两套脸。
+ */
+function mainZhiyu(): void {
+  const { id, dir, book } = resolveZhiyuEp(process.argv.slice(2));
+  const doc = JSON.parse(readFileSync(`${dir}/发布.json`, 'utf8')) as {
+    parts: { part: string; epTitle?: string; yt?: YtSpec }[];
+  };
+  const want = flagOf('--part');
+  const parts = doc.parts.filter((p) => !want || p.part === want);
+  const todo = parts.filter((p) => p.yt);
+  if (!todo.length) {
+    console.log(`《${book}》${want ? `（${want} 篇）` : ''}的 发布.json 里没有 yt 那一块。照这个写，放进 parts[i] 里：
+`);
+    console.log(
+      JSON.stringify(
+        {
+          yt: {
+            kicker: '陶庵梦忆 · 痴人夜行',
+            big: '看雪',
+            hook: ['他半夜出门都是{闲事}', '白天的{正事}一字没写'],
+            motif: 'snow_boat',
+            palette: 'paper',
+            seal: '醒',
+          },
+        },
+        null,
+        2
+      )
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(`《${book}》封面（${ZHIYU_LINE}线，V3 版式 ＋ 本线画风）`);
+  let bad = false;
+  for (const p of todo) {
+    const name = p.epTitle ?? p.part;
+    const r = renderYt(p.yt!);
+    const coverDir = `${dir}/cover/${p.part}`;
+    mkdirSync(coverDir, { recursive: true });
+    writeFileSync(`${dir}/YT_${name}.png`, r.png);
+    writeFileSync(`${coverDir}/YT-check-210.png`, r.preview);
+    // 横版和方版一起换：留着旧版式那两张，频道就有两套脸了
+    writeFileSync(`${coverDir}/upload-1280x720.png`, r.png);
+    writeFileSync(`${coverDir}/wechat-1080x1080.png`, r.square);
+    writeFileSync(`${coverDir}/check-square-200.png`, r.squareCheck);
+
+    console.log(`
+  ${p.part} 篇　主字「${p.yt!.big}」　眉标「${p.yt!.kicker}」　图形 ${p.yt!.motif}　配色 ${p.yt!.palette}`);
+    if (!r.issues.length) console.log('  ✓ 四项自动检测都过了');
+    for (const i of r.issues) console.log(`  ${i.level === 'error' ? '✗' : '!'} ${i.msg}`);
+    if (r.issues.some((i) => i.level === 'error')) bad = true;
+    console.log(`  → YT_${name}.png　cover/${p.part}/{upload-1280x720, wechat-1080x1080, YT-check-210}.png`);
+  }
+  console.log(
+    `
+**先看 cover/<篇>/YT-check-210.png 再上传** —— 210px 是唯一的验收标准。
+` +
+      `片头首帧没动（first-frame-1920x1080.png 还是 zhiyu-cover.ts 出的那张，成片认它）。`
+  );
+  if (bad) process.exitCode = 1;
+}
+
+const flagOf = (k: string) => {
+  const i = process.argv.indexOf(k);
+  return i < 0 ? undefined : process.argv[i + 1];
+};
+
 function main() {
+  // --line 一给就是治愈那三条线（治愈 / 心理 / 禅佛典），不给就是说书
+  if (process.argv.includes('--line')) return mainZhiyu();
   const { id, dir } = resolveEp(process.argv.slice(2));
   const doc = JSON.parse(readFileSync(`${dir}/scenes.json`, 'utf8')) as { yt?: YtSpec };
   if (!doc.yt) {

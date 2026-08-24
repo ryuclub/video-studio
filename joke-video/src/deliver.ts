@@ -35,6 +35,7 @@ import { readdirSync, existsSync, statSync, mkdirSync, linkSync, copyFileSync, w
 import { resolve, basename } from 'node:path';
 import { OUT_ROOT, OUT_SHUOSHU, OUT_ZHIYU, OUT_CHAN } from './paths.js';
 import { parseDir } from './schedule.js';
+import { writeIndex } from './xingmu-index.js';
 
 const ROOT = `${OUT_ROOT}/醒木不响`;
 const PENDING = `${ROOT}/_待发`;
@@ -97,8 +98,29 @@ function packOf(line: string, proj: string, videoPath: string, part?: string): P
   put('发布文案.md', pick(`${proj}/发布文案.md`));
 
   // 包名：项目目录有档期前缀就用它，没有就是「未排期」（老马线那个写法）
-  const parsed = parseDir(basename(proj));
-  const label = [stem.replace(/^\d{4}-\d{2}-\d{2}_/, ''), part && !stem.includes(part) ? part : ''].filter(Boolean).join('-');
+  const dirName = basename(proj);
+  const parsed = parseDir(dirName);
+
+  // ── 身份那一段：**去掉的是整个档期前缀，不只是日期** ────────────────
+  //
+  // 原来这儿写的是 `stem.replace(/^\d{4}-\d{2}-\d{2}_/, '')`，只削日期。
+  // 说书线没事（它的成片名本来就只有身份，`婴宁-E05.mp4`），
+  // 治愈线那几本也没事（老目录 `2026-08-19_hojoki`，削完正好剩 `hojoki_上`）。
+  //
+  // **第一个用新目录名的治愈项目一进来就露馅了**：成片名是
+  // `2026-08-26_1800JST_治愈_别人怎么看你-E01_全.mp4`，削掉日期还剩
+  // `1800JST_治愈_…`，再拼上前缀就成了
+  // `2026-08-26_1800JST_治愈_1800JST_治愈_别人怎么看你-E01_全`。
+  // 不报错，只是包名难看 —— 而包名就是那本账，看着不对就没人信它。
+  //
+  // 现在：目录名认得出档期，就拿 `parsed.slug` 当身份，成片名里比目录名
+  // **多出来的那一截**（`_全` / `_上_文字版` / `_全_烧字幕`）原样跟在后面。
+  const extra = stem.startsWith(dirName) ? stem.slice(dirName.length).split('_').filter(Boolean) : [];
+  const ident =
+    parsed && stem.startsWith(dirName)
+      ? [parsed.slug, ...extra].join('_')
+      : stem.replace(/^\d{4}-\d{2}-\d{2}_/, '');
+  const label = [ident, part && !stem.includes(part) ? part : ''].filter(Boolean).join('-');
   const name = parsed
     ? `${parsed.date}_${parsed.time}JST_${parsed.line}_${label}`
     : `未排期_${line}_${label}`;
@@ -177,6 +199,11 @@ function main() {
     console.log('\n缺东西的（补齐再上传）：');
     for (const w of warns) console.log(`  ! ${w}`);
   }
+  // 一页看完：成片 / 类型 / 发布状态 / 发布文案 / 档期。
+  // **跟着包一起重建** —— 分成两条命令的话，总有一次收完包忘了出页，
+  // 那张页就开始说假话（而它看着一切正常）。
+  if (!dry) console.log(`\n→ ${writeIndex()}　双击打开，一页看完成片 / 类型 / 状态 / 文案 / 档期`);
+
   console.log(
     `\n_待发 里按名字排就是上传顺序。发完把整个包挪进 _已发。\n` +
       `没排档的叫「未排期_」，给它改前缀就是排期 —— 目录树本身就是账本，没有第二张表。`

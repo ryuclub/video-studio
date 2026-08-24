@@ -21,6 +21,31 @@ const argv = process.argv.slice(2);
 const only = argv.indexOf('--text') >= 0 ? argv[argv.indexOf('--text') + 1] : null;
 
 /**
+ * 问号的豁免：`发布.json` 顶层写 `"免问号": "理由"`。
+ *
+ * **只放行问号这一条，闸没有整个关掉。** 叹号、编辑记号照旧硬拦。
+ *
+ * 为什么留这个口子：文本闸拦问号，是因为这条线的稿子一直是「念一本书」——
+ * 问句一进来，念的人就从「读」变成了「问你」，深夜档的调子当场散掉。
+ * 但 2026-08-26 那一期（《别人怎么看你，不归你管》）是原创随笔，
+ * **开场那两句问句是稿子的骨头**，改成陈述句等于换一篇稿。
+ *
+ * **豁免要写在数据里、一期写一次** —— 不是把规则改松，是让例外看得见。
+ * 那几处问号照样打印出来（降成 ⚠），谁扫一眼都知道这期开了口子。
+ * 已出片的老期没有这个字段，闸对它们还是硬的。
+ */
+function 读豁免(): string | null {
+  const f = `${PROJ}/发布.json`;
+  if (!existsSync(f)) return null;
+  try {
+    return (JSON.parse(readFileSync(f, 'utf8')) as { 免问号?: string }).免问号 ?? null;
+  } catch {
+    return null;
+  }
+}
+const Q_EXEMPT = 读豁免();
+
+/**
  * 实测含停顿均速。**唯一出处是 zhiyu-lines.ts** ——
  * 心理线那份体检里也有同一个概念，散成两个常量迟早分叉。
  */
@@ -66,7 +91,12 @@ function checkOne(file: string, name: string) {
   const bang = says.filter((b) => /[！!]/.test(b.text));
   if (bang.length) err.push(`${bang.length} 处感叹号：${bang[0].text.slice(0, 20)}`);
   const q = says.filter((b) => /[？?]/.test(b.text));
-  if (q.length) err.push(`${q.length} 处问号（问句改陈述）：${q[0].text.slice(0, 20)}`);
+  if (q.length)
+    (Q_EXEMPT ? warn : err).push(
+      Q_EXEMPT
+        ? `${q.length} 处问号 —— 本期已豁免（${Q_EXEMPT}）：${q[0].text.slice(0, 20)}`
+        : `${q.length} 处问号（问句改陈述）：${q[0].text.slice(0, 20)}`
+    );
   const marks = suspectMarks(says.map((b) => b.text));
   if (marks.length) err.push(`${marks.length} 处可疑编辑记号（会被念出来）：${marks[0].slice(0, 20)}`);
 
@@ -148,7 +178,10 @@ export function gate(): void {
     return;
   }
 
-  console.log(`《${BOOK}》　按 ${CPM} 字/分 算　规范见 zhiyu/治愈系稿件规范.md\n`);
+  console.log(`《${BOOK}》　按 ${CPM} 字/分 算　规范见 zhiyu/治愈系稿件规范.md`);
+  // 开了口子就说出来，别让它藏在一行 ⚠ 里
+  if (Q_EXEMPT) console.log(`⚠ 本期免问号：${Q_EXEMPT}　（叹号、编辑记号照旧硬拦）`);
+  console.log('');
   const rows = files.map((f) => {
     const p = `${PROJ}/${f}`;
     if (!existsSync(p)) throw new Error(`没有 ${p}`);

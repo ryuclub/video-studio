@@ -12,6 +12,9 @@
 // 跟剪纸风的另一个不同：**这里用 SVG 滤镜**。剪纸风刻意不用（每帧都要渲，
 // 滤镜慢 10 倍），但说书是静态画面，一期只渲二十来张，慢十倍也就几秒钟。
 
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 export const INK = {
   /** 宣纸。偏黄，不要用纯白——白纸配墨是打印稿，不是画 */
   paper: '#EDE4D2',
@@ -24,10 +27,43 @@ export const INK = {
   cinnabar: '#A62A21',
 };
 
-/** 题字用宋体族。黑体太现代，聊斋要衬线 */
+/**
+ * 题字的静态字重文件。**要粗体就必须喂它。**
+ *
+ * ⚠ 系统里装的是 `NotoSerifSC-VF.ttf`（可变字体），resvg 只认它的默认实例：
+ * 写 `font-weight="700"` 渲出来跟 400 **一模一样，而且不报错**——
+ * 实测同一段字两个字重的 PNG **字节数完全相同**（`fonts/README.md` 警告过同一件事）。
+ * 仓库里 `fonts/NotoSerifCJKsc/OTF/` 是一档一个文件的静态字重，喂进去才真的变粗。
+ *
+ * 路径按**本文件**算，不按 cwd —— 场景图既可能从 `joke-video/` 跑，
+ * 也可能被 `shuoshu-ship.ts` 拉起来跑。
+ */
+export const INK_FONT_FILES: string[] = ['Bold', 'SemiBold', 'Medium', 'Regular']
+  .map((w) =>
+    fileURLToPath(new URL(`../../../fonts/NotoSerifCJKsc/OTF/SimplifiedChinese/NotoSerifCJKsc-${w}.otf`, import.meta.url))
+  )
+  .filter(existsSync);
+
+/**
+ * 题字用宋体族。黑体太现代，聊斋要衬线。
+ *
+ * 有静态字重文件就认 `Noto Serif CJK SC`（那是那几个 otf 的族名），
+ * 没有才退回系统的思源宋 —— 退回去之后**粗体是假的**（见上）。
+ */
 export const INK_FONT =
   process.env.SHUOSHU_FONT ||
-  'Noto Serif SC, Source Han Serif SC, SimSun, STSong, Songti SC, Microsoft YaHei, serif';
+  (INK_FONT_FILES.length
+    ? 'Noto Serif CJK SC, Noto Serif SC, SimSun, serif'
+    : 'Noto Serif SC, Source Han Serif SC, SimSun, STSong, Songti SC, Microsoft YaHei, serif');
+
+/** 字重文件缺了要吼一声。静默变细是这条线最难发现的那类问题 */
+export function warnIfNoWeights(): void {
+  if (INK_FONT_FILES.length) return;
+  console.log(
+    '! 没找到 fonts/NotoSerifCJKsc/OTF/ —— 题字和幕名的加粗会静默失效（渲出来是常规字重）。\n' +
+      '  下载方式见 fonts/README.md'
+  );
+}
 
 export const n = (v: number) => Math.round(v * 100) / 100;
 
@@ -158,20 +194,46 @@ export function splatter(cx: number, cy: number, spread: number, count: number, 
  * 竖排题字。resvg 的 writing-mode 支持不可靠，所以一个字一个 <text>，
  * 自己算 y。**这是画面里唯一的"信息"**，其余全是氛围。
  */
+/**
+ * 竖排文字。`outline` 给了就是**描边字**：一个字画两遍。
+ *
+ * ⚠ **描边不能只画一遍。** SVG 的 stroke 是**骑在轮廓线上**的，一半宽度落在字里面，
+ * 描粗一点宋体那些细横就被吃光了。所以先画一遍只有 stroke 的（在下面），
+ * 再画一遍只有 fill 的盖上去 —— 露出来的就只剩外面那一半。
+ * 宽度取字号的 7%（60px 的字 ≈ 4.2px，进到字里 2.1px），再粗就开始糊字内白。
+ */
 export function vtext(
   x: number,
   y: number,
   text: string,
   size: number,
-  o: { fill?: string; opacity?: number; gap?: number; weight?: number } = {}
+  o: {
+    fill?: string;
+    opacity?: number;
+    gap?: number;
+    weight?: number;
+    /** 描边色。给了就画两遍 */
+    outline?: string;
+    /** 描边宽度，缺省 = 字号 × 0.07 */
+    outlineWidth?: number;
+  } = {}
 ): string {
   const gap = o.gap ?? size * 1.18;
+  const common = (i: number) =>
+    `x="${n(x)}" y="${n(y + i * gap)}" font-family="${INK_FONT}" font-size="${size}" font-weight="${o.weight ?? 400}" text-anchor="middle"`;
+  const op = o.opacity ?? 0.92;
   return text
     .split('')
-    .map(
-      (ch, i) =>
-        `<text x="${n(x)}" y="${n(y + i * gap)}" font-family="${INK_FONT}" font-size="${size}" font-weight="${o.weight ?? 400}" fill="${o.fill ?? INK.ink}" opacity="${o.opacity ?? 0.92}" text-anchor="middle">${escapeXml(ch)}</text>`
-    )
+    .map((ch, i) => {
+      const g = escapeXml(ch);
+      const face = `<text ${common(i)} fill="${o.fill ?? INK.ink}" opacity="${op}">${g}</text>`;
+      if (!o.outline) return face;
+      const w = o.outlineWidth ?? size * 0.07;
+      return (
+        `<text ${common(i)} fill="none" stroke="${o.outline}" stroke-width="${n(w)}" stroke-linejoin="round" opacity="${op}">${g}</text>` +
+        face
+      );
+    })
     .join('');
 }
 

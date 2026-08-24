@@ -38,6 +38,8 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
   text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
 .nav-item:hover { background:rgba(127,127,127,.1); }
+/* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
+.nav-col { color:var(--accent); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -120,6 +122,13 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
 .extras figure { margin:0; }
 /* 公用素材区 */
 .assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+/* 符号库：一格一个符号，比角色/场景那种小得多 —— 一屏要看得全 */
+.symbols-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; }
+.symbols-grid .asset img { background:#FBF8F1; }
+.symbols-grid figcaption { gap:1px; margin-top:4px; font-size:10px; line-height:1.35; }
+.symbols-grid figcaption b { font-size:11px; }
+.symbols-grid .vpill { font-size:9px; padding:1px 5px; }
+.symbols-grid .note { font-size:9px; opacity:.75; }
 .asset { margin:0; }
 .asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
 .asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
@@ -167,6 +176,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   .side-top { display:none; }
 }
 @media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+
 </style>
 </head>
 <body id="top">
@@ -2278,7 +2288,14 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     Object.keys(seen).forEach(function (id) { if (seen[id] > bestV) { bestV = seen[id]; best = id; } });
     if (best) mark(best);
   }, { threshold: [0, 0.15, 0.4, 0.75, 1], rootMargin: '-10% 0px -55% 0px' });
-  document.querySelectorAll('section.joke').forEach(function (s) { io.observe(s); });
+  // **盯的是目录项指到的那些块**，不是某个写死的 class。
+  // 原来写的是 'section.joke'，那是段子画廊的类名 —— 醒木不响那页的块叫 .ep，
+  // 目录能点、但滚动时不会跟着高亮，而且不报错（就是不动）。
+  // 每一项本来就带 data-target，照它去找就跟页面长什么样无关了。
+  items.forEach(function (a) {
+    var el = document.getElementById(a.dataset.target);
+    if (el) io.observe(el);
+  });
   if (items.length) items[0].classList.add('active');
 })();
 </script>

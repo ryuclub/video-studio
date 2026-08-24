@@ -38,6 +38,8 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
   text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
 .nav-item:hover { background:rgba(127,127,127,.1); }
+/* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
+.nav-col { color:var(--accent); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -120,6 +122,13 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
 .extras figure { margin:0; }
 /* 公用素材区 */
 .assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+/* 符号库：一格一个符号，比角色/场景那种小得多 —— 一屏要看得全 */
+.symbols-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; }
+.symbols-grid .asset img { background:#FBF8F1; }
+.symbols-grid figcaption { gap:1px; margin-top:4px; font-size:10px; line-height:1.35; }
+.symbols-grid figcaption b { font-size:11px; }
+.symbols-grid .vpill { font-size:9px; padding:1px 5px; }
+.symbols-grid .note { font-size:9px; opacity:.75; }
 .asset { margin:0; }
 .asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
 .asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
@@ -167,6 +176,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   .side-top { display:none; }
 }
 @media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+
 </style>
 </head>
 <body id="top">
@@ -177,7 +187,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-006</h2>
     <div class="facts">
       <span>A 类 · rental-living</span>
-      <span>片长 26.4s</span>
+      <span>片长 25.7s</span>
       <span>笑点 21.5s</span>
       <span>定格 23.7s</span>
       <span>ma=老马</span>
@@ -275,7 +285,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">24.2s</span></figcaption></figure>
 <figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">25.7s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">25.1s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1852 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
@@ -300,13 +310,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>收尾卡上必须有东西</strong>（<code>endMark</code>，汗 / 右上 / 0.5 / seed 2 / tilt 8）。口径见 老马出片方案 §五</p>
 <p>  - <strong>语义上的第一人选其实是「云」（丧 / 认了）</strong>，渲出来对比过：云画得清清楚楚，但它整个在灰调里（<code>#D8D2C6</code> 加墨线），去色之后跟整幅画同一个调子，读作画面的一部分，不是「那一帧上唯一还活着的东西」。退回汗也站得住：他刚花二十秒把这张卡算得明明白白，下一秒当着镜头说「续吧」，那一下的尴尬是真的。⚠ 这是第三条用汗的（001 / 003 / 006），<strong>再用之前先问一句是不是真的「被自己抓包」</strong> —— 一旦变成缺省就退化成频道 logo</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.2</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：健身卡这个东西，我买的时候不当运动，当理财</td><td>—</td></tr><tr><td>0:05.6–0:08.5</td><td>同上</td><td><strong>ma</strong>：一次性存一笔钱进去，然后就不管了</td><td>—</td></tr><tr><td>0:08.9–0:11.3</td><td>同上</td><td><strong>ma</strong>：每个月按时不去，一次也没落下</td><td>—</td></tr><tr><td>0:11.7–0:15.3</td><td>同上</td><td><strong>ma</strong>：一年下来我去了三次，平均一次四百块</td><td>—</td></tr><tr><td>0:15.3–0:16.2</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.4–0:20.8</td><td>同上</td><td><strong>ma</strong>：上个月他们打电话来，说卡快到期了，问我续不续</td><td>—</td></tr><tr><td>0:21.5–0:23.7</td><td>同上</td><td><strong>ma</strong>：续吧。我也没打算取</td><td>—</td></tr><tr><td>0:23.7–0:26.4</td><td>定格去色 + 钩子字幕「老马的第 1852 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.2</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：健身卡这个东西，我买的时候不当运动，当理财</td><td>—</td></tr><tr><td>0:05.6–0:08.5</td><td>同上</td><td><strong>ma</strong>：一次性存一笔钱进去，然后就不管了</td><td>—</td></tr><tr><td>0:08.9–0:11.3</td><td>同上</td><td><strong>ma</strong>：每个月按时不去，一次也没落下</td><td>—</td></tr><tr><td>0:11.7–0:15.3</td><td>同上</td><td><strong>ma</strong>：一年下来我去了三次，平均一次四百块</td><td>—</td></tr><tr><td>0:15.3–0:16.2</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.4–0:20.8</td><td>同上</td><td><strong>ma</strong>：上个月他们打电话来，说卡快到期了，问我续不续</td><td>—</td></tr><tr><td>0:21.5–0:23.7</td><td>同上</td><td><strong>ma</strong>：续吧。我也没打算取</td><td>—</td></tr><tr><td>0:23.7–0:25.7</td><td>定格去色 + 钩子字幕「老马的第 1852 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>rental-living</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 26.44s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 25.74s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>

@@ -38,6 +38,8 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
   text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
 .nav-item:hover { background:rgba(127,127,127,.1); }
+/* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
+.nav-col { color:var(--accent); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -120,6 +122,13 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
 .extras figure { margin:0; }
 /* 公用素材区 */
 .assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+/* 符号库：一格一个符号，比角色/场景那种小得多 —— 一屏要看得全 */
+.symbols-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; }
+.symbols-grid .asset img { background:#FBF8F1; }
+.symbols-grid figcaption { gap:1px; margin-top:4px; font-size:10px; line-height:1.35; }
+.symbols-grid figcaption b { font-size:11px; }
+.symbols-grid .vpill { font-size:9px; padding:1px 5px; }
+.symbols-grid .note { font-size:9px; opacity:.75; }
 .asset { margin:0; }
 .asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
 .asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
@@ -167,6 +176,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   .side-top { display:none; }
 }
 @media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+
 </style>
 </head>
 <body id="top">
@@ -177,7 +187,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-005</h2>
     <div class="facts">
       <span>A 类 · meeting-room</span>
-      <span>片长 25.9s</span>
+      <span>片长 25.2s</span>
       <span>笑点 19.7s</span>
       <span>定格 23.2s</span>
       <span>ma=老马</span>
@@ -275,7 +285,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">23.7s</span></figcaption></figure>
 <figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">25.2s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">24.6s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1851 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
@@ -300,13 +310,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>收尾卡上必须有东西</strong>（<code>endMark</code>，冷 / 右上 / 0.42 / seed 2 / tilt 8）。口径见 老马出片方案 §五：出收尾卡的片子，卡上不能只有一行钩子字 —— 定格去色 ＋ 一行藏青字，两秒七什么都不发生，观众读作「没做完」而不是「克制」</p>
 <p>  - <strong>是「冷」不是汗、不是灯。</strong> 汗＝被自己抓包（稿 1 面具掉下来，稿 4 他就是那七个人之一）；灯＝想通了一件没用的事（稿 3 试出写「随便」那个办法）。这一条两样都不是：他没被抓包，也没想通任何事 —— 他发现的是<strong>这件事没有出口</strong>，第三次会的产出是第四次会。那一下是后背一紧。颜色也过了那道关：漫符不过 <code>ink()</code>，收尾卡全屏去色，这一个是那一帧上唯一还有颜色的东西；语义上也贴的「点」（无语）和「云」（丧）都是灰调的，挂上去看得见但不亮</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.3</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们公司有个词，我到现在也没弄明白，它叫对齐</td><td>—</td></tr><tr><td>0:05.7–0:07.9</td><td>同上</td><td><strong>ma</strong>：开会前，要先对齐一下</td><td>—</td></tr><tr><td>0:08.3–0:10.9</td><td>同上</td><td><strong>ma</strong>：开会的时候，全程都在对齐</td><td>—</td></tr><tr><td>0:11.3–0:14.0</td><td>同上</td><td><strong>ma</strong>：开完会发个文档，确认刚才对齐了</td><td>—</td></tr><tr><td>0:14.1–0:15.0</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:15.1–0:19.1</td><td>同上</td><td><strong>ma</strong>：上周有件事，一句话能说完，我们对齐了三次</td><td>—</td></tr><tr><td>0:19.7–0:23.2</td><td>同上</td><td><strong>ma</strong>：第三次的结论是，下周接着对齐</td><td>—</td></tr><tr><td>0:23.2–0:25.9</td><td>定格去色 + 钩子字幕「老马的第 1851 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.3</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们公司有个词，我到现在也没弄明白，它叫对齐</td><td>—</td></tr><tr><td>0:05.7–0:07.9</td><td>同上</td><td><strong>ma</strong>：开会前，要先对齐一下</td><td>—</td></tr><tr><td>0:08.3–0:10.9</td><td>同上</td><td><strong>ma</strong>：开会的时候，全程都在对齐</td><td>—</td></tr><tr><td>0:11.3–0:14.0</td><td>同上</td><td><strong>ma</strong>：开完会发个文档，确认刚才对齐了</td><td>—</td></tr><tr><td>0:14.1–0:15.0</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:15.1–0:19.1</td><td>同上</td><td><strong>ma</strong>：上周有件事，一句话能说完，我们对齐了三次</td><td>—</td></tr><tr><td>0:19.7–0:23.2</td><td>同上</td><td><strong>ma</strong>：第三次的结论是，下周接着对齐</td><td>—</td></tr><tr><td>0:23.2–0:25.2</td><td>定格去色 + 钩子字幕「老马的第 1851 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>meeting-room</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 25.95s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 25.25s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>

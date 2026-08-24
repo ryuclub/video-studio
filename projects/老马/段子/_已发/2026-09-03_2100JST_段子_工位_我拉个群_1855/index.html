@@ -38,6 +38,8 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
   text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
 .nav-item:hover { background:rgba(127,127,127,.1); }
+/* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
+.nav-col { color:var(--accent); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -120,6 +122,13 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
 .extras figure { margin:0; }
 /* 公用素材区 */
 .assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+/* 符号库：一格一个符号，比角色/场景那种小得多 —— 一屏要看得全 */
+.symbols-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; }
+.symbols-grid .asset img { background:#FBF8F1; }
+.symbols-grid figcaption { gap:1px; margin-top:4px; font-size:10px; line-height:1.35; }
+.symbols-grid figcaption b { font-size:11px; }
+.symbols-grid .vpill { font-size:9px; padding:1px 5px; }
+.symbols-grid .note { font-size:9px; opacity:.75; }
 .asset { margin:0; }
 .asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
 .asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
@@ -167,6 +176,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   .side-top { display:none; }
 }
 @media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+
 </style>
 </head>
 <body id="top">
@@ -177,7 +187,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-009</h2>
     <div class="facts">
       <span>A 类 · meeting-room</span>
-      <span>片长 29.1s</span>
+      <span>片长 28.4s</span>
       <span>笑点 23.6s</span>
       <span>定格 26.4s</span>
       <span>ma=老马</span>
@@ -275,7 +285,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">26.9s</span></figcaption></figure>
 <figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">28.4s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">27.8s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1855 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
@@ -311,13 +321,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>六个字 / 三十七 / 第一条，三个数一个都不能凑成整数</strong>：§一之四，奇数和具体数听起来像真数过</p>
 <p>  - <strong>收尾卡挂灯，不是汗。</strong> §五：想通了一件没用的事用「灯」，自带反讽 —— 他数完三十七个群，得出的结论对生活一点用都没有。汗＝当场被自己抓包（这条他是在盘账，不是被抓；而且前八条已经用了四次汗），问＝账没算清（007 用过，这条账是清的），冷＝僵住发凉（005 用过，这条的底色是发现不是受惊）。参数照抄 004 不换 seed</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:06.1</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们开会有一句话，谁说了这句，这件事就算有人管了</td><td>—</td></tr><tr><td>0:06.5–0:10.2</td><td>同上</td><td><strong>ma</strong>：原话六个字，这个我拉个群。说完就散会</td><td>—</td></tr><tr><td>0:10.6–0:14.5</td><td>同上</td><td><strong>ma</strong>：群建得特别快，名字带日期，该在的人一个不少</td><td>—</td></tr><tr><td>0:14.9–0:18.3</td><td>同上</td><td><strong>ma</strong>：第一条消息是，群拉好了，后续在这里同步</td><td>—</td></tr><tr><td>0:18.4–0:19.3</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:19.5–0:22.9</td><td>同上</td><td><strong>ma</strong>：我手机里，有四十一个这样的群，一个都没退</td><td>—</td></tr><tr><td>0:23.6–0:26.4</td><td>同上</td><td><strong>ma</strong>：每个群，都还停在第一条</td><td>—</td></tr><tr><td>0:26.4–0:29.1</td><td>定格去色 + 钩子字幕「老马的第 1855 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:06.1</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们开会有一句话，谁说了这句，这件事就算有人管了</td><td>—</td></tr><tr><td>0:06.5–0:10.2</td><td>同上</td><td><strong>ma</strong>：原话六个字，这个我拉个群。说完就散会</td><td>—</td></tr><tr><td>0:10.6–0:14.5</td><td>同上</td><td><strong>ma</strong>：群建得特别快，名字带日期，该在的人一个不少</td><td>—</td></tr><tr><td>0:14.9–0:18.3</td><td>同上</td><td><strong>ma</strong>：第一条消息是，群拉好了，后续在这里同步</td><td>—</td></tr><tr><td>0:18.4–0:19.3</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:19.5–0:22.9</td><td>同上</td><td><strong>ma</strong>：我手机里，有四十一个这样的群，一个都没退</td><td>—</td></tr><tr><td>0:23.6–0:26.4</td><td>同上</td><td><strong>ma</strong>：每个群，都还停在第一条</td><td>—</td></tr><tr><td>0:26.4–0:28.4</td><td>定格去色 + 钩子字幕「老马的第 1855 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>meeting-room</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 29.08s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 28.38s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>

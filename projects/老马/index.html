@@ -38,6 +38,8 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
   text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
 .nav-item:hover { background:rgba(127,127,127,.1); }
+/* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
+.nav-col { color:var(--accent); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -120,6 +122,13 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
 .extras figure { margin:0; }
 /* 公用素材区 */
 .assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+/* 符号库：一格一个符号，比角色/场景那种小得多 —— 一屏要看得全 */
+.symbols-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; }
+.symbols-grid .asset img { background:#FBF8F1; }
+.symbols-grid figcaption { gap:1px; margin-top:4px; font-size:10px; line-height:1.35; }
+.symbols-grid figcaption b { font-size:11px; }
+.symbols-grid .vpill { font-size:9px; padding:1px 5px; }
+.symbols-grid .note { font-size:9px; opacity:.75; }
 .asset { margin:0; }
 .asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
 .asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
@@ -167,164 +176,1284 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   .side-top { display:none; }
 }
 @media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+
 </style>
 </head>
 <body id="top">
 <div class="layout"><nav class="side" id="side">
   <div class="side-head">稿件目录<span class="side-count">16</span></div>
-  <div class="side-list"><a class="nav-item" href="#laoma-001" data-target="laoma-001">
-  <img class="nav-thumb" src="段子/_已发/未排期_段子_工位_练了三年_1847/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">1</b>老马的第 1847 天</span>
-    
-    <span class="nav-meta">A 类 · 29.5s · 6 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-002" data-target="laoma-002">
-  <img class="nav-thumb" src="段子/_已发/未排期_段子_回家_我妈的天气预报_1848/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">2</b>laoma-002</span>
-    
-    <span class="nav-meta">A 类 · 31.1s · 7 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-003" data-target="laoma-003">
-  <img class="nav-thumb" src="段子/_已发/未排期_段子_众目睽睽_决定看哪儿_1849/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">3</b>老马的第 1849 天</span>
-    
-    <span class="nav-meta">A 类 · 22.3s · 6 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-004" data-target="laoma-004">
-  <img class="nav-thumb" src="段子/_已发/未排期_段子_一个人住_从来不备注_1850/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">4</b>老马的第 1850 天</span>
-    
-    <span class="nav-meta">A 类 · 25.5s · 7 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-005" data-target="laoma-005">
-  <img class="nav-thumb" src="段子/_已发/2026-08-25_2100JST_段子_工位_对齐了三次_1851/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">5</b>老马的第 1851 天</span>
-    
-    <span class="nav-meta">A 类 · 25.9s · 6 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-006" data-target="laoma-006">
-  <img class="nav-thumb" src="段子/_已发/2026-08-27_2100JST_段子_一个人住_按时不去_1852/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">6</b>老马的第 1852 天</span>
-    
-    <span class="nav-meta">A 类 · 26.4s · 6 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-007" data-target="laoma-007">
-  <img class="nav-thumb" src="段子/_已发/2026-08-30_2100JST_段子_工位_优化以后_1853/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">7</b>老马的第 1853 天</span>
-    
-    <span class="nav-meta">A 类 · 25.4s · 6 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-008" data-target="laoma-008">
-  <img class="nav-thumb" src="段子/_已发/2026-09-01_2100JST_段子_众目睽睽_十七分钟_1854/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">8</b>老马的第 1854 天</span>
-    
-    <span class="nav-meta">A 类 · 27.3s · 6 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-009" data-target="laoma-009">
-  <img class="nav-thumb" src="段子/_已发/2026-09-03_2100JST_段子_工位_我拉个群_1855/stills/00-开场.png" alt="" loading="lazy">
-  <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">9</b>老马的第 1855 天</span>
-    
-    <span class="nav-meta">A 类 · 29.1s · 6 句</span>
-    <span class="nav-cast">老马</span>
-  </span>
-</a>
-<a class="nav-item" href="#laoma-010" data-target="laoma-010">
+  <div class="side-list"><a class="nav-item" href="#laoma-010" data-target="laoma-010">
   <img class="nav-thumb" src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">10</b>老马的第 1858 天</span>
+    <span class="nav-title"><b class="nav-num">1</b>老马的第 1858 天</span>
     
-    <span class="nav-meta">A 类 · 23.3s · 6 句</span>
+    <span class="nav-meta"><b class="nav-col">工位</b> · A 类 · 22.6s · 6 句</span>
     <span class="nav-cast">老马</span>
   </span>
 </a>
 <a class="nav-item" href="#laoma-011" data-target="laoma-011">
   <img class="nav-thumb" src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">11</b>老马的第 1861 天</span>
+    <span class="nav-title"><b class="nav-num">2</b>老马的第 1861 天</span>
     
-    <span class="nav-meta">A 类 · 18.3s · 5 句</span>
+    <span class="nav-meta"><b class="nav-col">工位</b> · A 类 · 17.5s · 5 句</span>
     <span class="nav-cast">老马</span>
   </span>
 </a>
 <a class="nav-item" href="#laoma-012" data-target="laoma-012">
-  <img class="nav-thumb" src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/00-开场.png" alt="" loading="lazy">
+  <img class="nav-thumb" src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">12</b>老马的第 1863 天</span>
+    <span class="nav-title"><b class="nav-num">3</b>老马的第 1863 天</span>
     
-    <span class="nav-meta">A 类 · 24.0s · 5 句</span>
+    <span class="nav-meta"><b class="nav-col">一个人住</b> · A 类 · 16.4s · 5 句</span>
     <span class="nav-cast">老马</span>
   </span>
 </a>
 <a class="nav-item" href="#laoma-013" data-target="laoma-013">
   <img class="nav-thumb" src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">13</b>老马的第 1866 天</span>
+    <span class="nav-title"><b class="nav-num">4</b>老马的第 1866 天</span>
     
-    <span class="nav-meta">A 类 · 24.7s · 5 句</span>
+    <span class="nav-meta"><b class="nav-col">众目睽睽</b> · A 类 · 22.6s · 5 句</span>
     <span class="nav-cast">老马</span>
   </span>
 </a>
 <a class="nav-item" href="#laoma-014" data-target="laoma-014">
   <img class="nav-thumb" src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">14</b>老马的第 1868 天</span>
+    <span class="nav-title"><b class="nav-num">5</b>老马的第 1868 天</span>
     
-    <span class="nav-meta">A 类 · 26.2s · 5 句</span>
+    <span class="nav-meta"><b class="nav-col">工位</b> · A 类 · 24.1s · 5 句</span>
     <span class="nav-cast">老马</span>
   </span>
 </a>
 <a class="nav-item" href="#laoma-015" data-target="laoma-015">
-  <img class="nav-thumb" src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/00-开场.png" alt="" loading="lazy">
+  <img class="nav-thumb" src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">15</b>老马的第 1871 天</span>
+    <span class="nav-title"><b class="nav-num">6</b>老马的第 1871 天</span>
     
-    <span class="nav-meta">A 类 · 23.1s · 5 句</span>
+    <span class="nav-meta"><b class="nav-col">一个人住</b> · A 类 · 22.4s · 5 句</span>
     <span class="nav-cast">老马</span>
   </span>
 </a>
 <a class="nav-item" href="#laoma-016" data-target="laoma-016">
   <img class="nav-thumb" src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">16</b>老马的第 1874 天</span>
+    <span class="nav-title"><b class="nav-num">7</b>老马的第 1874 天</span>
     
-    <span class="nav-meta">A 类 · 19.1s · 5 句</span>
+    <span class="nav-meta"><b class="nav-col">回家</b> · A 类 · 18.4s · 5 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-001" data-target="laoma-001">
+  <img class="nav-thumb" src="段子/_已发/未排期_段子_工位_练了三年_1847/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">8</b>老马的第 1847 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">工位</b> · A 类 · 28.8s · 6 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-002" data-target="laoma-002">
+  <img class="nav-thumb" src="段子/_已发/未排期_段子_回家_我妈的天气预报_1848/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">9</b>laoma-002</span>
+    
+    <span class="nav-meta"><b class="nav-col">回家</b> · A 类 · 29.1s · 7 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-003" data-target="laoma-003">
+  <img class="nav-thumb" src="段子/_已发/未排期_段子_众目睽睽_决定看哪儿_1849/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">10</b>老马的第 1849 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">众目睽睽</b> · A 类 · 21.6s · 6 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-004" data-target="laoma-004">
+  <img class="nav-thumb" src="段子/_已发/未排期_段子_一个人住_从来不备注_1850/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">11</b>老马的第 1850 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">一个人住</b> · A 类 · 24.8s · 7 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-005" data-target="laoma-005">
+  <img class="nav-thumb" src="段子/_已发/2026-08-25_2100JST_段子_工位_对齐了三次_1851/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">12</b>老马的第 1851 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">工位</b> · A 类 · 25.2s · 6 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-006" data-target="laoma-006">
+  <img class="nav-thumb" src="段子/_已发/2026-08-27_2100JST_段子_一个人住_按时不去_1852/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">13</b>老马的第 1852 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">一个人住</b> · A 类 · 25.7s · 6 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-007" data-target="laoma-007">
+  <img class="nav-thumb" src="段子/_已发/2026-08-30_2100JST_段子_工位_优化以后_1853/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">14</b>老马的第 1853 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">工位</b> · A 类 · 24.7s · 6 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-008" data-target="laoma-008">
+  <img class="nav-thumb" src="段子/_已发/2026-09-01_2100JST_段子_众目睽睽_十七分钟_1854/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">15</b>老马的第 1854 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">众目睽睽</b> · A 类 · 26.6s · 6 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
+<a class="nav-item" href="#laoma-009" data-target="laoma-009">
+  <img class="nav-thumb" src="段子/_已发/2026-09-03_2100JST_段子_工位_我拉个群_1855/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">16</b>老马的第 1855 天</span>
+    
+    <span class="nav-meta"><b class="nav-col">工位</b> · A 类 · 28.4s · 6 句</span>
     <span class="nav-cast">老马</span>
   </span>
 </a></div>
   <a class="side-top" href="#top">回到顶部</a>
 </nav><div class="wrap"><h1>老马 · 稿件与成片</h1>
 <p class="sub">共 16 条 · 目录名带发布日和时刻，排期见 joke-video/horse/SCHEDULE.md</p>
+<section class="card" id="_symbols">
+  <h2>符号库　<span class="sub-inline">两套，各有各的规矩</span></h2>
+  <p class="sub"><b>没有情绪的八个</b>　落点符号写 <code>endEmote</code>（全片 ≤1，落点定格里延后 0.3 秒起）；
+  停顿符号写 <code>line.emote</code>（全片 ≤2，只挂 ≥0.8 秒的句末停顿，落点句和它前一句不许挂）。</p>
+  <div class="symbols-grid"><figure class="asset">
+  <img src="_symbols/dots.png" alt="dots" loading="lazy">
+  <figcaption><b>dots</b><span class="voice-row"><span class="vpill">省略号 …</span></span><span class="note">没话说。最通用，落点后默认用这个</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/dash.png" alt="dash" loading="lazy">
+  <figcaption><b>dash</b><span class="voice-row"><span class="vpill">一横 —</span></span><span class="note">比省略号更冷，什么都不想说</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/question.png" alt="question" loading="lazy">
+  <figcaption><b>question</b><span class="voice-row"><span class="vpill">小问号 ?</span></span><span class="note">不明白。要画得极小，大了就成了卖萌</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/num.png" alt="num" loading="lazy">
+  <figcaption><b>num</b><span class="voice-row"><span class="vpill">数字</span></span><span class="note">呼应落点里的数字，传 value</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/calendar.png" alt="calendar" loading="lazy">
+  <figcaption><b>calendar</b><span class="voice-row"><span class="vpill">日历撕页</span></span><span class="note">呼应时间、天数、周期</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/clock.png" alt="clock" loading="lazy">
+  <figcaption><b>clock</b><span class="voice-row"><span class="vpill">小钟</span></span><span class="note">呼应等待、时长</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/zzz.png" alt="zzz" loading="lazy">
+  <figcaption><b>zzz</b><span class="voice-row"><span class="vpill">zZ</span></span><span class="note">困。老马唯一允许的生理状态</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/sink.png" alt="sink" loading="lazy">
+  <figcaption><b>sink</b><span class="voice-row"><span class="vpill">下沉短箭头</span></span><span class="note">算了。比省略号重一点</span></figcaption>
+</figure></div>
+  <p class="sub"><b>情绪符号十个</b>　它们是<b>画面替观众表态</b>，所以给的是配额不是自由：<b>近 5 条最多 1 条</b>
+  （收尾卡 <code>endMark</code> 和停顿 <code>line.emote</code> 共用同一份账）。用在停顿里的写法跟上面一样。</p>
+  <div class="symbols-grid"><figure class="asset">
+  <img src="_symbols/mark-惊.png" alt="惊" loading="lazy">
+  <figcaption><b>惊</b><span class="voice-row"><span class="vpill">感叹号 · 吃惊</span></span><span class="note">最通用的一个</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-惊二.png" alt="惊二" loading="lazy">
+  <figcaption><b>惊二</b><span class="voice-row"><span class="vpill">双感叹号 · 大吃惊</span></span><span class="note">比惊夸张一档，一条片子最多一次</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-问.png" alt="问" loading="lazy">
+  <figcaption><b>问</b><span class="voice-row"><span class="vpill">问号 · 没听懂</span></span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-汗.png" alt="汗" loading="lazy">
+  <figcaption><b>汗</b><span class="voice-row"><span class="vpill">汗 · 尴尬心虚</span></span><span class="note">老马最常用</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-点.png" alt="点" loading="lazy">
+  <figcaption><b>点</b><span class="voice-row"><span class="vpill">三个点 · 无语</span></span><span class="note">人设最贴的一个，最不吵</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-闪.png" alt="闪" loading="lazy">
+  <figcaption><b>闪</b><span class="voice-row"><span class="vpill">放射线 · 被戳中</span></span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-云.png" alt="云" loading="lazy">
+  <figcaption><b>云</b><span class="voice-row"><span class="vpill">乌云 · 丧</span></span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-灯.png" alt="灯" loading="lazy">
+  <figcaption><b>灯</b><span class="voice-row"><span class="vpill">灯泡 · 想通了</span></span><span class="note">自带反讽：老马想通的多半没用</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-冷.png" alt="冷" loading="lazy">
+  <figcaption><b>冷</b><span class="voice-row"><span class="vpill">竖线 · 僵住发凉</span></span><span class="note">「害怕」那一档</span></figcaption>
+</figure>
+<figure class="asset">
+  <img src="_symbols/mark-星.png" alt="星" loading="lazy">
+  <figcaption><b>星</b><span class="voice-row"><span class="vpill">星 · 晕/被打击</span></span></figcaption>
+</figure></div>
+</section>
+<section class="joke" id="laoma-010">
+  <header>
+    <h2>laoma-010</h2>
+    <div class="facts">
+      <span>A 类 · office-desk</span>
+      <span>片长 22.6s</span>
+      <span>笑点 17.6s</span>
+      <span>定格 20.6s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><video src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/out.mp4" controls preload="metadata" playsinline></video><div class="film-note">成片　<code>out.mp4</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot">2026-09-06 21:00 JST　<em>待发</em></span></div>
+<div class="pub-row"><span class="k">标题</span><span class="v title">我的单子交上去八天了</span></div>
+<div class="pub-row"><span class="k">副标题</span><span class="v ">老马 · 工位　每天刷两次</span></div>
+<div class="pub-row"><span class="k">关键词</span><span class="v tags">#碎嘴老马 #碎嘴 #老马 #打工人 #职场 #上班这件事 #审批 #待审批 #工位 #流程
+#审批流程 #走流程 #打工人日常</span></div>
+<div class="pub-row"><span class="k">各平台</span><span class="v plat">youtube <code>2026-09-06 21:00:00 +09</code><br>douyin <code>2026-09-10 21:30:00 +09</code><br>channels <code>2026-09-12 21:30:00 +09</code></span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我的单子交上去八天了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.68s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.6s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">系统里一直显示待审批</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.88s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">5.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我不知道点那个按钮的人是谁</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.74s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">8.8s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我每天早上刷一次，下午再刷一次</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.63s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.2s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">今天九点四十七，七张单子一起通过了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.03s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">17.6s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">我这儿也压着一张，压了<em>三天</em></p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.95s</div>
+  </div>
+</div></div>
+  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/thumb.png" alt="封面" loading="lazy">
+  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/00-开场.png" alt="开场大字" loading="lazy">
+  <figcaption>开场大字　<span class="ts-inline">0.8s</span></figcaption></figure>
+<figure><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">21.1s</span></figcaption></figure>
+<figure><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">22.0s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1858 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1858 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　他抱怨了九条片子的那套流程，这一条里他自己就是其中一环 ——</li>
+</ul>
+<p>  而且他在这一环上做的事，跟他抱怨别人做的一模一样。</p>
+<ul>
+<li><strong>视角</strong>　<strong>共谋者</strong>（horse_standup_plan §六之二 的四档里唯一一次都没用过的那档）。</li>
+</ul>
+<p>  前九条老马永远是被卡住的人或者旁观的人，<strong>干净久了就成了「一个总在被亏待的人」</strong>，</p>
+<p>  那离抱怨只有一步 —— 而抱怨正是 §一 开篇要躲开的东西。</p>
+<ul>
+<li><strong>为什么这么分镜</strong>　一镜到底、镜头不动，只在第 5 句给一次 -12° 扭头。</li>
+</ul>
+<p>  这一条的转折是<strong>视角翻面</strong>不是场景变化，切镜会把注意力引到画面上去。</p>
+<ul>
+<li><strong>不能动的地方</strong></li>
+</ul>
+<p>  - <strong>第 3 句那个「第九百三十七天」</strong>　它跟收尾卡的 1858 是同一条轴上的两个点，</p>
+<p>    观众自己会算中间那两年半。<strong>天数咬合九条里一次都没做过</strong>，动了这一条就白搭</p>
+<p>  - <strong>第 5 句是配额句</strong>（<code>emotionLine: 5</code>）　全片唯一一句带情绪的。</p>
+<p>    加第二句就违规（v3 §2 约束③），删掉它这条片子仍旧成立、只是变冷</p>
+<p>  - <strong>落点不许挪到第 5 句后面去补一刀</strong>　§一之八 说完就停</p>
+<p>  - <code>opening.style: "voice-first"</code>　物件「按钮」库里没有画法，走不了缺省的档 ③；</p>
+<p>    <strong>别拿 <code>系统</code> 顶替</strong>，那张审批单画死了七个节点，那个七是 007 的数</p>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:01.7</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我的单子交上去八天了</td><td>—</td></tr><tr><td>0:02.6–0:04.5</td><td>同上</td><td><strong>ma</strong>：系统里一直显示待审批</td><td>—</td></tr><tr><td>0:05.4–0:07.1</td><td>同上</td><td><strong>ma</strong>：我不知道点那个按钮的人是谁</td><td>—</td></tr><tr><td>0:08.8–0:11.4</td><td>同上</td><td><strong>ma</strong>：我每天早上刷一次，下午再刷一次</td><td>—</td></tr><tr><td>0:11.5–0:12.4</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:13.2–0:16.2</td><td>同上</td><td><strong>ma</strong>：今天九点四十七，七张单子一起通过了</td><td>—</td></tr><tr><td>0:17.6–0:20.6</td><td>同上</td><td><strong>ma</strong>：我这儿也压着一张，压了三天</td><td>—</td></tr><tr><td>0:20.6–0:22.6</td><td>定格去色 + 钩子字幕「老马的第 1858 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>office-desk</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 22.55s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<blockquote>⚠ <strong>2026-08-23 整条换过稿</strong>（原来是《我管一个按钮》），这一节跟着重写。</blockquote>
+<blockquote><strong>换稿要连 §四 一起换</strong> —— 预览页把标题摆到成片旁边之后一眼看见了：</blockquote>
+<blockquote>片子早就是《一直显示待审批》，标题还挂着上一版的「我在那个系统里管一个按钮」。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. <code>我的单子交上去八天了</code>　←主选</p>
+<p>  2. <code>一直显示待审批</code></p>
+<p>  3. <code>我不知道点那个按钮的人是谁</code></p>
+<ul>
+<li><strong>为什么是第 1 个</strong>　它是第 1 句原话，<strong>给处境不给结果</strong>：交上去八天了，</li>
+</ul>
+<p>  观众立刻知道他在等什么，但不知道会怎么样。跟封面大字「一直显示待审批」</p>
+<p>  是同一件事的两个角度 —— 一个说时间，一个说状态，两边不打架。</p>
+<p>  第 2 个跟封面大字一模一样，浪费了唯一的视觉资源；</p>
+<p>  第 3 个是第 3 句，那句是落点的伏笔，抖在标题上会让最后一句的翻面变弱。</p>
+<ul>
+<li><strong>副标题</strong>　<code>老马 · 工位　每天刷两次</code></li>
+<li><strong>内容关键词</strong>　审批 / 待审批 / 工位 / 打工人 / 流程</li>
+<li><strong>热度关键词</strong>　审批流程 / 走流程 / 职场 / 上班这件事 / 打工人日常</li>
+<li><strong>话题标签</strong>　#职场 #上班这件事</li>
+<li><strong>简介</strong></li>
+</ul>
+<p>  &gt; 我的单子交上去八天了，系统里一直显示待审批。</p>
+<p>  &gt;</p>
+<p>  &gt; 我不知道点那个按钮的人是谁。</p>
+<p>  &gt; 每天早上刷一次，下午再刷一次。</p>
+<ul>
+<li><strong>封面大字</strong>　<code>一直显示待审批</code></li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
+<section class="joke" id="laoma-011">
+  <header>
+    <h2>laoma-011</h2>
+    <div class="facts">
+      <span>A 类 · office-desk</span>
+      <span>片长 17.5s</span>
+      <span>笑点 13.9s</span>
+      <span>定格 15.5s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">这瓶水我拧了四下</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.97s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">手心印出一圈齿</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.48s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">4.9s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">老马把瓶子递给小李，小李一下就开了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.36s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">9.8s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">小李说这瓶本来就松了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.18s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.9s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">那瓶水我一口没喝</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.65s</div>
+  </div>
+</div></div>
+  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.0s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">16.0s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">16.9s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1861 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_工位_laoma-011_1861/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1861 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　（？）</li>
+<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
+<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
+</ul>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.0</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：这瓶水我拧了四下</td><td>—</td></tr><tr><td>0:02.4–0:03.9</td><td>同上</td><td><strong>ma</strong>：手心印出一圈齿</td><td>—</td></tr><tr><td>0:04.9–0:08.3</td><td>同上</td><td><strong>ma</strong>：老马把瓶子递给小李，小李一下就开了</td><td>—</td></tr><tr><td>0:09.8–0:12.0</td><td>同上</td><td><strong>ma</strong>：小李说这瓶本来就松了</td><td>—</td></tr><tr><td>0:13.9–0:15.5</td><td>同上</td><td><strong>ma</strong>：那瓶水我一口没喝</td><td>—</td></tr><tr><td>0:15.5–0:17.5</td><td>定格去色 + 钩子字幕「老马的第 1861 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>office-desk</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 17.55s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. （？）</p>
+<p>  2. （？）</p>
+<p>  3. （？）</p>
+<ul>
+<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
+<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
+<li><strong>话题标签</strong>　（？#xxx）</li>
+<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>封面大字</strong>　``</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
+<section class="joke" id="laoma-012">
+  <header>
+    <h2>laoma-012</h2>
+    <div class="facts">
+      <span>A 类 · rental-living</span>
+      <span>片长 16.4s</span>
+      <span>笑点 12.0s</span>
+      <span>定格 14.4s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><video src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/out.mp4" controls preload="metadata" playsinline></video><div class="film-note">成片　<code>out.mp4</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot">2026-09-10 21:00 JST　<em>待发</em></span></div>
+<div class="pub-row"><span class="k">标题</span><span class="v title">我站在卧室门口，忘了要拿什么</span></div>
+<div class="pub-row"><span class="k">关键词</span><span class="v tags">#碎嘴老马 #碎嘴 #老马 #打工人 #一个人住 #忘了要拿什么 #忘事 #遥控器 #沙发
+#走回去 #脑子空白 #站在门口忘了 #下班回家 #独居日常</span></div>
+<div class="pub-row"><span class="k">各平台</span><span class="v plat">youtube <code>2026-09-10 21:00:00 +09</code><br>douyin <code>2026-09-14 21:30:00 +09</code><br>channels <code>2026-09-16 21:30:00 +09</code></span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我站在卧室门口，忘了要拿什么</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.52s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.9s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">遥控器在沙发上，电视还开着</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.68s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">6.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">老马原路走回沙发，坐下</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.25s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">8.6s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">手碰到遥控器的时候，我想起来了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.58s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">12.0s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">我没起来，又坐了一会儿</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.11s</div>
+  </div>
+</div></div>
+  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/thumb.png" alt="封面" loading="lazy">
+  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.3s</span></figcaption></figure>
+<figure><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">14.9s</span></figcaption></figure>
+<figure><img src="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">15.8s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1863 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/2026-09-10_2100JST_段子_一个人住_忘了要拿什么_1863/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1863 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　站在卧室门口忘了要拿什么，走回沙发坐下，手碰到遥控器的那一下想起来了 —— 然后他没起来。</li>
+<li><strong>为什么这么分镜</strong>　全片只有一个动作（走回去、坐下），而那个动作发生在台词里、不在画面上。</li>
+</ul>
+<p>  所以镜头不动、场景不换：<strong>画面负责「他一直在那儿」，台词负责「他去了又回来」</strong>。</p>
+<p>  真去分镜表演那一趟，反而把「想起来了也没动」这件事演成了搞笑桥段。</p>
+<ul>
+<li><strong>不能动的地方</strong></li>
+</ul>
+<p>  - <strong>第 4 句是配额句</strong>（<code>emotionLine: 4</code>）。「手碰到遥控器的时候，我想起来了」是全片唯一一处带情绪的，</p>
+<p>    v3 §2 一条只给一句，动它就得整条重排</p>
+<p>  - <strong>落点后不许有话</strong>。「我没起来，又坐了一会儿」说完就停 —— 加半句解释这条就废了</p>
+<p>  - <strong>没有落点符号、没有尾卡</strong>，两处都是有意留空：配额句已经用掉了那一次力（尾卡跟配额二选一），</p>
+<p>    而上一条 1858 刚用过省略号，连着两条挂符号就开始像模板</p>
+<p>  - <strong>首帧走档 ③</strong>（物件特写「遥控器」）。这条的物件在库里有画法，是档 ③ 成立的前提</p>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.5</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我站在卧室门口，忘了要拿什么</td><td>—</td></tr><tr><td>0:02.9–0:05.6</td><td>同上</td><td><strong>ma</strong>：遥控器在沙发上，电视还开着</td><td>—</td></tr><tr><td>0:06.0–0:08.2</td><td>同上</td><td><strong>ma</strong>：老马原路走回沙发，坐下</td><td>—</td></tr><tr><td>0:08.6–0:11.2</td><td>同上</td><td><strong>ma</strong>：手碰到遥控器的时候，我想起来了</td><td>—</td></tr><tr><td>0:12.0–0:14.1</td><td>同上</td><td><strong>ma</strong>：我没起来，又坐了一会儿</td><td>—</td></tr><tr><td>0:14.4–0:16.4</td><td>定格去色 + 钩子字幕「老马的第 1863 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>rental-living</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 16.38s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. <code>我站在卧室门口，忘了要拿什么</code>　←主选　第一句原样搬，<strong>不剧透落点</strong></p>
+<p>  2. 走回沙发那一下，我想起来了　← 泄了第 4 句那一拍，落点就没落差了</p>
+<p>  3. 一个人住久了会这样　← 犯了「替观众下判断」，v3 硬禁令一。留着当反例</p>
+<ul>
+<li><strong>内容关键词</strong>　忘事 / 遥控器 / 一个人住 / 沙发 / 走回去</li>
+<li><strong>热度关键词</strong>　脑子空白 / 站在门口忘了 / 下班回家 / 独居日常</li>
+<li><strong>话题标签</strong>　#老马　#一个人住　#忘了要拿什么</li>
+<li><strong>简介</strong></li>
+</ul>
+<p>  &gt; 我站在卧室门口，忘了要拿什么。</p>
+<p>  &gt;</p>
+<p>  &gt; 遥控器在沙发上，电视还开着。</p>
+<p>  &gt; 老马原路走回沙发，坐下。</p>
+<ul>
+<li><strong>封面大字</strong>　<code>忘了要拿什么</code>　6 字，同时是幕布闭幕那半秒打在布面上的标题（闭幕帧就是封面）</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
+<section class="joke" id="laoma-013">
+  <header>
+    <h2>laoma-013</h2>
+    <div class="facts">
+      <span>A 类 · subway</span>
+      <span>片长 22.6s</span>
+      <span>笑点 15.4s</span>
+      <span>定格 20.6s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">出地铁的时候，手机剩百分之三</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">4.2s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">到家还有十三分钟的路</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">7.5s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">老马把亮度调到最低，手机塞进兜里</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">12.2s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">我没有要看的东西</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">15.4s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">剩下那十三分钟，我一直在算它还能撑多久</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div></div>
+  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.9s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">21.1s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">22.0s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1866 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1866 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　（？）</li>
+<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
+<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
+</ul>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>subway</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:00.0</td><td>场景 <code>subway</code>　在场 ma　单人镜</td><td><strong>ma</strong>：出地铁的时候，手机剩百分之三</td><td>—</td></tr><tr><td>0:04.2–0:04.2</td><td>同上</td><td><strong>ma</strong>：到家还有十三分钟的路</td><td>—</td></tr><tr><td>0:07.5–0:07.5</td><td>同上</td><td><strong>ma</strong>：老马把亮度调到最低，手机塞进兜里</td><td>—</td></tr><tr><td>0:12.2–0:12.2</td><td>同上</td><td><strong>ma</strong>：我没有要看的东西</td><td>—</td></tr><tr><td>0:15.4–0:15.4</td><td>同上</td><td><strong>ma</strong>：剩下那十三分钟，我一直在算它还能撑多久</td><td>—</td></tr><tr><td>0:20.6–0:22.6</td><td>定格去色 + 钩子字幕「老马的第 1866 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>subway</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 22.59s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. （？）</p>
+<p>  2. （？）</p>
+<p>  3. （？）</p>
+<ul>
+<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
+<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
+<li><strong>话题标签</strong>　（？#xxx）</li>
+<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>封面大字</strong>　``</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
+<section class="joke" id="laoma-014">
+  <header>
+    <h2>laoma-014</h2>
+    <div class="facts">
+      <span>A 类 · meeting-room</span>
+      <span>片长 24.1s</span>
+      <span>笑点 17.6s</span>
+      <span>定格 22.1s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">一个小时的会，每个词我都听懂了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">4.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">散会的时候我不知道定了没有</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">8.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">老马夹着笔记本跟出去，等了三步才开口</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">13.5s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">同事说，大概是那个方向吧</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">17.6s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">我回工位翻笔记，上面写的就是这句</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta warn">还没跑 align，时长是估算的</div>
+  </div>
+</div></div>
+  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">2.0s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">22.6s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">23.5s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1868 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_工位_laoma-014_1868/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1868 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　（？）</li>
+<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
+<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
+</ul>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:00.0</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：一个小时的会，每个词我都听懂了</td><td>—</td></tr><tr><td>0:04.4–0:04.4</td><td>同上</td><td><strong>ma</strong>：散会的时候我不知道定了没有</td><td>—</td></tr><tr><td>0:08.4–0:08.4</td><td>同上</td><td><strong>ma</strong>：老马夹着笔记本跟出去，等了三步才开口</td><td>—</td></tr><tr><td>0:13.5–0:13.5</td><td>同上</td><td><strong>ma</strong>：同事说，大概是那个方向吧</td><td>—</td></tr><tr><td>0:17.6–0:17.6</td><td>同上</td><td><strong>ma</strong>：我回工位翻笔记，上面写的就是这句</td><td>—</td></tr><tr><td>0:22.1–0:24.1</td><td>定格去色 + 钩子字幕「老马的第 1868 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>meeting-room</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 24.13s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. （？）</p>
+<p>  2. （？）</p>
+<p>  3. （？）</p>
+<ul>
+<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
+<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
+<li><strong>话题标签</strong>　（？#xxx）</li>
+<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>封面大字</strong>　``</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
+<section class="joke" id="laoma-015">
+  <header>
+    <h2>laoma-015</h2>
+    <div class="facts">
+      <span>A 类 · rental-living</span>
+      <span>片长 22.4s</span>
+      <span>笑点 16.3s</span>
+      <span>定格 20.4s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><video src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/out.mp4" controls preload="metadata" playsinline></video><div class="film-note">成片　<code>out.mp4</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot">2026-09-17 21:00 JST　<em>待发</em></span></div>
+<div class="pub-row"><span class="k">标题</span><span class="v title">我说往后一点，她把手机举得更近了</span></div>
+<div class="pub-row"><span class="k">关键词</span><span class="v tags">#碎嘴老马 #碎嘴 #老马 #打工人 #一个人住 #跟爸妈视频 #视频通话 #我妈 #半张脸
+#举得更近 #二十六分钟 #老人用手机 #视频只有半张脸 #异地</span></div>
+<div class="pub-row"><span class="k">各平台</span><span class="v plat">youtube <code>2026-09-17 21:00:00 +09</code><br>douyin <code>2026-09-21 21:30:00 +09</code><br>channels <code>2026-09-23 21:30:00 +09</code></span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">视频接通，屏幕上是我妈的半张脸</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.66s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">3.9s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我说往后一点，她把手机举得更近了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.43s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">7.9s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我把自己的手机往后挪，想让她照着做</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.89s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">12.8s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">她说你那边怎么黑了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.96s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">16.3s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">那通电话打了二十六分钟，我没看清她</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 4.12s</div>
+  </div>
+</div></div>
+  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/thumb.png" alt="封面" loading="lazy">
+  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.8s</span></figcaption></figure>
+<figure><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">20.9s</span></figcaption></figure>
+<figure><img src="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">21.8s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1871 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/2026-09-17_2100JST_段子_一个人住_我妈的半张脸_1871/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1871 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　跟我妈视频，我说往后一点，她把手机举得更近；我把自己的手机往后挪想让她照做，她说「你那边怎么黑了」。二十六分钟，我没看清她。</li>
+<li><strong>为什么这么分镜</strong>　全片只有一个动作（两个人各自挪手机），而两边都在照着自己那头的逻辑动。</li>
+</ul>
+<p>  镜头不动、单场景：<strong>画面负责「他一直坐在那儿」，台词负责那两只手在屏幕外各挪各的</strong>。</p>
+<p>  真去演视频通话的两头，就成了双人小品 —— 这条线的规矩是一个人说到底。</p>
+<ul>
+<li><strong>不能动的地方</strong></li>
+</ul>
+<p>  - <strong>落点是纯事实</strong>：一个数（二十六分钟）＋ 一件没做成的事（没看清）。<strong>不许加一句感慨</strong></p>
+<p>  - <strong>配额句点在落点上</strong>（<code>emotionLine: 5</code>），用户明确要留</p>
+<p>  - <strong>同时挂尾卡</strong>（<code>allowBoth: true</code>）——「二选一」那条是知情地破的，理由记在稿件 <code>_allowBoth</code> 里</p>
+<p>  - <strong>首帧走档 ③</strong>（物件特写「手机」），库里有画法</p>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:03.7</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：视频接通，屏幕上是我妈的半张脸</td><td>—</td></tr><tr><td>0:03.9–0:06.3</td><td>同上</td><td><strong>ma</strong>：我说往后一点，她把手机举得更近了</td><td>—</td></tr><tr><td>0:07.9–0:10.7</td><td>同上</td><td><strong>ma</strong>：我把自己的手机往后挪，想让她照着做</td><td>—</td></tr><tr><td>0:12.8–0:14.7</td><td>同上</td><td><strong>ma</strong>：她说你那边怎么黑了</td><td>—</td></tr><tr><td>0:16.3–0:20.4</td><td>同上</td><td><strong>ma</strong>：那通电话打了二十六分钟，我没看清她</td><td>—</td></tr><tr><td>0:20.4–0:22.4</td><td>定格去色 + 钩子字幕「老马的第 1871 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>rental-living</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 22.38s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. <code>我说往后一点，她把手机举得更近了</code>　←主选　第 2 句原样搬，一句话把两头的错位摆出来</p>
+<p>  2. 跟我妈视频，二十六分钟没看清她　← 把落点的数和结果都说了，等于剧透</p>
+<p>  3. 爸妈的视频通话为什么总是半张脸　← 「为什么」是在替观众提问，也滑向科普腔</p>
+<ul>
+<li><strong>内容关键词</strong>　视频通话 / 我妈 / 半张脸 / 举得更近 / 二十六分钟</li>
+<li><strong>热度关键词</strong>　跟爸妈视频 / 老人用手机 / 视频只有半张脸 / 异地</li>
+<li><strong>话题标签</strong>　#老马　#一个人住　#跟爸妈视频</li>
+<li><strong>简介</strong></li>
+</ul>
+<p>  &gt; 视频接通，屏幕上是我妈的半张脸。</p>
+<p>  &gt;</p>
+<p>  &gt; 我说往后一点，她把手机举得更近了。</p>
+<p>  &gt; 我把自己的手机往后挪，想让她照着做。</p>
+<ul>
+<li><strong>封面大字</strong>　<code>我妈的半张脸</code>　6 字，同时是幕布闭幕那半秒打在布面上的标题</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
+<section class="joke" id="laoma-016">
+  <header>
+    <h2>laoma-016</h2>
+    <div class="facts">
+      <span>A 类 · home-living</span>
+      <span>片长 18.4s</span>
+      <span>笑点 13.2s</span>
+      <span>定格 16.4s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">三舅问我一个月拿多少</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.96s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.6s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我说还行</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 0.86s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">4.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我端起杯子喝了一口，杯子是空的</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.51s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">9.2s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">三舅说，还行就是不多</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.13s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.2s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">那天我喝了四次空杯子</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.24s</div>
+  </div>
+</div></div>
+  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.0s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">16.9s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">17.8s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1874 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_回家_laoma-016_1874/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1874 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　（？）</li>
+<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
+<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
+</ul>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>home-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.0</td><td>场景 <code>home-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：三舅问我一个月拿多少</td><td>—</td></tr><tr><td>0:02.6–0:03.5</td><td>同上</td><td><strong>ma</strong>：我说还行</td><td>—</td></tr><tr><td>0:04.4–0:06.9</td><td>同上</td><td><strong>ma</strong>：我端起杯子喝了一口，杯子是空的</td><td>—</td></tr><tr><td>0:09.2–0:11.3</td><td>同上</td><td><strong>ma</strong>：三舅说，还行就是不多</td><td>—</td></tr><tr><td>0:13.2–0:16.4</td><td>同上</td><td><strong>ma</strong>：那天我喝了四次空杯子</td><td>—</td></tr><tr><td>0:16.4–0:18.4</td><td>定格去色 + 钩子字幕「老马的第 1874 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>home-living</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 18.44s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. （？）</p>
+<p>  2. （？）</p>
+<p>  3. （？）</p>
+<ul>
+<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
+<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
+<li><strong>话题标签</strong>　（？#xxx）</li>
+<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>封面大字</strong>　``</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
 <section class="joke" id="laoma-001">
   <header>
     <h2>laoma-001</h2>
     <div class="facts">
       <span>A 类 · office-desk</span>
-      <span>片长 29.5s</span>
+      <span>片长 28.8s</span>
       <span>笑点 24.2s</span>
       <span>定格 26.8s</span>
       <span>ma=老马</span>
@@ -426,7 +1555,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/未排期_段子_工位_练了三年_1847/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">27.3s</span></figcaption></figure>
 <figure><img src="段子/_已发/未排期_段子_工位_练了三年_1847/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">28.8s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">28.2s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1847 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/未排期_段子_工位_练了三年_1847/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -460,13 +1589,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>封面 <code>cam: zoom 1.0</code></strong> —— 构图本身是内容（人在左三分之一、字在右半幅），</p>
 <p>    推近就只剩半张脸</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:04.6</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们组的群里，最恐怖的两个字是收到</td><td>—</td></tr><tr><td>0:05.1–0:08.3</td><td>同上</td><td><strong>ma</strong>：领导发一段话，十七个人排队回收到</td><td>—</td></tr><tr><td>0:08.6–0:12.6</td><td>同上</td><td><strong>ma</strong>：你回晚了，显得不积极。你回早了，显得没看完</td><td>—</td></tr><tr><td>0:12.6–0:13.4</td><td><strong>闭目</strong> 0.8s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:13.6–0:16.8</td><td>同上<br><em class="note">扭头一次：话锋转了。§四 一条最多两次</em></td><td><strong>ma</strong>：我练了三年，找到了最佳位置，第三个</td><td>—</td></tr><tr><td>0:17.4–0:23.5</td><td>同上</td><td><strong>ma</strong>：第一个像拍马屁，最后一个像敷衍，第三个刚好像是认真读完的</td><td>—</td></tr><tr><td>0:24.2–0:26.8</td><td>同上</td><td><strong>ma</strong>：至于内容，我一个字没看</td><td>—</td></tr><tr><td>0:26.8–0:29.5</td><td>定格去色 + 钩子字幕「老马的第 1847 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:04.6</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们组的群里，最恐怖的两个字是收到</td><td>—</td></tr><tr><td>0:05.1–0:08.3</td><td>同上</td><td><strong>ma</strong>：领导发一段话，十七个人排队回收到</td><td>—</td></tr><tr><td>0:08.6–0:12.6</td><td>同上</td><td><strong>ma</strong>：你回晚了，显得不积极。你回早了，显得没看完</td><td>—</td></tr><tr><td>0:12.6–0:13.4</td><td><strong>闭目</strong> 0.8s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:13.6–0:16.8</td><td>同上<br><em class="note">扭头一次：话锋转了。§四 一条最多两次</em></td><td><strong>ma</strong>：我练了三年，找到了最佳位置，第三个</td><td>—</td></tr><tr><td>0:17.4–0:23.5</td><td>同上</td><td><strong>ma</strong>：第一个像拍马屁，最后一个像敷衍，第三个刚好像是认真读完的</td><td>—</td></tr><tr><td>0:24.2–0:26.8</td><td>同上</td><td><strong>ma</strong>：至于内容，我一个字没看</td><td>—</td></tr><tr><td>0:26.8–0:28.8</td><td>定格去色 + 钩子字幕「老马的第 1847 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>office-desk</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 29.48s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 28.78s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -527,7 +1656,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-002</h2>
     <div class="facts">
       <span>A 类 · street-night</span>
-      <span>片长 31.1s</span>
+      <span>片长 29.1s</span>
       <span>笑点 25.0s</span>
       <span>定格 27.1s</span>
       <span>ma=老马</span>
@@ -680,13 +1809,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>定格是闭眼</strong>（<code>endPose.eyes: "closed"</code>）。全片唯一一次闭目，</p>
 <p>    §五：超过 0.5 秒的闭眼读作「忍耐/认命」，很重，所以只能有一次</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>street-night</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:02.9</td><td>场景 <code>street-night</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我妈每天给我发天气预报</td><td>—</td></tr><tr><td>0:03.4–0:06.5</td><td>同上</td><td><strong>ma</strong>：不是转发的那种，是她自己一个字一个字打的</td><td>—</td></tr><tr><td>0:06.8–0:12.7</td><td>同上</td><td><strong>ma</strong>：明天降温，加衣服。有雨，带伞。风大，别骑车</td><td>—</td></tr><tr><td>0:13.1–0:17.4</td><td>同上</td><td><strong>ma</strong>：我住的这个城市她没来过，但她每天都知道那儿几度</td><td>—</td></tr><tr><td>0:18.0–0:21.1</td><td>同上</td><td><strong>ma</strong>：有一次我跟她说，妈，手机上都有</td><td>—</td></tr><tr><td>0:21.6–0:23.1</td><td>同上</td><td><strong>ma</strong>：她说，我知道啊</td><td>—</td></tr><tr><td>0:23.2–0:24.8</td><td><strong>张嘴，不出声</strong> 1.6s　<em class="note">他想说什么，说不出来</em></td><td>—</td><td>静音</td></tr><tr><td>0:25.0–0:27.1</td><td>同上</td><td><strong>ma</strong>：第二天，她还是发了</td><td>—</td></tr><tr><td>0:27.1–0:31.1</td><td>定格去色 + 黑场 1.4s　<strong>不出收尾卡</strong></td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>street-night</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:02.9</td><td>场景 <code>street-night</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我妈每天给我发天气预报</td><td>—</td></tr><tr><td>0:03.4–0:06.5</td><td>同上</td><td><strong>ma</strong>：不是转发的那种，是她自己一个字一个字打的</td><td>—</td></tr><tr><td>0:06.8–0:12.7</td><td>同上</td><td><strong>ma</strong>：明天降温，加衣服。有雨，带伞。风大，别骑车</td><td>—</td></tr><tr><td>0:13.1–0:17.4</td><td>同上</td><td><strong>ma</strong>：我住的这个城市她没来过，但她每天都知道那儿几度</td><td>—</td></tr><tr><td>0:18.0–0:21.1</td><td>同上</td><td><strong>ma</strong>：有一次我跟她说，妈，手机上都有</td><td>—</td></tr><tr><td>0:21.6–0:23.1</td><td>同上</td><td><strong>ma</strong>：她说，我知道啊</td><td>—</td></tr><tr><td>0:23.2–0:24.8</td><td><strong>张嘴，不出声</strong> 1.6s　<em class="note">他想说什么，说不出来</em></td><td>—</td><td>静音</td></tr><tr><td>0:25.0–0:27.1</td><td>同上</td><td><strong>ma</strong>：第二天，她还是发了</td><td>—</td></tr><tr><td>0:27.1–0:29.1</td><td>定格去色 + 黑场 1.4s　<strong>不出收尾卡</strong></td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>street-night</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 31.09s　<strong>7</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 29.09s　<strong>7</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -737,7 +1866,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-003</h2>
     <div class="facts">
       <span>A 类 · elevator</span>
-      <span>片长 22.3s</span>
+      <span>片长 21.6s</span>
       <span>笑点 16.4s</span>
       <span>定格 19.6s</span>
       <span>ma=老马</span>
@@ -839,7 +1968,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/未排期_段子_众目睽睽_决定看哪儿_1849/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">20.1s</span></figcaption></figure>
 <figure><img src="段子/_已发/未排期_段子_众目睽睽_决定看哪儿_1849/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">21.6s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">21.0s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1849 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/未排期_段子_众目睽睽_决定看哪儿_1849/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -887,13 +2016,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>    位置和颜色都在干活：漫符不过 <code>ink()</code>，所以定格去色之后<strong>它是全屏唯一还有颜色的东西</strong>，</p>
 <p>    视线自然落上去；挂右上正好落在钩子字和头之间那块空墙上，不压头也不压字</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>elevator</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:04.5</td><td>场景 <code>elevator</code>　在场 ma　单人镜</td><td><strong>ma</strong>：电梯里最难的不是尴尬，是决定看哪儿</td><td>—</td></tr><tr><td>0:05.0–0:05.9</td><td>同上</td><td><strong>ma</strong>：看人不礼貌</td><td>—</td></tr><tr><td>0:06.3–0:07.8</td><td>同上</td><td><strong>ma</strong>：看地上像有心事</td><td>—</td></tr><tr><td>0:08.2–0:11.3</td><td>同上</td><td><strong>ma</strong>：看手机显得不合群，虽然大家都在看手机</td><td>—</td></tr><tr><td>0:11.4–0:12.3</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:12.5–0:15.7</td><td>同上</td><td><strong>ma</strong>：所以我们发明了一个方向，一个共同的</td><td>—</td></tr><tr><td>0:16.4–0:19.6</td><td>同上</td><td><strong>ma</strong>：七个人，看同一个不会变快的数字</td><td>—</td></tr><tr><td>0:19.6–0:22.3</td><td>定格去色 + 钩子字幕「老马的第 1849 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>elevator</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:04.5</td><td>场景 <code>elevator</code>　在场 ma　单人镜</td><td><strong>ma</strong>：电梯里最难的不是尴尬，是决定看哪儿</td><td>—</td></tr><tr><td>0:05.0–0:05.9</td><td>同上</td><td><strong>ma</strong>：看人不礼貌</td><td>—</td></tr><tr><td>0:06.3–0:07.8</td><td>同上</td><td><strong>ma</strong>：看地上像有心事</td><td>—</td></tr><tr><td>0:08.2–0:11.3</td><td>同上</td><td><strong>ma</strong>：看手机显得不合群，虽然大家都在看手机</td><td>—</td></tr><tr><td>0:11.4–0:12.3</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:12.5–0:15.7</td><td>同上</td><td><strong>ma</strong>：所以我们发明了一个方向，一个共同的</td><td>—</td></tr><tr><td>0:16.4–0:19.6</td><td>同上</td><td><strong>ma</strong>：七个人，看同一个不会变快的数字</td><td>—</td></tr><tr><td>0:19.6–0:21.6</td><td>定格去色 + 钩子字幕「老马的第 1849 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>elevator</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 22.33s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 21.63s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -954,7 +2083,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-004</h2>
     <div class="facts">
       <span>A 类 · kitchen-table</span>
-      <span>片长 25.5s</span>
+      <span>片长 24.8s</span>
       <span>笑点 19.8s</span>
       <span>定格 22.8s</span>
       <span>ma=老马</span>
@@ -1070,7 +2199,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/未排期_段子_一个人住_从来不备注_1850/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">23.3s</span></figcaption></figure>
 <figure><img src="段子/_已发/未排期_段子_一个人住_从来不备注_1850/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">24.8s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">24.2s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1850 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/未排期_段子_一个人住_从来不备注_1850/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -1093,13 +2222,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>是灯泡不是汗滴。</strong> 稿 1 / 稿 4 挂的那滴汗是「被自己抓包」，只在他把自己也算进去的时候才成立；这一条的落点「厨房也怕有要求」是<strong>站在事外下的一个推断</strong>，挂汗就是硬凑。灯泡对得上两头：落点本身是一次「想通了」（试出了写「随便」这个办法，还真管用），而 <code>marks.mjs</code> 给灯泡的备注是「自带反讽：老马想通的多半是件没用的事」—— 他悟出来的是「想拿到东西就别提要求」，这条道理越成立越丧</p>
 <p>  - 颜色是挑过的：漫符不过 <code>ink()</code>，收尾卡全屏去色，<strong>这一个是那一帧上唯一还有颜色的东西</strong>，视线才落得上去。灯泡 <code>#F2D98A</code> 暖黄活得下来；语义上更贴的「点」（无语）是灰的，挂上去跟去色的画面同一个调，看得见但不亮</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>kitchen-table</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:03.2</td><td>场景 <code>kitchen-table</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我点外卖，从来不备注</td><td>—</td></tr><tr><td>0:03.7–0:05.8</td><td>同上</td><td><strong>ma</strong>：不是我不挑，是我知道没用</td><td>—</td></tr><tr><td>0:06.3–0:09.0</td><td>同上</td><td><strong>ma</strong>：我写过不要香菜，来的是双份香菜</td><td>—</td></tr><tr><td>0:09.4–0:11.7</td><td>同上</td><td><strong>ma</strong>：我写过多放辣，来的是一份甜的</td><td>—</td></tr><tr><td>0:12.1–0:14.2</td><td>同上</td><td><strong>ma</strong>：我写过不用餐具，来了三副</td><td>—</td></tr><tr><td>0:14.3–0:15.2</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:15.4–0:19.1</td><td>同上</td><td><strong>ma</strong>：后来我改了个写法，备注只写两个字。随便</td><td>—</td></tr><tr><td>0:19.8–0:22.8</td><td>同上</td><td><strong>ma</strong>：那顿全对。厨房也怕有要求</td><td>—</td></tr><tr><td>0:22.8–0:25.5</td><td>定格去色 + 钩子字幕「老马的第 1850 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>kitchen-table</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:03.2</td><td>场景 <code>kitchen-table</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我点外卖，从来不备注</td><td>—</td></tr><tr><td>0:03.7–0:05.8</td><td>同上</td><td><strong>ma</strong>：不是我不挑，是我知道没用</td><td>—</td></tr><tr><td>0:06.3–0:09.0</td><td>同上</td><td><strong>ma</strong>：我写过不要香菜，来的是双份香菜</td><td>—</td></tr><tr><td>0:09.4–0:11.7</td><td>同上</td><td><strong>ma</strong>：我写过多放辣，来的是一份甜的</td><td>—</td></tr><tr><td>0:12.1–0:14.2</td><td>同上</td><td><strong>ma</strong>：我写过不用餐具，来了三副</td><td>—</td></tr><tr><td>0:14.3–0:15.2</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:15.4–0:19.1</td><td>同上</td><td><strong>ma</strong>：后来我改了个写法，备注只写两个字。随便</td><td>—</td></tr><tr><td>0:19.8–0:22.8</td><td>同上</td><td><strong>ma</strong>：那顿全对。厨房也怕有要求</td><td>—</td></tr><tr><td>0:22.8–0:24.8</td><td>定格去色 + 钩子字幕「老马的第 1850 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>kitchen-table</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 25.49s　<strong>7</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 24.79s　<strong>7</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -1138,7 +2267,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-005</h2>
     <div class="facts">
       <span>A 类 · meeting-room</span>
-      <span>片长 25.9s</span>
+      <span>片长 25.2s</span>
       <span>笑点 19.7s</span>
       <span>定格 23.2s</span>
       <span>ma=老马</span>
@@ -1241,7 +2370,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/2026-08-25_2100JST_段子_工位_对齐了三次_1851/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">23.7s</span></figcaption></figure>
 <figure><img src="段子/_已发/2026-08-25_2100JST_段子_工位_对齐了三次_1851/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">25.2s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">24.6s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1851 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/2026-08-25_2100JST_段子_工位_对齐了三次_1851/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -1266,13 +2395,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>收尾卡上必须有东西</strong>（<code>endMark</code>，冷 / 右上 / 0.42 / seed 2 / tilt 8）。口径见 老马出片方案 §五：出收尾卡的片子，卡上不能只有一行钩子字 —— 定格去色 ＋ 一行藏青字，两秒七什么都不发生，观众读作「没做完」而不是「克制」</p>
 <p>  - <strong>是「冷」不是汗、不是灯。</strong> 汗＝被自己抓包（稿 1 面具掉下来，稿 4 他就是那七个人之一）；灯＝想通了一件没用的事（稿 3 试出写「随便」那个办法）。这一条两样都不是：他没被抓包，也没想通任何事 —— 他发现的是<strong>这件事没有出口</strong>，第三次会的产出是第四次会。那一下是后背一紧。颜色也过了那道关：漫符不过 <code>ink()</code>，收尾卡全屏去色，这一个是那一帧上唯一还有颜色的东西；语义上也贴的「点」（无语）和「云」（丧）都是灰调的，挂上去看得见但不亮</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.3</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们公司有个词，我到现在也没弄明白，它叫对齐</td><td>—</td></tr><tr><td>0:05.7–0:07.9</td><td>同上</td><td><strong>ma</strong>：开会前，要先对齐一下</td><td>—</td></tr><tr><td>0:08.3–0:10.9</td><td>同上</td><td><strong>ma</strong>：开会的时候，全程都在对齐</td><td>—</td></tr><tr><td>0:11.3–0:14.0</td><td>同上</td><td><strong>ma</strong>：开完会发个文档，确认刚才对齐了</td><td>—</td></tr><tr><td>0:14.1–0:15.0</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:15.1–0:19.1</td><td>同上</td><td><strong>ma</strong>：上周有件事，一句话能说完，我们对齐了三次</td><td>—</td></tr><tr><td>0:19.7–0:23.2</td><td>同上</td><td><strong>ma</strong>：第三次的结论是，下周接着对齐</td><td>—</td></tr><tr><td>0:23.2–0:25.9</td><td>定格去色 + 钩子字幕「老马的第 1851 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.3</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们公司有个词，我到现在也没弄明白，它叫对齐</td><td>—</td></tr><tr><td>0:05.7–0:07.9</td><td>同上</td><td><strong>ma</strong>：开会前，要先对齐一下</td><td>—</td></tr><tr><td>0:08.3–0:10.9</td><td>同上</td><td><strong>ma</strong>：开会的时候，全程都在对齐</td><td>—</td></tr><tr><td>0:11.3–0:14.0</td><td>同上</td><td><strong>ma</strong>：开完会发个文档，确认刚才对齐了</td><td>—</td></tr><tr><td>0:14.1–0:15.0</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:15.1–0:19.1</td><td>同上</td><td><strong>ma</strong>：上周有件事，一句话能说完，我们对齐了三次</td><td>—</td></tr><tr><td>0:19.7–0:23.2</td><td>同上</td><td><strong>ma</strong>：第三次的结论是，下周接着对齐</td><td>—</td></tr><tr><td>0:23.2–0:25.2</td><td>定格去色 + 钩子字幕「老马的第 1851 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>meeting-room</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 25.95s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 25.25s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -1311,7 +2440,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-006</h2>
     <div class="facts">
       <span>A 类 · rental-living</span>
-      <span>片长 26.4s</span>
+      <span>片长 25.7s</span>
       <span>笑点 21.5s</span>
       <span>定格 23.7s</span>
       <span>ma=老马</span>
@@ -1414,7 +2543,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/2026-08-27_2100JST_段子_一个人住_按时不去_1852/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">24.2s</span></figcaption></figure>
 <figure><img src="段子/_已发/2026-08-27_2100JST_段子_一个人住_按时不去_1852/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">25.7s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">25.1s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1852 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/2026-08-27_2100JST_段子_一个人住_按时不去_1852/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -1439,13 +2568,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>收尾卡上必须有东西</strong>（<code>endMark</code>，汗 / 右上 / 0.5 / seed 2 / tilt 8）。口径见 老马出片方案 §五</p>
 <p>  - <strong>语义上的第一人选其实是「云」（丧 / 认了）</strong>，渲出来对比过：云画得清清楚楚，但它整个在灰调里（<code>#D8D2C6</code> 加墨线），去色之后跟整幅画同一个调子，读作画面的一部分，不是「那一帧上唯一还活着的东西」。退回汗也站得住：他刚花二十秒把这张卡算得明明白白，下一秒当着镜头说「续吧」，那一下的尴尬是真的。⚠ 这是第三条用汗的（001 / 003 / 006），<strong>再用之前先问一句是不是真的「被自己抓包」</strong> —— 一旦变成缺省就退化成频道 logo</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.2</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：健身卡这个东西，我买的时候不当运动，当理财</td><td>—</td></tr><tr><td>0:05.6–0:08.5</td><td>同上</td><td><strong>ma</strong>：一次性存一笔钱进去，然后就不管了</td><td>—</td></tr><tr><td>0:08.9–0:11.3</td><td>同上</td><td><strong>ma</strong>：每个月按时不去，一次也没落下</td><td>—</td></tr><tr><td>0:11.7–0:15.3</td><td>同上</td><td><strong>ma</strong>：一年下来我去了三次，平均一次四百块</td><td>—</td></tr><tr><td>0:15.3–0:16.2</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.4–0:20.8</td><td>同上</td><td><strong>ma</strong>：上个月他们打电话来，说卡快到期了，问我续不续</td><td>—</td></tr><tr><td>0:21.5–0:23.7</td><td>同上</td><td><strong>ma</strong>：续吧。我也没打算取</td><td>—</td></tr><tr><td>0:23.7–0:26.4</td><td>定格去色 + 钩子字幕「老马的第 1852 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:05.2</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：健身卡这个东西，我买的时候不当运动，当理财</td><td>—</td></tr><tr><td>0:05.6–0:08.5</td><td>同上</td><td><strong>ma</strong>：一次性存一笔钱进去，然后就不管了</td><td>—</td></tr><tr><td>0:08.9–0:11.3</td><td>同上</td><td><strong>ma</strong>：每个月按时不去，一次也没落下</td><td>—</td></tr><tr><td>0:11.7–0:15.3</td><td>同上</td><td><strong>ma</strong>：一年下来我去了三次，平均一次四百块</td><td>—</td></tr><tr><td>0:15.3–0:16.2</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.4–0:20.8</td><td>同上</td><td><strong>ma</strong>：上个月他们打电话来，说卡快到期了，问我续不续</td><td>—</td></tr><tr><td>0:21.5–0:23.7</td><td>同上</td><td><strong>ma</strong>：续吧。我也没打算取</td><td>—</td></tr><tr><td>0:23.7–0:25.7</td><td>定格去色 + 钩子字幕「老马的第 1852 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>rental-living</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 26.44s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 25.74s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -1484,7 +2613,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-007</h2>
     <div class="facts">
       <span>A 类 · office-desk</span>
-      <span>片长 25.4s</span>
+      <span>片长 24.7s</span>
       <span>笑点 20.8s</span>
       <span>定格 22.7s</span>
       <span>ma=老马</span>
@@ -1587,7 +2716,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/2026-08-30_2100JST_段子_工位_优化以后_1853/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">23.2s</span></figcaption></figure>
 <figure><img src="段子/_已发/2026-08-30_2100JST_段子_工位_优化以后_1853/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">24.7s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">24.1s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1853 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/2026-08-30_2100JST_段子_工位_优化以后_1853/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -1633,13 +2762,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>收尾卡挂问号，不是汗也不是灯。</strong> 这一条的第二层就是一个问句：他把账算完了，全程一个判断都没下，那句没说出口的「所以这优化了什么」交给收尾卡 —— 它不是替观众下判断，它就是观众自己的那句话。汗＝被自己抓包（这条他是受害者），灯＝想通了（他什么都没想通），都不对</p>
 <p>  - ⚠ 挑它的时候顺带修了一条我自己写的规矩：老马出片方案 §五 原来写「漫符必须是那一帧上唯一<strong>有颜色</strong>的东西」，按那条问号该被排除（它是墨色）。渲出来判据该是<strong>落差</strong>不是颜色 —— 问号近黑压在浅墙上，明度差比那滴淡蓝的汗还大。真正挂不住的是<strong>中间调</strong>（点、云）</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.9</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：上个月优化以后，报销要过七个人</td><td>—</td></tr><tr><td>0:03.4–0:06.7</td><td>同上</td><td><strong>ma</strong>：优化以前是这样，找我领导签个字，三天</td><td>—</td></tr><tr><td>0:07.1–0:10.4</td><td>同上</td><td><strong>ma</strong>：现在不用找人了，打开系统，自己提交</td><td>—</td></tr><tr><td>0:10.8–0:14.9</td><td>同上</td><td><strong>ma</strong>：系统里有七个节点，每个节点一个人点同意，都是我同事</td><td>—</td></tr><tr><td>0:14.9–0:15.8</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.0–0:20.2</td><td>同上</td><td><strong>ma</strong>：上周我报了一笔打车费，一共三十七块，当天就提了</td><td>—</td></tr><tr><td>0:20.8–0:22.7</td><td>同上</td><td><strong>ma</strong>：今天，第十一天</td><td>—</td></tr><tr><td>0:22.7–0:25.4</td><td>定格去色 + 钩子字幕「老马的第 1853 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.9</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：上个月优化以后，报销要过七个人</td><td>—</td></tr><tr><td>0:03.4–0:06.7</td><td>同上</td><td><strong>ma</strong>：优化以前是这样，找我领导签个字，三天</td><td>—</td></tr><tr><td>0:07.1–0:10.4</td><td>同上</td><td><strong>ma</strong>：现在不用找人了，打开系统，自己提交</td><td>—</td></tr><tr><td>0:10.8–0:14.9</td><td>同上</td><td><strong>ma</strong>：系统里有七个节点，每个节点一个人点同意，都是我同事</td><td>—</td></tr><tr><td>0:14.9–0:15.8</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.0–0:20.2</td><td>同上</td><td><strong>ma</strong>：上周我报了一笔打车费，一共三十七块，当天就提了</td><td>—</td></tr><tr><td>0:20.8–0:22.7</td><td>同上</td><td><strong>ma</strong>：今天，第十一天</td><td>—</td></tr><tr><td>0:22.7–0:24.7</td><td>定格去色 + 钩子字幕「老马的第 1853 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>office-desk</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 25.42s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 24.72s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -1678,7 +2807,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-008</h2>
     <div class="facts">
       <span>A 类 · hospital</span>
-      <span>片长 27.3s</span>
+      <span>片长 26.6s</span>
       <span>笑点 21.2s</span>
       <span>定格 24.6s</span>
       <span>ma=老马</span>
@@ -1781,7 +2910,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/2026-09-01_2100JST_段子_众目睽睽_十七分钟_1854/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">25.1s</span></figcaption></figure>
 <figure><img src="段子/_已发/2026-09-01_2100JST_段子_众目睽睽_十七分钟_1854/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">26.6s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">26.0s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1854 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/2026-09-01_2100JST_段子_众目睽睽_十七分钟_1854/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -1839,13 +2968,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>收尾卡挂汗，不是问也不是灯。</strong> §五 的判据：汗＝落点把他自己也算进去、当场被自己抓包。这条正是 —— 抓包的人是他自己。稿 7 的问号不对（那条他是受害者、站在事外），灯不对（他什么都没想通）。参数照抄不换 seed</p>
 <p>  - ⚠ <strong>叫号屏的高度是为收尾卡让出来的，不要改回去。</strong> 原来 470×230（y 89–319）跟钩子字幕（画死在 y=250，墨迹 268–313、横跨 x 324–756）<strong>正好叠在一起</strong>，而屏是 DARK、钩子是藏青，字直接看不见。这是 003 那块楼层屏踩过的坑（「场景里靠上的元素跟收尾卡是同一片地」），那次是渲出来才发现，这次是渲之前量的。改成 470×152（底 y≈241）</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>hospital</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:04.0</td><td>场景 <code>hospital</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我在医院等叫号，屏上写着，前面还有二十三位</td><td>—</td></tr><tr><td>0:04.5–0:07.5</td><td>同上</td><td><strong>ma</strong>：它不写还要等多久，只写一个数</td><td>—</td></tr><tr><td>0:07.9–0:10.8</td><td>同上</td><td><strong>ma</strong>：这个数掉得没规律，能十七分钟不动</td><td>—</td></tr><tr><td>0:11.2–0:15.7</td><td>同上</td><td><strong>ma</strong>：边上还有一扇小门，时不时进去一个人，屏上那个数不动</td><td>—</td></tr><tr><td>0:15.8–0:16.7</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.9–0:20.5</td><td>同上</td><td><strong>ma</strong>：我在那张椅子上，坐了一个半小时，没敢走开</td><td>—</td></tr><tr><td>0:21.2–0:24.6</td><td>同上</td><td><strong>ma</strong>：屏上少了两位。小门进去了五个</td><td>—</td></tr><tr><td>0:24.6–0:27.3</td><td>定格去色 + 钩子字幕「老马的第 1854 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>hospital</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:04.0</td><td>场景 <code>hospital</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我在医院等叫号，屏上写着，前面还有二十三位</td><td>—</td></tr><tr><td>0:04.5–0:07.5</td><td>同上</td><td><strong>ma</strong>：它不写还要等多久，只写一个数</td><td>—</td></tr><tr><td>0:07.9–0:10.8</td><td>同上</td><td><strong>ma</strong>：这个数掉得没规律，能十七分钟不动</td><td>—</td></tr><tr><td>0:11.2–0:15.7</td><td>同上</td><td><strong>ma</strong>：边上还有一扇小门，时不时进去一个人，屏上那个数不动</td><td>—</td></tr><tr><td>0:15.8–0:16.7</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:16.9–0:20.5</td><td>同上</td><td><strong>ma</strong>：我在那张椅子上，坐了一个半小时，没敢走开</td><td>—</td></tr><tr><td>0:21.2–0:24.6</td><td>同上</td><td><strong>ma</strong>：屏上少了两位。小门进去了五个</td><td>—</td></tr><tr><td>0:24.6–0:26.6</td><td>定格去色 + 钩子字幕「老马的第 1854 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>hospital</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 27.30s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 26.60s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -1884,7 +3013,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <h2>laoma-009</h2>
     <div class="facts">
       <span>A 类 · meeting-room</span>
-      <span>片长 29.1s</span>
+      <span>片长 28.4s</span>
       <span>笑点 23.6s</span>
       <span>定格 26.4s</span>
       <span>ma=老马</span>
@@ -1987,7 +3116,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <figure><img src="段子/_已发/2026-09-03_2100JST_段子_工位_我拉个群_1855/stills/90-定格.png" alt="定格去色" loading="lazy">
   <figcaption>定格去色　<span class="ts-inline">26.9s</span></figcaption></figure>
 <figure><img src="段子/_已发/2026-09-03_2100JST_段子_工位_我拉个群_1855/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">28.4s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">27.8s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1855 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_已发/2026-09-03_2100JST_段子_工位_我拉个群_1855/方案.md" target="_blank">方案.md ↗</a></summary>
@@ -2023,13 +3152,13 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  - <strong>六个字 / 三十七 / 第一条，三个数一个都不能凑成整数</strong>：§一之四，奇数和具体数听起来像真数过</p>
 <p>  - <strong>收尾卡挂灯，不是汗。</strong> §五：想通了一件没用的事用「灯」，自带反讽 —— 他数完三十七个群，得出的结论对生活一点用都没有。汗＝当场被自己抓包（这条他是在盘账，不是被抓；而且前八条已经用了四次汗），问＝账没算清（007 用过，这条账是清的），冷＝僵住发凉（005 用过，这条的底色是发现不是受惊）。参数照抄 004 不换 seed</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:06.1</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们开会有一句话，谁说了这句，这件事就算有人管了</td><td>—</td></tr><tr><td>0:06.5–0:10.2</td><td>同上</td><td><strong>ma</strong>：原话六个字，这个我拉个群。说完就散会</td><td>—</td></tr><tr><td>0:10.6–0:14.5</td><td>同上</td><td><strong>ma</strong>：群建得特别快，名字带日期，该在的人一个不少</td><td>—</td></tr><tr><td>0:14.9–0:18.3</td><td>同上</td><td><strong>ma</strong>：第一条消息是，群拉好了，后续在这里同步</td><td>—</td></tr><tr><td>0:18.4–0:19.3</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:19.5–0:22.9</td><td>同上</td><td><strong>ma</strong>：我手机里，有四十一个这样的群，一个都没退</td><td>—</td></tr><tr><td>0:23.6–0:26.4</td><td>同上</td><td><strong>ma</strong>：每个群，都还停在第一条</td><td>—</td></tr><tr><td>0:26.4–0:29.1</td><td>定格去色 + 钩子字幕「老马的第 1855 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:01.2</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:01.3–0:06.1</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我们开会有一句话，谁说了这句，这件事就算有人管了</td><td>—</td></tr><tr><td>0:06.5–0:10.2</td><td>同上</td><td><strong>ma</strong>：原话六个字，这个我拉个群。说完就散会</td><td>—</td></tr><tr><td>0:10.6–0:14.5</td><td>同上</td><td><strong>ma</strong>：群建得特别快，名字带日期，该在的人一个不少</td><td>—</td></tr><tr><td>0:14.9–0:18.3</td><td>同上</td><td><strong>ma</strong>：第一条消息是，群拉好了，后续在这里同步</td><td>—</td></tr><tr><td>0:18.4–0:19.3</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:19.5–0:22.9</td><td>同上</td><td><strong>ma</strong>：我手机里，有四十一个这样的群，一个都没退</td><td>—</td></tr><tr><td>0:23.6–0:26.4</td><td>同上</td><td><strong>ma</strong>：每个群，都还停在第一条</td><td>—</td></tr><tr><td>0:26.4–0:28.4</td><td>定格去色 + 钩子字幕「老马的第 1855 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>meeting-room</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 29.08s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 28.38s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
@@ -2062,1006 +3191,6 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <li class="task"><input type="checkbox" disabled > 内容风控</li>
 </ul>
   </details>
-</section>
-<section class="joke" id="laoma-010">
-  <header>
-    <h2>laoma-010</h2>
-    <div class="facts">
-      <span>A 类 · office-desk</span>
-      <span>片长 23.3s</span>
-      <span>笑点 17.6s</span>
-      <span>定格 20.6s</span>
-      <span>ma=老马</span>
-    </div>
-  </header>
-  
-  <div class="film with-pub"><div class="film-main"><video src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/out.mp4" controls preload="metadata" playsinline></video><div class="film-note">成片　<code>out.mp4</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot">2026-09-06 21:00 JST　<em>待发</em></span></div>
-<div class="pub-row"><span class="k">标题</span><span class="v title">我的单子交上去八天了</span></div>
-<div class="pub-row"><span class="k">副标题</span><span class="v ">老马 · 工位　每天刷两次</span></div>
-<div class="pub-row"><span class="k">关键词</span><span class="v tags">#碎嘴老马 #碎嘴 #老马 #打工人 #职场 #上班这件事 #审批 #待审批 #工位 #流程
-#审批流程 #走流程 #打工人日常</span></div>
-<div class="pub-row"><span class="k">各平台</span><span class="v plat">youtube <code>2026-09-06 21:00:00 +09</code><br>douyin <code>2026-09-10 21:30:00 +09</code><br>channels <code>2026-09-12 21:30:00 +09</code></span></div></aside></div>
-  <div class="rows"><div class="row">
-  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我的单子交上去八天了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.68s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.6s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">系统里一直显示待审批</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.88s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">5.4s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我不知道点那个按钮的人是谁</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.74s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">8.8s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我每天早上刷一次，下午再刷一次</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 2.63s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.2s</span></div>
-  <div class="talk">
-    <div class="beat">回应</div>
-    <div class="who">ma</div>
-    <p class="text">今天九点四十七，七张单子一起通过了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 3.03s</div>
-  </div>
-</div>
-<div class="row punch">
-  <div class="shot"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">17.6s</span></div>
-  <div class="talk">
-    <div class="beat">反转 · 笑点</div>
-    <div class="who">ma</div>
-    <p class="text">我这儿也压着一张，压了<em>三天</em></p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">叙平</span>
-      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 2.95s</div>
-  </div>
-</div></div>
-  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/thumb.png" alt="封面" loading="lazy">
-  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/00-开场.png" alt="开场大字" loading="lazy">
-  <figcaption>开场大字　<span class="ts-inline">0.8s</span></figcaption></figure>
-<figure><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">21.1s</span></figcaption></figure>
-<figure><img src="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">22.6s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1858 天</strong></div>
-  <details class="analysis" open>
-    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/2026-09-06_2100JST_段子_工位_一直显示待审批_1858/方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1858 天　落地方案</h2>
-<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
-<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
-<h3>一、稿件定位</h3>
-<ul>
-<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　他抱怨了九条片子的那套流程，这一条里他自己就是其中一环 ——</li>
-</ul>
-<p>  而且他在这一环上做的事，跟他抱怨别人做的一模一样。</p>
-<ul>
-<li><strong>视角</strong>　<strong>共谋者</strong>（horse_standup_plan §六之二 的四档里唯一一次都没用过的那档）。</li>
-</ul>
-<p>  前九条老马永远是被卡住的人或者旁观的人，<strong>干净久了就成了「一个总在被亏待的人」</strong>，</p>
-<p>  那离抱怨只有一步 —— 而抱怨正是 §一 开篇要躲开的东西。</p>
-<ul>
-<li><strong>为什么这么分镜</strong>　一镜到底、镜头不动，只在第 5 句给一次 -12° 扭头。</li>
-</ul>
-<p>  这一条的转折是<strong>视角翻面</strong>不是场景变化，切镜会把注意力引到画面上去。</p>
-<ul>
-<li><strong>不能动的地方</strong></li>
-</ul>
-<p>  - <strong>第 3 句那个「第九百三十七天」</strong>　它跟收尾卡的 1858 是同一条轴上的两个点，</p>
-<p>    观众自己会算中间那两年半。<strong>天数咬合九条里一次都没做过</strong>，动了这一条就白搭</p>
-<p>  - <strong>第 5 句是配额句</strong>（<code>emotionLine: 5</code>）　全片唯一一句带情绪的。</p>
-<p>    加第二句就违规（v3 §2 约束③），删掉它这条片子仍旧成立、只是变冷</p>
-<p>  - <strong>落点不许挪到第 5 句后面去补一刀</strong>　§一之八 说完就停</p>
-<p>  - <code>opening.style: "voice-first"</code>　物件「按钮」库里没有画法，走不了缺省的档 ③；</p>
-<p>    <strong>别拿 <code>系统</code> 顶替</strong>，那张审批单画死了七个节点，那个七是 007 的数</p>
-<h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:01.7</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我的单子交上去八天了</td><td>—</td></tr><tr><td>0:02.6–0:04.5</td><td>同上</td><td><strong>ma</strong>：系统里一直显示待审批</td><td>—</td></tr><tr><td>0:05.4–0:07.1</td><td>同上</td><td><strong>ma</strong>：我不知道点那个按钮的人是谁</td><td>—</td></tr><tr><td>0:08.8–0:11.4</td><td>同上</td><td><strong>ma</strong>：我每天早上刷一次，下午再刷一次</td><td>—</td></tr><tr><td>0:11.5–0:12.4</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:13.2–0:16.2</td><td>同上</td><td><strong>ma</strong>：今天九点四十七，七张单子一起通过了</td><td>—</td></tr><tr><td>0:17.6–0:20.6</td><td>同上</td><td><strong>ma</strong>：我这儿也压着一张，压了三天</td><td>—</td></tr><tr><td>0:20.6–0:23.3</td><td>定格去色 + 钩子字幕「老马的第 1858 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
-<h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>office-desk</code></p>
-<p><strong>节奏</strong>　<code>banter</code></p>
-<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
-<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 23.25s　<strong>6</strong> 句　<strong>1</strong> 个分镜</p>
-<h3>四、发布文案</h3>
-<blockquote>发平台时直接抄这一段。</blockquote>
-<blockquote>⚠ <strong>2026-08-23 整条换过稿</strong>（原来是《我管一个按钮》），这一节跟着重写。</blockquote>
-<blockquote><strong>换稿要连 §四 一起换</strong> —— 预览页把标题摆到成片旁边之后一眼看见了：</blockquote>
-<blockquote>片子早就是《一直显示待审批》，标题还挂着上一版的「我在那个系统里管一个按钮」。</blockquote>
-<ul>
-<li><strong>标题候选</strong></li>
-</ul>
-<p>  1. <code>我的单子交上去八天了</code>　←主选</p>
-<p>  2. <code>一直显示待审批</code></p>
-<p>  3. <code>我不知道点那个按钮的人是谁</code></p>
-<ul>
-<li><strong>为什么是第 1 个</strong>　它是第 1 句原话，<strong>给处境不给结果</strong>：交上去八天了，</li>
-</ul>
-<p>  观众立刻知道他在等什么，但不知道会怎么样。跟封面大字「一直显示待审批」</p>
-<p>  是同一件事的两个角度 —— 一个说时间，一个说状态，两边不打架。</p>
-<p>  第 2 个跟封面大字一模一样，浪费了唯一的视觉资源；</p>
-<p>  第 3 个是第 3 句，那句是落点的伏笔，抖在标题上会让最后一句的翻面变弱。</p>
-<ul>
-<li><strong>副标题</strong>　<code>老马 · 工位　每天刷两次</code></li>
-<li><strong>内容关键词</strong>　审批 / 待审批 / 工位 / 打工人 / 流程</li>
-<li><strong>热度关键词</strong>　审批流程 / 走流程 / 职场 / 上班这件事 / 打工人日常</li>
-<li><strong>话题标签</strong>　#职场 #上班这件事</li>
-<li><strong>简介</strong></li>
-</ul>
-<p>  &gt; 我的单子交上去八天了，系统里一直显示待审批。</p>
-<p>  &gt;</p>
-<p>  &gt; 我不知道点那个按钮的人是谁。</p>
-<p>  &gt; 每天早上刷一次，下午再刷一次。</p>
-<ul>
-<li><strong>封面大字</strong>　<code>一直显示待审批</code></li>
-</ul>
-<h3>五、人工核对</h3>
-<ul>
-<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
-<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
-<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
-<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
-<li class="task"><input type="checkbox" disabled > 内容风控</li>
-</ul>
-  </details>
-</section>
-<section class="joke" id="laoma-011">
-  <header>
-    <h2>laoma-011</h2>
-    <div class="facts">
-      <span>A 类 · office-desk</span>
-      <span>片长 18.3s</span>
-      <span>笑点 13.9s</span>
-      <span>定格 15.5s</span>
-      <span>ma=老马</span>
-    </div>
-  </header>
-  
-  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
-  <div class="rows"><div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">这瓶水我拧了四下</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.97s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.4s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">手心印出一圈齿</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.48s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">4.9s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">老马把瓶子递给小李，小李一下就开了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 3.36s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">9.8s</span></div>
-  <div class="talk">
-    <div class="beat">回应</div>
-    <div class="who">ma</div>
-    <p class="text">小李说这瓶本来就松了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 2.18s</div>
-  </div>
-</div>
-<div class="row punch">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.9s</span></div>
-  <div class="talk">
-    <div class="beat">反转 · 笑点</div>
-    <div class="who">ma</div>
-    <p class="text">那瓶水我一口没喝</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">叙平</span>
-      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.65s</div>
-  </div>
-</div></div>
-  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/00-开场.png" alt="开场物件" loading="lazy">
-  <figcaption>开场物件　<span class="ts-inline">1.0s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">16.0s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_工位_laoma-011_1861/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">17.6s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1861 天</strong></div>
-  <details class="analysis" open>
-    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_工位_laoma-011_1861/方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1861 天　落地方案</h2>
-<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
-<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
-<h3>一、稿件定位</h3>
-<ul>
-<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　（？）</li>
-<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
-<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
-</ul>
-<h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.0</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：这瓶水我拧了四下</td><td>—</td></tr><tr><td>0:02.4–0:03.9</td><td>同上</td><td><strong>ma</strong>：手心印出一圈齿</td><td>—</td></tr><tr><td>0:04.9–0:08.3</td><td>同上</td><td><strong>ma</strong>：老马把瓶子递给小李，小李一下就开了</td><td>—</td></tr><tr><td>0:09.8–0:12.0</td><td>同上</td><td><strong>ma</strong>：小李说这瓶本来就松了</td><td>—</td></tr><tr><td>0:13.9–0:15.5</td><td>同上</td><td><strong>ma</strong>：那瓶水我一口没喝</td><td>—</td></tr><tr><td>0:15.5–0:18.3</td><td>定格去色 + 钩子字幕「老马的第 1861 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
-<h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>office-desk</code></p>
-<p><strong>节奏</strong>　<code>banter</code></p>
-<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
-<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 18.25s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
-<h3>四、发布文案</h3>
-<blockquote>发平台时直接抄这一段。</blockquote>
-<ul>
-<li><strong>标题候选</strong></li>
-</ul>
-<p>  1. （？）</p>
-<p>  2. （？）</p>
-<p>  3. （？）</p>
-<ul>
-<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
-<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
-<li><strong>话题标签</strong>　（？#xxx）</li>
-<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
-<li><strong>封面大字</strong>　``</li>
-</ul>
-<h3>五、人工核对</h3>
-<ul>
-<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
-<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
-<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
-<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
-<li class="task"><input type="checkbox" disabled > 内容风控</li>
-</ul>
-  </details>
-</section>
-<section class="joke" id="laoma-012">
-  <header>
-    <h2>laoma-012</h2>
-    <div class="facts">
-      <span>A 类 · rental-living</span>
-      <span>片长 24.0s</span>
-      <span>笑点 16.5s</span>
-      <span>定格 19.9s</span>
-      <span>ma=老马</span>
-    </div>
-  </header>
-  
-  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
-  <div class="rows"><div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我站在卧室门口，忘了要拿什么</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">4.2s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">遥控器在沙发上，电视还开着</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">8.2s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">老马原路走回沙发，坐下</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">11.7s</span></div>
-  <div class="talk">
-    <div class="beat">回应</div>
-    <div class="who">ma</div>
-    <p class="text">手碰到遥控器的时候，我想起来了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row punch">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">16.5s</span></div>
-  <div class="talk">
-    <div class="beat">反转 · 笑点</div>
-    <div class="who">ma</div>
-    <p class="text">我没起来，又坐了一会儿</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">叙平</span>
-      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div></div>
-  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/00-开场.png" alt="开场物件" loading="lazy">
-  <figcaption>开场物件　<span class="ts-inline">1.9s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">20.4s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_一个人住_laoma-012_1863/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">22.2s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1863 天</strong></div>
-  <details class="analysis" open>
-    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_一个人住_laoma-012_1863/方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1863 天　落地方案</h2>
-<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
-<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
-<h3>一、稿件定位</h3>
-<ul>
-<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　（？）</li>
-<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
-<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
-</ul>
-<h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:00.0</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：我站在卧室门口，忘了要拿什么</td><td>—</td></tr><tr><td>0:04.2–0:04.2</td><td>同上</td><td><strong>ma</strong>：遥控器在沙发上，电视还开着</td><td>—</td></tr><tr><td>0:08.2–0:08.2</td><td>同上</td><td><strong>ma</strong>：老马原路走回沙发，坐下</td><td>—</td></tr><tr><td>0:11.7–0:11.7</td><td>同上</td><td><strong>ma</strong>：手碰到遥控器的时候，我想起来了</td><td>—</td></tr><tr><td>0:16.5–0:16.5</td><td>同上</td><td><strong>ma</strong>：我没起来，又坐了一会儿</td><td>—</td></tr><tr><td>0:19.9–0:24.0</td><td>定格去色 + 钩子字幕「老马的第 1863 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
-<h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>rental-living</code></p>
-<p><strong>节奏</strong>　<code>banter</code></p>
-<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
-<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 24.03s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
-<h3>四、发布文案</h3>
-<blockquote>发平台时直接抄这一段。</blockquote>
-<ul>
-<li><strong>标题候选</strong></li>
-</ul>
-<p>  1. （？）</p>
-<p>  2. （？）</p>
-<p>  3. （？）</p>
-<ul>
-<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
-<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
-<li><strong>话题标签</strong>　（？#xxx）</li>
-<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
-<li><strong>封面大字</strong>　``</li>
-</ul>
-<h3>五、人工核对</h3>
-<ul>
-<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
-<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
-<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
-<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
-<li class="task"><input type="checkbox" disabled > 内容风控</li>
-</ul>
-  </details>
-</section>
-<section class="joke" id="laoma-013">
-  <header>
-    <h2>laoma-013</h2>
-    <div class="facts">
-      <span>A 类 · subway</span>
-      <span>片长 24.7s</span>
-      <span>笑点 15.4s</span>
-      <span>定格 20.6s</span>
-      <span>ma=老马</span>
-    </div>
-  </header>
-  
-  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
-  <div class="rows"><div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">出地铁的时候，手机剩百分之三</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">4.2s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">到家还有十三分钟的路</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">7.5s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">老马把亮度调到最低，手机塞进兜里</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">12.2s</span></div>
-  <div class="talk">
-    <div class="beat">回应</div>
-    <div class="who">ma</div>
-    <p class="text">我没有要看的东西</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row punch">
-  <div class="shot"><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">15.4s</span></div>
-  <div class="talk">
-    <div class="beat">反转 · 笑点</div>
-    <div class="who">ma</div>
-    <p class="text">剩下那十三分钟，我一直在算它还能撑多久</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">叙平</span>
-      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div></div>
-  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/00-开场.png" alt="开场物件" loading="lazy">
-  <figcaption>开场物件　<span class="ts-inline">1.9s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">21.1s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">22.9s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1866 天</strong></div>
-  <details class="analysis" open>
-    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_众目睽睽_laoma-013_1866/方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1866 天　落地方案</h2>
-<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
-<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
-<h3>一、稿件定位</h3>
-<ul>
-<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　（？）</li>
-<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
-<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
-</ul>
-<h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>subway</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:00.0</td><td>场景 <code>subway</code>　在场 ma　单人镜</td><td><strong>ma</strong>：出地铁的时候，手机剩百分之三</td><td>—</td></tr><tr><td>0:04.2–0:04.2</td><td>同上</td><td><strong>ma</strong>：到家还有十三分钟的路</td><td>—</td></tr><tr><td>0:07.5–0:07.5</td><td>同上</td><td><strong>ma</strong>：老马把亮度调到最低，手机塞进兜里</td><td>—</td></tr><tr><td>0:12.2–0:12.2</td><td>同上</td><td><strong>ma</strong>：我没有要看的东西</td><td>—</td></tr><tr><td>0:15.4–0:15.4</td><td>同上</td><td><strong>ma</strong>：剩下那十三分钟，我一直在算它还能撑多久</td><td>—</td></tr><tr><td>0:20.6–0:24.7</td><td>定格去色 + 钩子字幕「老马的第 1866 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
-<h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>subway</code></p>
-<p><strong>节奏</strong>　<code>banter</code></p>
-<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
-<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 24.69s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
-<h3>四、发布文案</h3>
-<blockquote>发平台时直接抄这一段。</blockquote>
-<ul>
-<li><strong>标题候选</strong></li>
-</ul>
-<p>  1. （？）</p>
-<p>  2. （？）</p>
-<p>  3. （？）</p>
-<ul>
-<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
-<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
-<li><strong>话题标签</strong>　（？#xxx）</li>
-<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
-<li><strong>封面大字</strong>　``</li>
-</ul>
-<h3>五、人工核对</h3>
-<ul>
-<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
-<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
-<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
-<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
-<li class="task"><input type="checkbox" disabled > 内容风控</li>
-</ul>
-  </details>
-</section>
-<section class="joke" id="laoma-014">
-  <header>
-    <h2>laoma-014</h2>
-    <div class="facts">
-      <span>A 类 · meeting-room</span>
-      <span>片长 26.2s</span>
-      <span>笑点 17.6s</span>
-      <span>定格 22.1s</span>
-      <span>ma=老马</span>
-    </div>
-  </header>
-  
-  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
-  <div class="rows"><div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">一个小时的会，每个词我都听懂了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">4.4s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">散会的时候我不知道定了没有</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">8.4s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">老马夹着笔记本跟出去，等了三步才开口</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">13.5s</span></div>
-  <div class="talk">
-    <div class="beat">回应</div>
-    <div class="who">ma</div>
-    <p class="text">同事说，大概是那个方向吧</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div>
-<div class="row punch">
-  <div class="shot"><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">17.6s</span></div>
-  <div class="talk">
-    <div class="beat">反转 · 笑点</div>
-    <div class="who">ma</div>
-    <p class="text">我回工位翻笔记，上面写的就是这句</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">叙平</span>
-      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta warn">还没跑 align，时长是估算的</div>
-  </div>
-</div></div>
-  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/00-开场.png" alt="开场物件" loading="lazy">
-  <figcaption>开场物件　<span class="ts-inline">2.0s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">22.6s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_工位_laoma-014_1868/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">24.4s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1868 天</strong></div>
-  <details class="analysis" open>
-    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_工位_laoma-014_1868/方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1868 天　落地方案</h2>
-<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
-<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
-<h3>一、稿件定位</h3>
-<ul>
-<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　（？）</li>
-<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
-<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
-</ul>
-<h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>meeting-room</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:00.0</td><td>场景 <code>meeting-room</code>　在场 ma　单人镜</td><td><strong>ma</strong>：一个小时的会，每个词我都听懂了</td><td>—</td></tr><tr><td>0:04.4–0:04.4</td><td>同上</td><td><strong>ma</strong>：散会的时候我不知道定了没有</td><td>—</td></tr><tr><td>0:08.4–0:08.4</td><td>同上</td><td><strong>ma</strong>：老马夹着笔记本跟出去，等了三步才开口</td><td>—</td></tr><tr><td>0:13.5–0:13.5</td><td>同上</td><td><strong>ma</strong>：同事说，大概是那个方向吧</td><td>—</td></tr><tr><td>0:17.6–0:17.6</td><td>同上</td><td><strong>ma</strong>：我回工位翻笔记，上面写的就是这句</td><td>—</td></tr><tr><td>0:22.1–0:26.2</td><td>定格去色 + 钩子字幕「老马的第 1868 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
-<h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>meeting-room</code></p>
-<p><strong>节奏</strong>　<code>banter</code></p>
-<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
-<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 26.23s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
-<h3>四、发布文案</h3>
-<blockquote>发平台时直接抄这一段。</blockquote>
-<ul>
-<li><strong>标题候选</strong></li>
-</ul>
-<p>  1. （？）</p>
-<p>  2. （？）</p>
-<p>  3. （？）</p>
-<ul>
-<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
-<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
-<li><strong>话题标签</strong>　（？#xxx）</li>
-<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
-<li><strong>封面大字</strong>　``</li>
-</ul>
-<h3>五、人工核对</h3>
-<ul>
-<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
-<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
-<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
-<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
-<li class="task"><input type="checkbox" disabled > 内容风控</li>
-</ul>
-  </details>
-</section>
-<section class="joke" id="laoma-015">
-  <header>
-    <h2>laoma-015</h2>
-    <div class="facts">
-      <span>A 类 · rental-living</span>
-      <span>片长 23.1s</span>
-      <span>笑点 16.3s</span>
-      <span>定格 20.4s</span>
-      <span>ma=老马</span>
-    </div>
-  </header>
-  
-  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
-  <div class="rows"><div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">视频接通，屏幕上是我妈的半张脸</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 3.66s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">3.9s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我说往后一点，她把手机举得更近了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 2.43s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">7.9s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我把自己的手机往后挪，想让她照着做</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 2.89s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">12.8s</span></div>
-  <div class="talk">
-    <div class="beat">回应</div>
-    <div class="who">ma</div>
-    <p class="text">她说你那边怎么黑了</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.96s</div>
-  </div>
-</div>
-<div class="row punch">
-  <div class="shot"><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">16.3s</span></div>
-  <div class="talk">
-    <div class="beat">反转 · 笑点</div>
-    <div class="who">ma</div>
-    <p class="text">那通电话打了二十六分钟，我没看清她</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">叙平</span>
-      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 4.12s</div>
-  </div>
-</div></div>
-  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/00-开场.png" alt="开场物件" loading="lazy">
-  <figcaption>开场物件　<span class="ts-inline">1.8s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">20.9s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_一个人住_laoma-015_1871/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">22.4s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1871 天</strong></div>
-  <details class="analysis" open>
-    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_一个人住_laoma-015_1871/方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1871 天　落地方案</h2>
-<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
-<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
-<h3>一、稿件定位</h3>
-<ul>
-<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　（？）</li>
-<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
-<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
-</ul>
-<h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>rental-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:03.7</td><td>场景 <code>rental-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：视频接通，屏幕上是我妈的半张脸</td><td>—</td></tr><tr><td>0:03.9–0:06.3</td><td>同上</td><td><strong>ma</strong>：我说往后一点，她把手机举得更近了</td><td>—</td></tr><tr><td>0:07.9–0:10.7</td><td>同上</td><td><strong>ma</strong>：我把自己的手机往后挪，想让她照着做</td><td>—</td></tr><tr><td>0:12.8–0:14.7</td><td>同上</td><td><strong>ma</strong>：她说你那边怎么黑了</td><td>—</td></tr><tr><td>0:16.3–0:20.4</td><td>同上</td><td><strong>ma</strong>：那通电话打了二十六分钟，我没看清她</td><td>—</td></tr><tr><td>0:20.4–0:23.1</td><td>定格去色 + 钩子字幕「老马的第 1871 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
-<h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>rental-living</code></p>
-<p><strong>节奏</strong>　<code>banter</code></p>
-<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
-<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 23.08s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
-<h3>四、发布文案</h3>
-<blockquote>发平台时直接抄这一段。</blockquote>
-<ul>
-<li><strong>标题候选</strong></li>
-</ul>
-<p>  1. （？）</p>
-<p>  2. （？）</p>
-<p>  3. （？）</p>
-<ul>
-<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
-<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
-<li><strong>话题标签</strong>　（？#xxx）</li>
-<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
-<li><strong>封面大字</strong>　``</li>
-</ul>
-<h3>五、人工核对</h3>
-<ul>
-<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
-<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
-<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
-<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
-<li class="task"><input type="checkbox" disabled > 内容风控</li>
-</ul>
-  </details>
-</section>
-<section class="joke" id="laoma-016">
-  <header>
-    <h2>laoma-016</h2>
-    <div class="facts">
-      <span>A 类 · home-living</span>
-      <span>片长 19.1s</span>
-      <span>笑点 13.2s</span>
-      <span>定格 16.4s</span>
-      <span>ma=老马</span>
-    </div>
-  </header>
-  
-  <div class="film with-pub"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div></aside></div>
-  <div class="rows"><div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">三舅问我一个月拿多少</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 1.96s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.6s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我说还行</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 0.86s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">4.4s</span></div>
-  <div class="talk">
-    <div class="beat">铺垫</div>
-    <div class="who">ma</div>
-    <p class="text">我端起杯子喝了一口，杯子是空的</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 2.51s</div>
-  </div>
-</div>
-<div class="row">
-  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">9.2s</span></div>
-  <div class="talk">
-    <div class="beat">回应</div>
-    <div class="who">ma</div>
-    <p class="text">三舅说，还行就是不多</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">平</span>
-      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 2.13s</div>
-  </div>
-</div>
-<div class="row punch">
-  <div class="shot"><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.2s</span></div>
-  <div class="talk">
-    <div class="beat">反转 · 笑点</div>
-    <div class="who">ma</div>
-    <p class="text">那天我喝了四次空杯子</p>
-    <div class="voice">
-      <span class="pill">老马</span>
-      <span class="pill alt">叙平</span>
-      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
-    </div>
-    <div class="meta">实测配音 3.24s</div>
-  </div>
-</div></div>
-  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/00-开场.png" alt="开场物件" loading="lazy">
-  <figcaption>开场物件　<span class="ts-inline">1.0s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">16.9s</span></figcaption></figure>
-<figure><img src="段子/_待发/未排期_段子_回家_laoma-016_1874/stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">18.4s</span></figcaption></figure></div>
-  <div class="hook">结尾钩子：<strong>老马的第 1874 天</strong></div>
-  <details class="analysis" open>
-    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_回家_laoma-016_1874/方案.md" target="_blank">方案.md ↗</a></summary>
-    <h2>老马的第 1874 天　落地方案</h2>
-<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
-<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
-<h3>一、稿件定位</h3>
-<ul>
-<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　（？）</li>
-<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
-<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
-</ul>
-<h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>home-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.0</td><td>场景 <code>home-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：三舅问我一个月拿多少</td><td>—</td></tr><tr><td>0:02.6–0:03.5</td><td>同上</td><td><strong>ma</strong>：我说还行</td><td>—</td></tr><tr><td>0:04.4–0:06.9</td><td>同上</td><td><strong>ma</strong>：我端起杯子喝了一口，杯子是空的</td><td>—</td></tr><tr><td>0:09.2–0:11.3</td><td>同上</td><td><strong>ma</strong>：三舅说，还行就是不多</td><td>—</td></tr><tr><td>0:13.2–0:16.4</td><td>同上</td><td><strong>ma</strong>：那天我喝了四次空杯子</td><td>—</td></tr><tr><td>0:16.4–0:19.1</td><td>定格去色 + 钩子字幕「老马的第 1874 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
-<h3>三、场景 / 角色 / 节奏</h3>
-<p><strong>场景</strong>　<code>home-living</code></p>
-<p><strong>节奏</strong>　<code>banter</code></p>
-<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
-<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 19.14s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
-<h3>四、发布文案</h3>
-<blockquote>发平台时直接抄这一段。</blockquote>
-<ul>
-<li><strong>标题候选</strong></li>
-</ul>
-<p>  1. （？）</p>
-<p>  2. （？）</p>
-<p>  3. （？）</p>
-<ul>
-<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
-<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
-<li><strong>话题标签</strong>　（？#xxx）</li>
-<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
-<li><strong>封面大字</strong>　``</li>
-</ul>
-<h3>五、人工核对</h3>
-<ul>
-<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
-<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
-<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
-<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
-<li class="task"><input type="checkbox" disabled > 内容风控</li>
-</ul>
-  </details>
 </section></div></div>
 <script>
 // 滚动到哪条稿件，左边就高亮哪一条
@@ -3080,7 +3209,14 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     Object.keys(seen).forEach(function (id) { if (seen[id] > bestV) { bestV = seen[id]; best = id; } });
     if (best) mark(best);
   }, { threshold: [0, 0.15, 0.4, 0.75, 1], rootMargin: '-10% 0px -55% 0px' });
-  document.querySelectorAll('section.joke').forEach(function (s) { io.observe(s); });
+  // **盯的是目录项指到的那些块**，不是某个写死的 class。
+  // 原来写的是 'section.joke'，那是段子画廊的类名 —— 醒木不响那页的块叫 .ep，
+  // 目录能点、但滚动时不会跟着高亮，而且不报错（就是不动）。
+  // 每一项本来就带 data-target，照它去找就跟页面长什么样无关了。
+  items.forEach(function (a) {
+    var el = document.getElementById(a.dataset.target);
+    if (el) io.observe(el);
+  });
   if (items.length) items[0].classList.add('active');
 })();
 </script>

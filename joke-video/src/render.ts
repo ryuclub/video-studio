@@ -12,7 +12,8 @@ import { cat } from './rigs/cat.js';
 import { still } from './rigs/still.js';
 import type { CharState } from './rigs/state.js';
 import { dialogueStrip, hookStrip, seriesCard, sideText, openLineSvg, openFrameSvg } from './subtitle.js';
-import { curtain, CURTAIN_SEC } from '../horse/curtain.mjs';
+import { curtain, opening, CURTAIN_SEC, OPENING_SEC } from '../horse/curtain.mjs';
+import { emote, EMOTE_SEC, SYMBOLS as EMOTE_KINDS } from '../horse/emote.mjs';
 import { drawObject } from '../horse/objects.mjs';
 import { breathe, blinking, clamp, easeOut, lerp, shake, smoothstep, talkBob, track, type Key } from './anim.js';
 import { getPace } from './pace.js';
@@ -20,7 +21,7 @@ import { segAt, speakingAt, subtitleAt, estimateDur, partAt, partSpans, openSpan
 import { dayNo, subtitleText, lineText, type Timeline } from './types.js';
 import { mouthFrom } from './audio/align.js';
 import { horse as horseRig, horseBox } from './rigs/horse.js';
-import { place as placeMark, speechBurst } from '../horse/marks.mjs';
+import { place as placeMark, speechBurst, SPOTS as MARK_SPOTS } from '../horse/marks.mjs';
 
 export interface VoiceTrack {
   env: Float32Array; // 逐帧包络
@@ -637,11 +638,42 @@ export function toScreen(cam: { zoom: number; tx: number; ty: number }, px: numb
  * 所以幕布必须像现在这样**按帧算进度、每帧重画**。
  */
 function curtainAt(tl: Timeline, t: number): string {
-  if (t >= CURTAIN_SEC) return '';
   // 只给老马线。判据跟别处一样是 rig === 'horse'
   if (!tl.cfg.characters?.some((c) => c.rig === 'horse')) return '';
   if (tl.cfg.curtain === false) return '';
+
+  /**
+   * 2026-08-24：**幕布上要打标题**（素材包「开场」那一节）。
+   *
+   * 时间轴变成 闭幕持标题 0.6 → 拉开 0.45 → 标题淡出 0.38，合计约 1.4 秒；
+   * **配音照旧从第 0 帧就响**，观众在闭幕那半秒是边听边读标题，不是干等。
+   *
+   * 标题就用封面那一套字（`cover.title` / `cover.sub`）——
+   * 素材包那句「闭幕帧就是封面」说的就是这个：点进来的瞬间画面跟封面连续，
+   * 而且三处标题（封面 / 幕布 / 牌匾）收敛成两处，不再各写一份。
+   *
+   * 没有 `cover.title` 就退回原来那档：只有布，没有字。
+   */
+  const title = tl.cfg.cover?.title;
+  if (title) {
+    if (t >= OPENING_SEC) return '';
+    return opening(t, { text: title, sub: tl.cfg.cover?.sub });
+  }
+  if (t >= CURTAIN_SEC) return '';
   return curtain(t / CURTAIN_SEC);
+}
+
+/**
+ * 幕布（连同它上面的标题）还罩着的时长。**字幕要等它走完才开始。**
+ *
+ * 那一秒多的视觉任务由幕布上的标题承担；再压一条字幕上去就是同一时刻两处字，
+ * 而且字幕会从幕布底下透出来（幕布画在最外层，字幕在它下面）。
+ * 配音照旧从第 0 帧就响 —— 挡住的只有字。
+ */
+function openingCover(tl: Timeline): number {
+  if (!tl.cfg.characters?.some((c) => c.rig === 'horse')) return 0;
+  if (tl.cfg.curtain === false) return 0;
+  return tl.cfg.cover?.title ? OPENING_SEC : CURTAIN_SEC;
 }
 
 export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {}): string {
@@ -667,6 +699,18 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
    * ⚠ 早返回顺带保证了**没有东西能从它底下漏出来** —— 钩子、片头卡、fadeOut
    * 都排在合成的最外面，靠「盖一块不透明矩形」是盖不住它们的。
    */
+  /**
+   * 档 ③ 的首帧特写。**2026-08-24 从「整幅早返回」改成「当一层背景」。**
+   *
+   * 早返回那一版的问题：这一帧里**根本没有字幕那一层** —— 物件特写盖到 `card0.end` 为止，
+   * 第 1 句的字幕要等特写撤掉才出得来，而那时候这句话已经念了大半，字幕只来得及闪一下。
+   * 观感上像「老马一出场，字幕才想起来要出现」。
+   *
+   * 现在它跟场景层平级：特写画在最底下，**字幕、片头卡、钩子、黑场照原来的次序压在它上面**。
+   * 早返回原来防的那件事（钩子／片头卡从底下漏出来）仍旧不会发生 ——
+   * 钩子要到定格才出，片头卡只在 intro>0 时出，而这一档的 intro 恒为 0。
+   */
+  let objectFrame = '';
   if (card0?.style === 'object-first' && t < card0.end) {
     // ⚠ 这儿单独拦一次，不指望 drawObject 报「没有物件 undefined」——
     // 体检拦得住 build/voice，但 still / frame 是不过闸的，那两条路要能自己说清楚
@@ -677,14 +721,18 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
           '要么写 "opening": { "style": "figure-first" } 退回老样子。'
       );
     const art = drawObject(card0.subject, 1);
-    // ⚠ **幕布要挂两处。** 这儿是档 ③ 的早返回，下面正常路径的收尾是另一处 ——
-    // 只挂后者的话，恰恰是老马缺省那一档没有幕布，而且没人会报错。
-    return (
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
-      openFrameSvg(art, card0.text, { height: H }) +
-      curtainAt(tl, t) +
-      `</svg>`
-    );
+    /**
+     * ⚠ **幕布带标题的时候，这一档的那行字也不出**（2026-08-24，跟档 ② 同一条道理）。
+     *
+     * 幕布已经用 0.6 秒把标题打在布面上了，布一拉开物件特写底下又来一行字，
+     * 那是**头两秒里第二段文案** —— 观众刚读完一句，又要读一句，而这会儿
+     * 第 1 句配音还在响。首帧规范要的「一眼认出这是什么」由物件本身承担，
+     * 字那一层交给幕布。
+     */
+    const frameText = openingCover(tl) > CURTAIN_SEC ? '' : card0.text;
+    // 幕布不用在这儿单挂了：合成那头本来就在最外面挂一次，
+    // 而这一档现在也走同一条合成路径 —— **原来「幕布要挂两处」那条注意事项作废**
+    objectFrame = openFrameSvg(art, frameText, { height: H });
   }
 
   // 定格：整帧去色（不用 SVG 滤镜，直接换色，快很多）
@@ -881,6 +929,8 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
   // 判据是 seg.kind：`freeze` 是落点定格，`hold` 才是收尾卡。
   const markChar = tl.cfg.characters.find((c) => c.rig === 'horse');
   let marks = '';
+  /** 落点符号画在哪儿。尾卡要排在它正下方 */
+  let emoteAnchor: { x: number; y: number } | null = null;
   if (markChar) {
     const mi = tl.cfg.characters.indexOf(markChar);
     const box = horseBox(charStateFor(ctx, mi, t, frame));
@@ -894,6 +944,107 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
         })
       )
       .join('');
+
+    /**
+     * 落点符号（`endEmote`，2026-08-24 加，**只给老马线**）。
+     *
+     * 跟上面那套漫符是两回事，也不能混用：漫符里的汗滴（慌张）、感叹号（兴奋）、
+     * 星星（可爱）、井字纹（生气）**全都是画面替观众表态**，跟「只陈述不评论」的人设
+     * 正相反。老马能用的符号只有一类 —— **表达「没有情绪」的那一类**（见 emote.mjs 的 SYMBOLS）。
+     *
+     * 三处规矩，跟漫符都不一样：
+     *
+     * ① **出现在落点定格里**，不在收尾卡那一段。原来的规矩是「定格那一拍什么都不发生」，
+     *    但三个点依次浮出来正是「他还没开口 / 他不打算说了」—— 那本身就是「什么都不发生」。
+     *    延后 0.3 秒起，**落点之前或同时出现就成了「这里好笑」的提示**。
+     * ② **贴着头侧上方**，不要飘在远处的墙上 —— 离得远就读成场景装饰，
+     *    建立不起「这是他的反应」这层关系。角色站左就放头的右上，站右则相反。
+     * ③ **一条最多一个，而且不是每条都有**（建议三成左右）。
+     */
+    /**
+     * **停顿符号**（`line.emote`，2026-08-24 加）：挂在那一句说完之后的停顿里。
+     *
+     * 三十秒一张不动的脸，中途全靠眼动撑着 —— 1863 那条实测下来「太冷场」。
+     * 这一层就是给中途的停顿一点东西看。**仍旧只有「没有情绪」那八个**，
+     * 而且**不许图解刚说完的台词**：它是他停下来时脑子里那点东西。
+     *
+     * 时间窗是**这一句的语音结束 → 下一句起头**（`speakingAt` 管的是发声那一段，
+     * 段的 end 含 padAfter，所以这儿要拿 seg.end 减 padAfter 自己算）：
+     * 停顿开始 +0.15 秒起浮现，浮现 0.5 秒（比落点那次快一倍，停顿短），
+     * 下一句起头前 0.1 秒收掉 —— **绝不跨句**。
+     */
+    const pauseSeg = segAt(tl, t);
+    if (pauseSeg?.kind === 'line' && pauseSeg.line?.emote) {
+      const pad = pauseSeg.line.padAfter ?? 0.2;
+      const speakEnd = pauseSeg.end - pad;
+      const from = speakEnd + 0.15;
+      const to = pauseSeg.end - 0.1;
+      if (t >= from && t < to) {
+        const pe = pauseSeg.line.emote;
+        const prog = Math.min(1, (t - from) / 0.5);
+        const spotName = markChar.side === 'right' ? '左上' : '右上';
+        const spot = MARK_SPOTS[spotName];
+        /**
+         * **两套符号都能挂**（2026-08-24 用户定）：
+         *
+         * · `emote.mjs` 那八个「没有情绪」的（省略号、小钟、zZ…）
+         * · `marks.mjs` 那十个**情绪符号**（汗、点、云、冷…）
+         *
+         * 用户的判断：**三十秒一张不动的脸，光靠「没有情绪」那一套会很无趣。**
+         * 情绪符号仍旧走配额（近 5 条最多 1 条，`laoma-check.ts` 守），
+         * 但**不再一律禁用** —— 「偶尔用是可以的」。
+         */
+        marks += EMOTE_KINDS[pe.kind]
+          ? emote(pe.kind, {
+              p: prog,
+              x: (box.x + box.w * spot.x) / W,
+              y: (box.y + box.h * spot.y) / H,
+              // 比落点那次小一档：中途这次是顺带，不该跟落点一样重
+              scale: pe.scale ?? 0.95,
+              W,
+              H,
+              seed: pe.seed ?? 7,
+            })
+          : placeMark(pe.kind, spotName, box, {
+              size: (pe.scale ?? 1) * 0.34,
+              seed: pe.seed ?? 7,
+              pop: prog,
+            });
+      }
+    }
+
+    const em = tl.cfg.endEmote;
+    // 尾卡要排在符号正下方（2026-08-24 用户定），所以这儿把符号的落点记下来 ——
+    // 马框只有这一段拿得到（`horseBox()` 是唯一出处）
+    if (em) {
+      const sp0 = MARK_SPOTS[em.spot ?? (markChar.side === 'right' ? '左上' : '右上')];
+      emoteAnchor = { x: box.x + box.w * sp0.x, y: box.y + box.h * sp0.y };
+    }
+    if (em && t >= tl.freezeStart + (em.delay ?? 0.3)) {
+      const prog = Math.min(1, (t - tl.freezeStart - (em.delay ?? 0.3)) / EMOTE_SEC);
+      // 站左的马把符号挂右上，站右的挂左上 —— 永远在头的**外侧**
+      const spot = em.spot ?? (markChar.side === 'right' ? '左上' : '右上');
+      const sp = MARK_SPOTS[spot];
+      /**
+       * ⚠ **有尾卡的时候符号往下让一档。**
+       *
+       * 尾卡固定排在日子牌正下方（那是它的位置，见下面那段），而符号的缺省高度
+       * （头框 3%）正好落在同一条横带上 —— 1858 实测那三个点从「第二天早上」
+       * 几个字中间穿过去。**让的是符号不是字**：字那一行的位置是规矩，
+       * 符号只是贴着头，往下挪一点照样贴着。
+       */
+      const spotY = tl.cfg.tailCard ? 0.1 : sp.y;
+      marks += emote(em.kind ?? 'dots', {
+        p: prog,
+        x: (box.x + box.w * sp.x) / W,
+        y: (box.y + box.h * spotY) / H,
+        scale: em.scale ?? 1.15,
+        value: em.value ?? '',
+        W,
+        H,
+        seed: em.seed ?? 5,
+      });
+    }
 
     // 说话放射：**只在真正出声的那一段挂着**。
     //
@@ -919,7 +1070,13 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
   }
 
   // 字幕
-  const sub = ov.hideSubtitle ? null : subtitleAt(tl, Math.min(t, tl.freezeStart - 0.001));
+  // ⚠ **幕布期间不出字幕**（2026-08-24）。那一秒多的视觉任务由幕布上的标题承担，
+  // 再压一条字幕上去就是同一时刻两处字；而且幕布画在最外层，字幕会从它底下透出来。
+  // **配音照旧从第 0 帧就响** —— 挡住的只有字。
+  const sub =
+    ov.hideSubtitle || t < openingCover(tl)
+      ? null
+      : subtitleAt(tl, Math.min(t, tl.freezeStart - 0.001));
   let subtitle = '';
   /**
    * 开场大字。**占的是字幕那一格。**
@@ -933,7 +1090,15 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
    *
    * 现在是：字随声走。他说完，字就没了，接着在这半秒静音里滑进来。
    */
-  if (card0 && sub?.index === 0) {
+  /**
+   * ⚠ **幕布已经打了标题，开场大字就是第二遍**（2026-08-24）。
+   *
+   * 两个一起开的表现是：幕布罩着的 1.43 秒里大字被盖住，幕布一走它**闪 0.25 秒**
+   * 再被侧边字幕替掉 —— 那 0.25 秒读起来是渲染打嗝，不是设计。
+   * 所以幕布带标题的时候这一档直接跳过，第 1 句走正常字幕。
+   */
+  const curtainTitled = openingCover(tl) > CURTAIN_SEC;
+  if (card0 && sub?.index === 0 && !curtainTitled) {
     // 档 ③ 走的是整幅早返回，到不了这儿；这一格只归档 ②
     subtitle = card0.style === 'voice-first' && t < card0.end ? openLineSvg(card0.text, H * 0.4, ink) : '';
     // 0.40 是侧边字幕的那条视线高度（`box.y + box.h × 0.34` ≈ 761，H×0.40 = 768）。
@@ -1006,19 +1171,72 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
       tl.cfg.type === 'B' ? 46 : 64
     );
   }
+  const tailSeg = tl.segments.find((g) => g.kind === 'tail');
+
   // 结尾钩子
   let hook = '';
   // 钩子跟定格**同时**出现：画面一冻、一去色，字就上来。
   // 早先是等到定格快结束才出（freezeStart + freeze - 0.3），
   // 中间那一两秒是纯灰画面没有信息，白占时长。
-  if (!ov.hideHook && tl.cfg.hook && t >= tl.freezeStart) {
-    const prog = clamp((t - tl.freezeStart) / 0.35);
+  // 收尾卡跟尾卡**同时上**（2026-08-24 用户定）。
+  //
+  // 先前是让收尾卡等尾卡走完 —— 按规范「尾卡在收尾卡之前」排的，
+  // 但那样片尾变成两次上字：先一行冷字、再一块日子牌，观众要读两回。
+  // 一起出反而是一组：日子牌报的是「第几天」，尾卡报的是「后来怎么样了」，
+  // 两条都是事实，本来就该在同一眼里看完。
+  const hookFrom = tl.freezeStart;
+  if (!ov.hideHook && tl.cfg.hook && t >= hookFrom) {
+    const prog = clamp((t - hookFrom) / 0.35);
     // 钩子是 CTA，不跟着定格去色，让它在灰调画面里跳出来
     // 侧边字幕那条线全程无衬底，收尾卡也不挂色块 —— 它正好落在定格去色那一帧上，
     // 全屏都灰了就它一块藏青，是整片里唯一一处「装饰」
     // 老马线（`subtitleStyle: 'side'`）的收尾卡是日子牌，字号单独一档 —— 见 hookStrip
     const sideStyle = tl.cfg.subtitleStyle === 'side';
     hook = hookStrip(tl.cfg.hook, 250, makeInk(0), 777, prog, sideStyle, sideStyle ? 72 : 52);
+  }
+
+  /**
+   * 尾卡事实句：落点定格之后、收尾卡之前的一行字。**只显示，不念。**
+   *
+   * ── 排版必须冷 ──
+   *
+   * 字号是正文字幕的 **0.8 倍**、无衬线常规字重（**不加粗**）、白或 #D8D8D8、
+   * 居中偏下、**描边／发光／阴影全部禁用**、0.2 秒淡入之后就不动、背景压暗 15%。
+   *
+   * **做成大字加黄边的金句卡，内容再对也毁了。**
+   * 这一行的气质应该像是片子忘了关，不像是片子在总结。
+   */
+  let tail = '';
+  // 老马线的片尾只有一段（`freeze`，2 秒），没有单独的 tail 段 ——
+  // 尾卡从定格第一帧起一直挂到片子结束，跟收尾卡同进同出
+  const tailEnd = tailSeg ? tailSeg.end : tl.duration;
+  if (!ov.hideHook && tl.cfg.tailCard && t >= tl.freezeStart && t < tailEnd) {
+    const fadeIn = clamp((t - tl.freezeStart) / 0.2);
+    const size = (tl.cfg.subtitleStyle === 'side' ? 64 : 72) * 0.8;
+    /**
+     * ⚠ **规范给的是白字或 #D8D8D8，那是按深底写的。**
+     * 老马的画面是纸白底，白字压上去等于没有 —— 而「压暗 15%」也救不回来：
+     * 要让白字读得出得压到六成，那就成了黑场卡，正好是规范骂的「金句卡」。
+     * **所以这条线用墨色，其余照抄**：0.8 倍字号、无衬线常规字重、无描边无阴影、
+     * 0.2 秒淡入之后不动。冷的是气质，不是颜色。
+     */
+    const tailInk = '#3B322B';
+    tail =
+      // 压暗 15%：画面停在最后一帧，只是暗下去一档 —— 不是黑场
+      `<rect width="${W}" height="${H}" fill="#000" opacity="${(0.15 * fadeIn).toFixed(3)}"/>` +
+      /**
+       * **排在日子牌正下方**（2026-08-24 用户定，写进 老马出片方案 §五之二）。
+       *
+       * 日子牌（`hookStrip`，y=250、字号 72）和尾卡是一组：一个报「第几天」，
+       * 一个报「后来怎么样了」，两条都是事实，**观众一眼读完两行**。
+       * 试过跟着落点符号走（符号在头侧上方），结果两行字被拆到画面两处，
+       * 而且没有符号的那些条又要另找地方 —— **位置跟着日子牌走才是稳的**：
+       * 日子牌每条都有，符号不是每条都有。
+       *
+       * y 的算法：日子牌顶 250 ＋ 一行 72 号字（行高 1.4）＋ 上下内边距 ＋ 一档间距。
+       */
+      `<text x="${W / 2}" y="${250 + 72 * 1.4 + 18 * 2 + 62}" text-anchor="middle" font-family="Noto Sans CJK SC, sans-serif"` +
+      ` font-size="${size}" font-weight="400" fill="${tailInk}" opacity="${fadeIn.toFixed(3)}">${tl.cfg.tailCard.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</text>`;
   }
 
   // 片头卡：只在 intro 那段空镜上。放在字幕之后画，**不跟着推镜走**——
@@ -1045,12 +1263,13 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
 <rect width="${W}" height="${H}" fill="${ink(P.paper)}"/>
-${layer(scene.far, 0.35)}
-${layer(scene.mid, 0.7)}
-${layer(chars + props + marks, 1.0)}
-${layer(scene.near, 1.35)}
+${
+  objectFrame ||
+  layer(scene.far, 0.35) + layer(scene.mid, 0.7) + layer(chars + props + marks, 1.0) + layer(scene.near, 1.35)
+}
 ${subtitle}
 ${card}
+${tail}
 ${hook}
 ${ov.overlay ?? ''}
 ${veil}

@@ -1,0 +1,149 @@
+{
+  "_": "老马 · 第 1874 天 · home-living。稿源：素材包 v3-S1 第一批六条（`E:/ryu/laoma/老马_v3-S1_六条.json`）。\n\nlane=熟人原话／domain=家庭 是稿源自己的分类，仓库不按它分流（栏目从 `scene` 反查）。**这两个字段原样存着，别拿它们当栏目用。**",
+  "id": "laoma-016",
+  "day": 1874,
+  "type": "A",
+  "scene": "home-living",
+  "pace": "banter",
+  "intro": 0,
+  "freeze": 1.2,
+  "hold": 1.5,
+  "opening": {
+    "style": "object-first",
+    "frameSubject": "杯子",
+    "frameText": "三舅问我一个"
+  },
+  "_opening": "出场档 ③「先出声 · 物件」，老马线缺省。首帧＝物件特写 ＋ 一行字，音轨 0.0 起，人在第 1 句说完那半秒静音里滑进来。",
+  "ambience": "none",
+  "bgm": {
+    "enabled": false
+  },
+  "characters": [
+    {
+      "id": "ma",
+      "rig": "horse",
+      "side": "left",
+      "x": 290,
+      "scale": 1,
+      "cast": "老马",
+      "keepX": true
+    }
+  ],
+  "lines": [
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0,
+      "padAfter": 0.536,
+      "say": [
+        {
+          "text": "三舅问我一个月拿多少。"
+        }
+      ],
+      "dur": 1.964,
+      "audio": "out/voice/laoma-016/1-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0.1,
+      "padAfter": 0.84,
+      "say": [
+        {
+          "text": "我说还行。"
+        }
+      ],
+      "dur": 0.86,
+      "audio": "out/voice/laoma-016/2-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0.1,
+      "padAfter": 2.186,
+      "say": [
+        {
+          "text": "我端起杯子喝了一口，",
+          "gap": 0.26
+        },
+        {
+          "text": "杯子是空的。"
+        }
+      ],
+      "dur": 2.514,
+      "audio": "out/voice/laoma-016/3-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "reply",
+      "padBefore": 0.1,
+      "padAfter": 1.425,
+      "say": [
+        {
+          "text": "三舅说，还行就是不多。"
+        }
+      ],
+      "dur": 2.125,
+      "audio": "out/voice/laoma-016/4-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "punch",
+      "padBefore": 0.45,
+      "padAfter": 0,
+      "delivery": "叙平",
+      "say": [
+        {
+          "text": "那天我喝了四次空杯子。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 3.237,
+      "audio": "out/voice/laoma-016/5-ma.wav"
+    }
+  ],
+  "object": "杯子",
+  "bodyAnchor": "被问到不想答的问题时端起杯子挡一下",
+  "hookLine": 3,
+  "payoffLine": 5,
+  "emotionLine": null,
+  "domain": "家庭",
+  "hook": "老马的第 1874 天",
+  "cues": {
+    "introHiss": false,
+    "replyWood": false,
+    "punchSlide": false,
+    "freezeThud": false,
+    "subtitlePop": false
+  },
+  "speechBurst": {
+    "spot": "右",
+    "size": 0.36,
+    "tilt": -14,
+    "seed": 31,
+    "byBeat": {
+      "setup": 0,
+      "reply": 0.7,
+      "punch": 1.15
+    }
+  },
+  "camera": "static",
+  "subtitleStyle": "side",
+  "endPose": {
+    "mouth": 2,
+    "eyes": "wide"
+  },
+  "cover": {
+    "title": "",
+    "sub": "",
+    "cam": {
+      "zoom": 1,
+      "tx": 0,
+      "ty": 0
+    },
+    "mark": "none"
+  },
+  "_hook": "⚠ **`hookLine` 不是稿源的 `hook_line`。** 稿源那个是「开场钩子句」（叙事上的钩子），仓库这个是「**被落点字面回收的那一句**」（§一之十四：听觉媒介，同义词不算回收）。两者常常重合，但这一条不重合 —— 按落点里真正复现的那个词回填的。",
+  "_pace": "停顿照稿源时间轴倒推（`老马_v3-S1_六条_时间轴.md`）。**先 voice + align 拿真实 dur，再用相邻起点差减 dur** —— 按估算排时间轴连撞过两条片子。",
+  "_hold": "定格 1.2 ＋ 收尾卡 1.5，跟 008 同一套。\n\n⚠ **2026-08-23 从 1.6 / 3.0 改回来的。** 那两个数当初是为了把片长凑进 25–32 那个区间撑出来的 —— **为了凑片长硬停，看着就是硬停的**。片子首先要自然流畅，长度是结果不是目标；区间也跟着放宽到 18–32 了。"
+}

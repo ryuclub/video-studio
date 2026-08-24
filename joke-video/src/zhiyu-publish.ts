@@ -33,6 +33,8 @@ interface Part {
   partName?: string;
   part: string; epTitle: string; hook: string; acts: string[];
   title: string; lead: string; body: string; next: string;
+  /** 写了就跳过简介栏四段的体检。**只给 2026-08-24 之前已发的那几期**，见 checkIntro */
+  简介栏?: string;
   tags: string[]; chapters: Chapter[];
 }
 interface PubDoc {
@@ -41,7 +43,8 @@ interface PubDoc {
   tags: { core: string[]; long: string[] };
   /** 顶层备份的一份标题，封面脚本读它。和 parts[].title 必须有一期对得上 */
   videoTitle?: string;
-  cover: { hook: string; label: string };
+  /** 总封面（整本一张）。**一次性的一期没有这个东西**，不写就不出、发布文案也不列 */
+  cover?: { hook: string; label: string };
   /** 这一本专属的核对项。通用那几条写在代码里 —— **别把书名写进代码** */
   checks?: string[];
   parts: Part[];
@@ -115,6 +118,47 @@ function wrapTags(xs: string[], width = 46): string {
   return out.join('\n');
 }
 
+/**
+ * 简介栏四段（2026-08-24 立，四条线共用）。规范正文在
+ * `zhiyu/禅佛典向_小故事大道理_书目与稿件.md` 的「简介栏规范与人称尺度」一节。
+ *
+ * **为什么要有这道闸**：那一节是 2026-08-24 才补的，而在那之前简介栏
+ * **四段里有两段整个是缺的**（"这期不做什么" 和 "使用场景"，已出的六期一期都没写）。
+ * 这条线自己的教训写在别处也是同一句：**文档拦不住人，体检才拦得住。**
+ *
+ * 查得了的只有"在不在"，查不了"写得好不好"：
+ *
+ * | 查 | 判据 |
+ * |---|---|
+ * | 第一句是不是概括型 | 以「本期／这期讲／今天讲／为你带来」开头就是概括，直接拦 |
+ * | 有没有翻转句 | 第一段里找「不是…是…」这类对仗。没有只提醒 —— 翻转句不止一种写法 |
+ * | 有没有「这期不做什么」 | 找「这期不／本期不／不劝／不解经／不讲道理／不急着给」 |
+ * | 有没有使用场景 | 找「适合」 |
+ *
+ * **已发的那几期不回改**：在那一篇写 `"简介栏": "旧版"` 就跳过（跟频道
+ * 「只对新片生效」的惯例一致）。新写的一期别去写这个字段 —— 那等于把闸关了。
+ */
+function checkIntro(p: Part): { level: 'error' | 'warn'; msg: string }[] {
+  if (p.简介栏) return [];
+  const out: { level: 'error' | 'warn'; msg: string }[] = [];
+  const head = p.lead.trim();
+  const all = `${p.lead}\n${p.body}`;
+  const first = head.split(/[。！？\n]/)[0] ?? '';
+
+  if (/^(本期|这期讲|今天讲|为你带来|本视频)/.test(first))
+    out.push({ level: 'error', msg: `简介栏第一句是概括型开头「${first.slice(0, 14)}…」。推荐流的折叠位只露这一句，概括型在那儿等于放弃` });
+  else if (!/不是[^，。]{0,12}[，,]?\s*(而)?是/.test(head))
+    out.push({ level: 'warn', msg: `简介栏第一段里没看到翻转句（「不是 A，是 B」那种对仗）。不是硬规则，但那个位置最吃这一句` });
+
+  if (!/(这期|本期)不|不劝|不解经|不讲道理|不急着给|不教你/.test(all))
+    out.push({ level: 'error', msg: '简介栏缺「这期不做什么」那一句。听众点进来带着「又要被教育了」的戒备，先卸掉这层，人才松下来' });
+
+  if (!/适合/.test(all))
+    out.push({ level: 'error', msg: '简介栏结尾缺使用场景（「适合……的时候」）。除了睡前／通勤，更好用的是情绪发生的当下' });
+
+  return out;
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const i = argv.indexOf('--cover-sec');
@@ -123,6 +167,26 @@ function main() {
 
   const blocks: string[] = [];
   const files: string[] = [];
+
+  // ── 简介栏体检 ──
+  // 先把所有篇查完再决定停不停，不要查一篇报一篇 —— 一次把问题看全，改一轮就够
+  const introIssues = doc.parts.flatMap((p) => checkIntro(p).map((i) => ({ ...i, part: p.part })));
+  if (introIssues.length) {
+    console.log('简介栏体检（2026-08-24 立的四段规范）');
+    for (const i of introIssues) console.log(`  ${i.level === 'error' ? '✗' : '!'} ${i.part}篇　${i.msg}`);
+  }
+  const introErrors = introIssues.filter((i) => i.level === 'error');
+  if (introErrors.length) {
+    console.error(
+      `
+✗ 简介栏差 ${introErrors.length} 项，发布文案不出了。
+` +
+        `  规范：zhiyu/禅佛典向_小故事大道理_书目与稿件.md 的「简介栏规范与人称尺度」一节
+` +
+        `  这几期是 2026-08-24 之前发的、不回改的话，在那一篇加 "简介栏": "旧版"`
+    );
+    process.exit(1);
+  }
 
   for (const p of doc.parts) {
     const dir = `${PROJ}/成片/${p.part}`;
@@ -191,26 +255,43 @@ ${wrapTags([...new Set([...doc.tags.core, ...p.tags, ...doc.tags.long])])}
 `
     );
 
-    // 文字版是另一档产品（正文逐句上浮，给静音看的人），出了才列。
-    // **不列的话等于没出** —— 文件躺在目录里，照着这份传片的人不会知道它在。
-    const textVer = `${dir}/${EP}_${p.part}_文字版.mp4`;
-    const textRow = existsSync(textVer)
-      ? `| | 文字版 | \`成片/${p.part}/${EP}_${p.part}_文字版.mp4\`　` +
-        `${mmss(videoLen(textVer) ?? m.duration + coverHold)}　**别开平台软字幕**，屏上已经有同一句了 |\n`
-      : '';
+    // ── 三版并存，但**只列真出了的那几版** ────────────────────────────
+    //
+    // 常规版 / 烧字幕版 / 文字版，文件名各不相同、谁也不覆盖谁，
+    // 但**一期不一定三版都出**：2026-08-26《不归你管》只出文字版
+    // （用户 08-24 定：这一期只要带字幕那一份，不用两份都出）。
+    //
+    // 所以这张表按文件在不在列。**表里写着的文件必须存在** ——
+    // 这份是照着传片的人看的，列一个不存在的路径比少列一行糟得多；
+    // 反过来，出了却不列**等于没出**，文件躺在目录里没人知道它在。
+    const rows: string[] = [];
+    const row = (name: string, file: string, tail = '') => {
+      const abs = `${dir}/${file}`;
+      if (!existsSync(abs)) return;
+      rows.push(`| ${rows.length ? '' : `**${p.partName ?? `${p.part}篇`}**`} | ${name} | ` +
+        `\`成片/${p.part}/${file}\`　${mmss(videoLen(abs) ?? m.duration + coverHold)}${tail} |`);
+    };
+    row('成片', `${EP}_${p.part}.mp4`);
+    row('文字版', `${EP}_${p.part}_文字版.mp4`, '　**别开平台软字幕**，屏上已经有同一句了');
+    row('烧字幕版', `${EP}_${p.part}_烧字幕.mp4`, '　字幕烧进画面，同上');
+    if (!rows.length) throw new Error(`${p.part} 篇一个 mp4 都没有 —— 先跑 zhiyu-video.ts`);
 
     files.push(
-      `| **${p.partName ?? `${p.part}篇`}** | 成片 | \`成片/${p.part}/${EP}_${p.part}.mp4\`　` +
-        `${mmss(videoLen(`${dir}/${EP}_${p.part}.mp4`) ?? m.duration + coverHold)} |\n` +
-        textRow +
-        `| | 字幕 | \`成片/${p.part}/${p.part}篇.srt\`（软字幕，没烧进画面） |\n` +
+      rows.join('\n') +
+        `\n| | 字幕 | \`成片/${p.part}/${p.part}篇.srt\`（软字幕，没烧进画面） |\n` +
         `| | 封面 | \`cover/${p.part}/upload-1280x720.png\` |\n` +
         `| | ${SKIN.squareName} | \`cover/${p.part}/${SKIN.square}\` |`
     );
   }
 
   // 「整本」那一套只有治愈线有（一本多期）。心理线是单期，没有播放列表封面。
-  if (SKIN.wholeBook)
+  //
+  // **`doc.cover` 也要有。** 那一档是 `zhiyu-cover.ts` 按 `发布.json` 的 `cover`
+  // 字段出的；没写这个字段的期（2026-08-26《不归你管》这种一次性的原创随笔，
+  // 没有「整本」可言）根本没跑过 `--part 总`，`cover/总/` 是空的。
+  // 而这张表**是照着传文件的人看的** —— 表里写着的文件必须存在，
+  // 「按线路一律列上」跟「这一期真有」不是一回事。
+  if (SKIN.wholeBook && doc.cover)
     files.push(
       `| **整本** | 播放列表封面 | \`cover/总/upload-1280x720.png\` |\n| | ${SKIN.squareName} | \`cover/总/${SKIN.square}\` |`
     );

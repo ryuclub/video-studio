@@ -14,7 +14,14 @@ const { Resvg } = require('@resvg/resvg-js');
 
 const opts = {
   fitTo: { mode: 'original' },
-  font: { loadSystemFonts: true, defaultFontFamily: workerData.font },
+  // fontFiles 由主线程传进来（见 video.ts 的 makeRasterPool）。
+  // **worker 不共享主线程的 resvg 配置**，漏了这一项的表现是：
+  // 静帧上字体对、成片里回退成系统字体，两边都不报错。
+  font: {
+    loadSystemFonts: true,
+    fontFiles: workerData.fontFiles || [],
+    defaultFontFamily: workerData.font,
+  },
 };
 
 parentPort.on('message', (msg) => {

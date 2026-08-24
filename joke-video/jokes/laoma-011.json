@@ -1,0 +1,148 @@
+{
+  "_": "老马 · 第 1861 天 · office-desk。稿源：素材包 v3-S1 第一批六条（`E:/ryu/laoma/老马_v3-S1_六条.json`）。\n\nlane=命名类／domain=日常 是稿源自己的分类，仓库不按它分流（栏目从 `scene` 反查）。**这两个字段原样存着，别拿它们当栏目用。**\n\n物件是**带瓶盖的那瓶水**，不是单独一个盖 —— 盖只是它身上最要紧的一截。台词里复现的字面是「瓶」（第 1、3、4、5 句都有），所以 `object` 写「瓶」而不是「瓶子」：体检数的是字面出现次数。",
+  "id": "laoma-011",
+  "day": 1861,
+  "type": "A",
+  "scene": "office-desk",
+  "pace": "banter",
+  "intro": 0,
+  "freeze": 1.2,
+  "hold": 1.5,
+  "opening": {
+    "style": "object-first",
+    "frameSubject": "瓶子",
+    "frameText": "这瓶水我拧了"
+  },
+  "_opening": "出场档 ③「先出声 · 物件」，老马线缺省。首帧＝物件特写 ＋ 一行字，音轨 0.0 起，人在第 1 句说完那半秒静音里滑进来。",
+  "ambience": "none",
+  "bgm": {
+    "enabled": false
+  },
+  "characters": [
+    {
+      "id": "ma",
+      "rig": "horse",
+      "side": "left",
+      "x": 290,
+      "scale": 1,
+      "cast": "老马",
+      "keepX": true
+    }
+  ],
+  "lines": [
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0,
+      "padAfter": 0.333,
+      "say": [
+        {
+          "text": "这瓶水我拧了四下。"
+        }
+      ],
+      "dur": 1.967,
+      "audio": "out/voice/laoma-011/1-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0.1,
+      "padAfter": 0.924,
+      "say": [
+        {
+          "text": "手心印出一圈齿。"
+        }
+      ],
+      "dur": 1.476,
+      "audio": "out/voice/laoma-011/2-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "setup",
+      "padBefore": 0.1,
+      "padAfter": 1.444,
+      "say": [
+        {
+          "text": "老马把瓶子递给小李，",
+          "gap": 0.26
+        },
+        {
+          "text": "小李一下就开了。"
+        }
+      ],
+      "dur": 3.356,
+      "audio": "out/voice/laoma-011/3-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "reply",
+      "padBefore": 0.1,
+      "padAfter": 1.474,
+      "say": [
+        {
+          "text": "小李说这瓶本来就松了。"
+        }
+      ],
+      "dur": 2.176,
+      "audio": "out/voice/laoma-011/4-ma.wav"
+    },
+    {
+      "who": "ma",
+      "beat": "punch",
+      "padBefore": 0.45,
+      "padAfter": 0,
+      "delivery": "叙平",
+      "say": [
+        {
+          "text": "那瓶水我一口没喝。",
+          "delivery": "叙平"
+        }
+      ],
+      "dur": 1.65,
+      "audio": "out/voice/laoma-011/5-ma.wav"
+    }
+  ],
+  "object": "瓶",
+  "bodyAnchor": "拧不开的瓶盖，手心被瓶盖齿印出一圈",
+  "hookLine": 1,
+  "payoffLine": 5,
+  "emotionLine": null,
+  "domain": "日常",
+  "hook": "老马的第 1861 天",
+  "cues": {
+    "introHiss": false,
+    "replyWood": false,
+    "punchSlide": false,
+    "freezeThud": false,
+    "subtitlePop": false
+  },
+  "speechBurst": {
+    "spot": "右",
+    "size": 0.36,
+    "tilt": -14,
+    "seed": 18,
+    "byBeat": {
+      "setup": 0,
+      "reply": 0.7,
+      "punch": 1.15
+    }
+  },
+  "camera": "static",
+  "subtitleStyle": "side",
+  "endPose": {
+    "mouth": 2,
+    "eyes": "wide"
+  },
+  "cover": {
+    "title": "",
+    "sub": "",
+    "cam": {
+      "zoom": 1,
+      "tx": 0,
+      "ty": 0
+    },
+    "mark": "none"
+  },
+  "_pace": "停顿照稿源时间轴倒推（`老马_v3-S1_六条_时间轴.md`）。**先 voice + align 拿真实 dur，再用相邻起点差减 dur** —— 按估算排时间轴连撞过两条片子。",
+  "_hold": "定格 1.2 ＋ 收尾卡 1.5，跟 008 同一套。\n\n⚠ **2026-08-23 从 1.6 / 3.0 改回来的。** 那两个数当初是为了把片长凑进 25–32 那个区间撑出来的 —— **为了凑片长硬停，看着就是硬停的**。片子首先要自然流畅，长度是结果不是目标；区间也跟着放宽到 18–32 了。"
+}

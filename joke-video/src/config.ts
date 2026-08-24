@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 // ── 全局参数：改这里就能改片子规格 ──────────────────────────────────────
 
 export const W = 1080;
@@ -43,6 +44,42 @@ export const FONT =
  * 本机实测装着：Noto Sans SC Black / Noto Serif SC Black / Noto Sans JP Black。
  * 一个都没有的时候会退到 `FONT`，那时候封面会明显变细 —— 出片前扫一眼封面就看得出来。
  */
+/**
+ * **仓库自带的字体文件**，喂给 resvg 的 `fontFiles`。
+ *
+ * ⚠ **不装进系统也要能用。** 换台机器、换个人接手，靠「记得先装字体」是靠不住的 ——
+ * 字体缺了 resvg **不报错**，它静默回退到别的字族，你只会觉得「字怎么没变」。
+ * 实测：`font-family="Smiley Sans"` 不喂文件时，渲出来跟雅黑**字节数完全一样**。
+ *
+ * 路径相对仓库根（脚本的 cwd 是 joke-video/）。
+ */
+export const FONT_FILES: string[] = [
+  '../fonts/smiley-sans-v2.0.1/SmileySans-Oblique.otf',
+  // 站酷快乐体：**只给标题牌匾**（`horse/plaque.mjs`）。
+  // 字幕规范 §二 点名禁止它用于字幕 —— 那种圆滚滚的字自带「我在逗你笑」的语气，
+  // **字体先笑了，台词就不好笑了**。牌匾是场景里的一块牌子，不是台词，可以有语气。
+  '../fonts/ZCOOLKuaiLe-Regular.ttf',
+].filter((p) => existsSync(p));
+
+/**
+ * 老马线主字幕：**得意黑 Smiley Sans**（字幕规范 §二）。
+ *
+ * ── 为什么不是「搞笑字体」，也不是默认黑体 ──
+ *
+ * 站酷快乐体那类圆滚滚的字**自带「我在逗你笑」的语气** —— 老马的笑点全靠平静陈述，
+ * **字体先笑了，台词就不好笑了**。这跟「落点句不加重音」是同一条道理。
+ * 但纯黑无描边的默认黑体也不对：它没有态度，在暖色场景里还会糊进背景。
+ * 得意黑正好在中间：倾斜紧凑有速度感，字形本身不卖萌。
+ *
+ * ⚠ **必须写英文名。** 写中文「得意黑」在部分渲染器里匹配不到，会**静默回退**到思源黑。
+ * ⚠ 只有一个字重而且是斜体，**层次只能靠字号和颜色做，不能靠字重**。
+ * ⚠ 只给老马线。段子和《一页故事》照旧走 `FONT` —— 换字体是换语气，不是换皮肤。
+ * ⚠ **字族名用单引号，不能用双引号。** 这个串会塞进 SVG 的
+ * `font-family="…"` 属性里，里面再出现双引号就把属性提前截断了 ——
+ * resvg 报的是「expected space not 'S'」，跟字体一点关系都没有。
+ */
+export const FONT_LAOMA = `'Smiley Sans', ${FONT}`;
+
 export const FONT_HEAVY =
   process.env.JOKE_FONT_HEAVY ||
   'Noto Sans SC Black, Source Han Sans SC Heavy, Noto Sans CJK SC Black, Noto Sans JP Black, Microsoft YaHei, sans-serif';

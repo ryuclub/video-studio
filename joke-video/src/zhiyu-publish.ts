@@ -33,6 +33,8 @@ interface Part {
   partName?: string;
   part: string; epTitle: string; hook: string; acts: string[];
   title: string; lead: string; body: string; next: string;
+  /** 写了就跳过简介栏四段的体检。**只给 2026-08-24 之前已发的那几期**，见 checkIntro */
+  简介栏?: string;
   tags: string[]; chapters: Chapter[];
 }
 interface PubDoc {
@@ -115,6 +117,47 @@ function wrapTags(xs: string[], width = 46): string {
   return out.join('\n');
 }
 
+/**
+ * 简介栏四段（2026-08-24 立，四条线共用）。规范正文在
+ * `zhiyu/禅佛典向_小故事大道理_书目与稿件.md` 的「简介栏规范与人称尺度」一节。
+ *
+ * **为什么要有这道闸**：那一节是 2026-08-24 才补的，而在那之前简介栏
+ * **四段里有两段整个是缺的**（"这期不做什么" 和 "使用场景"，已出的六期一期都没写）。
+ * 这条线自己的教训写在别处也是同一句：**文档拦不住人，体检才拦得住。**
+ *
+ * 查得了的只有"在不在"，查不了"写得好不好"：
+ *
+ * | 查 | 判据 |
+ * |---|---|
+ * | 第一句是不是概括型 | 以「本期／这期讲／今天讲／为你带来」开头就是概括，直接拦 |
+ * | 有没有翻转句 | 第一段里找「不是…是…」这类对仗。没有只提醒 —— 翻转句不止一种写法 |
+ * | 有没有「这期不做什么」 | 找「这期不／本期不／不劝／不解经／不讲道理／不急着给」 |
+ * | 有没有使用场景 | 找「适合」 |
+ *
+ * **已发的那几期不回改**：在那一篇写 `"简介栏": "旧版"` 就跳过（跟频道
+ * 「只对新片生效」的惯例一致）。新写的一期别去写这个字段 —— 那等于把闸关了。
+ */
+function checkIntro(p: Part): { level: 'error' | 'warn'; msg: string }[] {
+  if (p.简介栏) return [];
+  const out: { level: 'error' | 'warn'; msg: string }[] = [];
+  const head = p.lead.trim();
+  const all = `${p.lead}\n${p.body}`;
+  const first = head.split(/[。！？\n]/)[0] ?? '';
+
+  if (/^(本期|这期讲|今天讲|为你带来|本视频)/.test(first))
+    out.push({ level: 'error', msg: `简介栏第一句是概括型开头「${first.slice(0, 14)}…」。推荐流的折叠位只露这一句，概括型在那儿等于放弃` });
+  else if (!/不是[^，。]{0,12}[，,]?\s*(而)?是/.test(head))
+    out.push({ level: 'warn', msg: `简介栏第一段里没看到翻转句（「不是 A，是 B」那种对仗）。不是硬规则，但那个位置最吃这一句` });
+
+  if (!/(这期|本期)不|不劝|不解经|不讲道理|不急着给|不教你/.test(all))
+    out.push({ level: 'error', msg: '简介栏缺「这期不做什么」那一句。听众点进来带着「又要被教育了」的戒备，先卸掉这层，人才松下来' });
+
+  if (!/适合/.test(all))
+    out.push({ level: 'error', msg: '简介栏结尾缺使用场景（「适合……的时候」）。除了睡前／通勤，更好用的是情绪发生的当下' });
+
+  return out;
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const i = argv.indexOf('--cover-sec');
@@ -123,6 +166,26 @@ function main() {
 
   const blocks: string[] = [];
   const files: string[] = [];
+
+  // ── 简介栏体检 ──
+  // 先把所有篇查完再决定停不停，不要查一篇报一篇 —— 一次把问题看全，改一轮就够
+  const introIssues = doc.parts.flatMap((p) => checkIntro(p).map((i) => ({ ...i, part: p.part })));
+  if (introIssues.length) {
+    console.log('简介栏体检（2026-08-24 立的四段规范）');
+    for (const i of introIssues) console.log(`  ${i.level === 'error' ? '✗' : '!'} ${i.part}篇　${i.msg}`);
+  }
+  const introErrors = introIssues.filter((i) => i.level === 'error');
+  if (introErrors.length) {
+    console.error(
+      `
+✗ 简介栏差 ${introErrors.length} 项，发布文案不出了。
+` +
+        `  规范：zhiyu/禅佛典向_小故事大道理_书目与稿件.md 的「简介栏规范与人称尺度」一节
+` +
+        `  这几期是 2026-08-24 之前发的、不回改的话，在那一篇加 "简介栏": "旧版"`
+    );
+    process.exit(1);
+  }
 
   for (const p of doc.parts) {
     const dir = `${PROJ}/成片/${p.part}`;

@@ -19,7 +19,15 @@ const FOLD = "#8A3F2C";
 const RAIL = "#5A4232";
 const LINE = "#3B2A22";
 
-export const CURTAIN_SEC = 0.45;
+export const CURTAIN_SEC = 0.45;   // 拉开时长
+/**
+ * 闭幕持标题的停留时长（2026-08-24 加）。
+ *
+ * **配音从第 0 帧就响**，观众在这半秒里是边听边读标题，不是干等 ——
+ * 等幕布拉开才出声，那半秒就是纯亏；闭幕超过 0.8 秒开始掉完播。
+ * 中文六个字读完约 0.4 秒，0.5–0.7 够读又不至于失去耐心。
+ */
+export const HOLD_SEC = 0.6;
 
 /** 缓出：开头快、结尾慢，比线性有份量 */
 const ease = (p) => 1 - Math.pow(1 - Math.max(0, Math.min(1, p)), 2.2);
@@ -129,3 +137,70 @@ export function curtainPanel(side, { rail = true } = {}) {
 
 /** 某一帧该位移多少像素（正数＝向外）。给 ffmpeg 写表达式时对照用 */
 export const shiftAt = (p) => ease(p) * (W / 2 + 40);
+
+
+/* ═══════ 闭幕标题卡（2026-08-24 从素材包接进来）═══════
+ *
+ * 幕布闭合时把标题打在布面上，观众边听第一句边读标题。
+ * **这一帧同时就是封面** —— 点进来的瞬间画面连续，没有割裂感，也省掉单独做一张。
+ * 于是三处标题收敛成两处：**幕布写标题，牌匾写栏目名**，不再重复。
+ */
+const T_FONT = "Smiley Sans, Noto Sans CJK SC Black, sans-serif";
+const T_SUB = "Noto Sans CJK SC, sans-serif";
+const CREAM = "#FAF6EC";
+const DEEP = "#41211A";
+
+/**
+ * ⚠ **标题和副标题都必须带深色描边。**
+ * 幕布拉开后底下是浅色纸白，**奶白色无描边的字会直接消失** ——
+ * 主标题本来就有描边所以没事，副标题和那条分隔线是后来补的：
+ * 它们在幕布期间看得见、拉开后就没了。这类「只在某个阶段才暴露」的问题，
+ * 必须把整段时间轴都渲出来才看得见。
+ */
+export function curtainTitle({ text, sub = "", y = 0.40 }) {
+  const cy = H * y;
+  const fs = Math.min(150, (W * 0.74) / Math.max([...text].length, 1));
+  let o = `<g id="curtain-title">`;
+  o += `<text x="${W / 2}" y="${cy}" font-family="${T_FONT}" font-size="${fs}" text-anchor="middle" fill="none" stroke="${DEEP}" stroke-width="${fs * 0.16}" stroke-linejoin="round">${text}</text>`;
+  o += `<text x="${W / 2}" y="${cy}" font-family="${T_FONT}" font-size="${fs}" text-anchor="middle" fill="${CREAM}">${text}</text>`;
+  if (sub) {
+    const ss = fs * 0.34;
+    o += stroke([[W / 2 - fs * 1.5, cy + fs * 0.42], [W / 2 + fs * 1.5, cy + fs * 0.44]],
+      { color: DEEP, w: 7, passes: 1, amp: 2.4, seed: 40, op: 0.85 });
+    o += stroke([[W / 2 - fs * 1.5, cy + fs * 0.42], [W / 2 + fs * 1.5, cy + fs * 0.44]],
+      { color: CREAM, w: 4, passes: 1, amp: 2.4, seed: 41, op: 0.9 });
+    o += `<text x="${W / 2}" y="${cy + fs * 0.86}" font-family="${T_SUB}" font-size="${ss}" text-anchor="middle" fill="none" stroke="${DEEP}" stroke-width="${ss * 0.28}" stroke-linejoin="round">${sub}</text>`;
+    o += `<text x="${W / 2}" y="${cy + fs * 0.86}" font-family="${T_SUB}" font-size="${ss}" text-anchor="middle" fill="${CREAM}">${sub}</text>`;
+  }
+  return o + `</g>`;
+}
+
+/**
+ * 整个开场：闭幕持标题 → 拉开 → 标题淡出。返回该帧的覆盖层。
+ *
+ * **标题固定在画面中间，不跟着幕布走。** 幕布从它两侧拉开，标题在幕布走完之后才淡出，
+ * 这样标题始终可读、不会被拉扯变形。
+ * （试过让标题沿中线劈成两半各跟一片走，"印在布上"的逻辑更硬，但拉开过程中
+ *   标题被撕成两截反而看不清。**可读性优先于逻辑自洽。**）
+ *
+ * ⚠ **这儿的两片布必须走 `curtain()` 那套画法，不能照素材包里的 opening() 抄。**
+ * 素材包那版是旧底子：既没有中缝重叠（全闭那一帧会裂开一条缝、背景漏出来），
+ * 也没有「拉到画外就不画」的判断（最后两帧 resvg 直接 panic，退出码 3221226505、
+ * 一行错误都没有）。两处都是这个仓库修过的，接新功能不能把它们带回去。
+ */
+export function opening(t, { text, sub, hold = HOLD_SEC, open = CURTAIN_SEC, linger = 0.38 } = {}) {
+  const p = t < hold ? 0 : (t - hold) / open;
+  if (p >= 1 + linger / open) return "";
+
+  // 标题：幕布走完之后才开始淡出，再用 linger 秒消失
+  let tOp = 1;
+  if (p > 1) tOp = Math.max(0, 1 - (p - 1) * (open / linger));
+
+  let o = `<g id="opening">`;
+  if (p < 1) o += curtain(p);
+  if (tOp > 0) o += `<g opacity="${tOp.toFixed(3)}">${curtainTitle({ text, sub })}</g>`;
+  return o + `</g>`;
+}
+
+/** 开场整段占多久（闭幕 ＋ 拉开 ＋ 标题淡出）。字幕要等它走完 */
+export const OPENING_SEC = HOLD_SEC + CURTAIN_SEC + 0.38;

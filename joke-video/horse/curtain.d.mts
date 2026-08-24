@@ -12,3 +12,12 @@ export declare function curtainPanel(side: 'left' | 'right', opts?: { rail?: boo
 
 /** 某一帧该位移多少像素（正数＝向外） */
 export declare function shiftAt(p: number): number;
+
+export declare const HOLD_SEC: number;
+/** 闭幕 ＋ 拉开 ＋ 标题淡出，字幕要等它走完 */
+export declare const OPENING_SEC: number;
+export declare function curtainTitle(o: { text: string; sub?: string; y?: number }): string;
+export declare function opening(
+  t: number,
+  o: { text: string; sub?: string; hold?: number; open?: number; linger?: number }
+): string;

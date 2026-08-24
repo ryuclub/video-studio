@@ -41,10 +41,18 @@
 // 「现在讲到哪儿了」原先只写在发布页的章节列表里，画面上没有。
 // 深夜档中途醒过来一下，抬眼看不出自己在第几节 —— 这一栏补的就是那一眼。
 //
-// 位置在窗框右边的空白带：**左边书名、右边章节，一重一轻**。
-// 它是次要信息，所以比书名小一号（46px vs 72px）、淡一档（`inkDim`）——
-// 跟蜗牛同一条道理：会变的那个不能比不动的东西更抢眼。
-// **但也别小到读不出来**：34px 那一版（《枕草子》重出的那支片子）反馈是「调大加粗」。
+// 位置在窗框右边的空白带：**左边书名、右边章节**。
+//
+// 字号走过三档：34（《枕草子》重出那版）→ 46（反馈「调大加粗」）→ **92（2026-08-24 用户定，翻倍）**，
+// 同时**改成白字黑边**，跟说书线右栏同一天改的是同一件事 ——
+// 频道屏上的字统一成这一种。宣纸底上白字本身是看不见的，
+// **立住它的是那圈黑边**，所以描边是这套配色的承重墙，不是装饰。
+//
+// 92px 之后有一件事变了，别踩回去：**这一栏只放得下一列了**。
+// 右边这条带子净宽 284px，46px 时两列（列距 83）刚好塞得进，
+// 92px 的列距是 166，第二列会压到窗框上。所以 `chapLimits()` 现在
+// **从版式反推**「几列 × 每列几个字」，`CHAP_MAX` 也跟着算 —— 不再写死 2 和 16。
+// 章节名超了直接报错，报的是当前字号下真正的上限。
 //
 // 名字从 `发布.json` 的 `chapters` 来，跟发布页章节列表**同一份数据、同一种定位**
 // （那一段的开头几个字）。屏上只取 `｜` 前那半，后半是给发布页看的说明句。
@@ -132,10 +140,28 @@ const L = {
   // 章节名那一栏：窗框右沿 1636 到画布右边 1920，正中 1778。
   // **顶对齐，不是居中** —— 换章节时字只在下边收放，上边那一头始终不动。
   // 居中的话每换一次名字整块都要挪一挪，而「挪」在这条线上就是一次睁眼。
-  // 46px / SemiBold 是 2026-08-21 反馈「调大加粗」之后的值，上一版是 34px / 500。
-  // **仍旧压在书名（72px）之下、且用 inkDim 不用 ink** —— 大归大，
-  // 它还是会变的那个，不能比不动的东西更抢眼。
-  chap: { cx: 1778, top: 196, size: 46, weight: 600, maxH: 660, ruleY: 134, ruleH: 36 },
+  //
+  // **92px / SemiBold / 白字黑边**（2026-08-24 用户定，从 46px 翻倍；34 → 46 → 92）。
+  // 这一档它比片内书名（72px）还大，而书名是不动的那个 —— 原来「会变的不能更抢眼」
+  // 那条让位了：**深夜档抬眼那一下要一眼认出来**，这一条现在排第一。
+  //
+  // `maxH` 从 660 抬到 750：92px 一个字连行距占 124，660 只放得下 5 个字。
+  // 下边界卡在音波层（`WAVE_POS_ZHIYU`，柱子最高够到 y 962）—— 196 + 750 = 946，
+  // 留 16px。**再往下就压到音波上了**，那两样在同一块画面上会打架。
+  chap: {
+    cx: 1778, top: 196, size: 92, weight: 600, maxH: 750, ruleY: 134, ruleH: 36,
+    /** 白字。**单独一个白字在宣纸上是看不见的**，见 outline */
+    fill: '#FFFFFF',
+    /**
+     * 描边色。**不是纯黑** —— 跟说书线右栏同一条理由：这套画风里所有的墨
+     * 都带一点色相，纯黑跟画面上任何一处都对不上。这是 `ink`（#5A6E66）
+     * 压到最深的那一档，肉眼分不出，混在一张画里分得出。
+     * 三条线共用这一个值；哪条线的景压不住它，去 `zhiyu-lines.ts` 的 palette 覆盖。
+     */
+    outline: '#1B211C',
+    /** 描边宽度 = 字号 × 这个。说书线用的 0.07，这套字更细，要粗一点才立得住 */
+    outlineK: 0.085,
+  },
   sealX: 226, sealY: 852, sealS: 84, sealR: 7,
   bar: { x: 226, y: 1006, w: 1468, h: 3 },
   /** 蜗牛露在线上方多高（px）。宽度按素材比例跟着走，约 1.3 倍 */
@@ -653,32 +679,60 @@ function chapterCols(text: string, perCol: number): string[] {
 }
 
 /**
+ * 这一栏在当前字号下**装得下几列、每列几个字**。
+ *
+ * 原来这两个数一个写死（最多两列）、一个半写死（`CHAP_MAX` = 16），
+ * 而字号从 46 翻到 92 之后**两个都不对了** —— 92px 的列距是 166px，
+ * 第二列的左沿会压到窗框上；每列也只剩 6 个字。
+ *
+ * 所以从版式反推：
+ *   `perCol`  = 竖着能排几个字 = `maxH / (字号 × 1.35)`
+ *   `maxCols` = 往左还长得出几列 = 最左那列的左沿不越过窗框右沿（`winRight`）
+ *
+ * **写死的数在这儿是有毒的**：写死了，超限的名字会走到「兜底降字号」那条路，
+ * 而降字号正好把「调大」抵消掉 —— 图照出，不报错，只是字又变小了。
+ */
+function chapLimits(): { perCol: number; maxCols: number; max: number } {
+  const { size, maxH, cx } = L.chap;
+  const perCol = Math.max(1, Math.floor(maxH / (size * 1.35)));
+  const winRight = L.win.x + L.win.w + L.frame;
+  const colGap = size * 1.8;
+  let maxCols = 1;
+  // 第 ci 列的中线是 cx - ci*colGap，左沿再往左半个字
+  while (cx - maxCols * colGap - size / 2 >= winRight) maxCols++;
+  return { perCol, maxCols, max: perCol * maxCols };
+}
+
+/**
  * 章节名竖排在窗框右边。
  *
  * 上面那一小道竖线是这一栏的起头，**始终在**（章节淡掉的那一秒也在）：
  * 一个会自己出现又消失的构件，比一个一直杵在那儿的构件招眼得多。
+ *
+ * **白字黑边**（2026-08-24）：一个字要画两遍，先 stroke 后 fill。
+ * 描边骑在轮廓线上，只画一遍会把宋体的细横吃掉 —— 说书线换白字黑边时踩过同一处。
  */
 function chapterCol(c: NonNullable<SceneSpec['chapter']>): string {
   const { cx, top, maxH } = L.chap;
   const rule = `<rect x="${n(cx - 1.5)}" y="${L.chap.ruleY}" width="3" height="${L.chap.ruleH}" fill="${C.frame}"/>`;
   const a = Math.max(0, Math.min(1, c.alpha));
-  // 每列放得下几个字，是**按目标字号算出来的**，不是写死的：
-  // 字号一改这个数要跟着变，否则长名字会去缩字号，而缩回去正好抵消了「调大」。
-  const perCol = Math.floor(maxH / (L.chap.size * 1.35));
+  const { perCol, maxCols } = chapLimits();
   let cols = chapterCols(c.text, perCol);
   if (a <= 0.001 || !cols.length) return rule;
-  // **最多两列。** 右边这条窄栏只有 284px，第三列会压到窗框上。
-  // 标点断出三列以上的名字（少见）就不按标点断了，忽略标点均分成两列。
-  if (cols.length > 2) {
+  // 标点断出来的列比装得下的多（92px 那一档 maxCols 就是 1），
+  // 就不按标点断了，忽略标点均分成 maxCols 列。
+  if (cols.length > maxCols) {
     const t = [...c.text.replace(/[，、；：。！？]/g, '')];
-    const half = Math.ceil(t.length / 2);
-    cols = [t.slice(0, half).join(''), t.slice(half).join('')];
+    const per = Math.ceil(t.length / maxCols);
+    cols = [];
+    for (let i = 0; i < t.length; i += per) cols.push(t.slice(i, i + per).join(''));
   }
   const longest = Math.max(...cols.map((t) => [...t].length));
-  // 兜底：真排不下才降字号（`CHAP_MAX` 之内两列够用，正常走不到这儿）
+  // 兜底：真排不下才降字号（`CHAP_MAX` 之内正常走不到这儿）
   const size = Math.min(L.chap.size, Math.floor(maxH / longest / 1.35));
   const gap = size * 1.35;
   const colGap = size * 1.8;
+  const sw = size * L.chap.outlineK;
   // **第一列钉死在 cx，多出来的列往左长** —— 不居中。
   // 居中的话，两列的名字跟一列的名字起头不在一条线上，
   // 换过去的那一下会看见整块字往旁边挪了一点。竖排本来也是从右往左。
@@ -686,12 +740,17 @@ function chapterCol(c: NonNullable<SceneSpec['chapter']>): string {
   const body = cols
     .map((t, ci) =>
       [...t]
-        .map(
-          (ch, i) =>
-            `<text x="${n(cx0 - ci * colGap)}" y="${n(top + size + i * gap)}" font-family="${SC}" ` +
-            `font-weight="${L.chap.weight}" font-size="${size}" fill="${C.inkDim}" ` +
-            `text-anchor="middle" opacity="${n(a)}">${esc(ch)}</text>`
-        )
+        .map((ch, i) => {
+          const common =
+            `x="${n(cx0 - ci * colGap)}" y="${n(top + size + i * gap)}" font-family="${SC}" ` +
+            `font-weight="${L.chap.weight}" font-size="${size}" text-anchor="middle" opacity="${n(a)}"`;
+          const g = esc(ch);
+          return (
+            `<text ${common} fill="none" stroke="${L.chap.outline}" stroke-width="${n(sw)}" ` +
+            `stroke-linejoin="round">${g}</text>` +
+            `<text ${common} fill="${L.chap.fill}">${g}</text>`
+          );
+        })
         .join(NL)
     )
     .join(NL);
@@ -918,8 +977,15 @@ const CSTEPS = 6;
  * 《枕草子》下篇收尾那一节 20 秒，是现有稿子里最短的一条。
  */
 const MIN_CHAP = 15;
-/** 屏上章节名最多几个字。右边那条是窄栏，超了用 `屏` 另写一个短的 */
-const CHAP_MAX = 16;
+/**
+ * 屏上章节名最多几个字。**按当前字号算，不写死** —— 见 `chapLimits()`。
+ *
+ * 46px 那一档是 2 列 × 8 = 16（跟原来写死的那个数一样）；
+ * 92px 是 1 列 × 6 = **6**。字号翻倍，这个数就砍到三分之一，
+ * 章节名得当成路标写（「谁承担后果」），不是当成小标题写。
+ * 超了用 `屏` 另写一个短的，发布页那条不动。
+ */
+const CHAP_MAX = chapLimits().max;
 
 export interface ChapterPlan { t0: number; t1: number; text: string }
 
@@ -949,7 +1015,8 @@ export function planChapters(
     if (!text) throw new Error(`章节「${c.text}」取不出屏上的名字：｜ 前那半是空的`);
     if ([...text].length > CHAP_MAX)
       throw new Error(
-        `章节名「${text}」${[...text].length} 字，超过屏上的 ${CHAP_MAX} 字。\n` +
+        `章节名「${text}」${[...text].length} 字，超过屏上的 ${CHAP_MAX} 字` +
+          `（${L.chap.size}px 下是 ${chapLimits().maxCols} 列 × 每列 ${chapLimits().perCol} 字）。\n` +
           `右边是一条窄栏，长了会顶到窗底。加 "屏": "短名字" 单给画面用，发布页那条不动。`
       );
     if (raw.length && cue.start <= raw[raw.length - 1])

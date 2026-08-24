@@ -43,7 +43,8 @@ interface PubDoc {
   tags: { core: string[]; long: string[] };
   /** 顶层备份的一份标题，封面脚本读它。和 parts[].title 必须有一期对得上 */
   videoTitle?: string;
-  cover: { hook: string; label: string };
+  /** 总封面（整本一张）。**一次性的一期没有这个东西**，不写就不出、发布文案也不列 */
+  cover?: { hook: string; label: string };
   /** 这一本专属的核对项。通用那几条写在代码里 —— **别把书名写进代码** */
   checks?: string[];
   parts: Part[];
@@ -254,26 +255,43 @@ ${wrapTags([...new Set([...doc.tags.core, ...p.tags, ...doc.tags.long])])}
 `
     );
 
-    // 文字版是另一档产品（正文逐句上浮，给静音看的人），出了才列。
-    // **不列的话等于没出** —— 文件躺在目录里，照着这份传片的人不会知道它在。
-    const textVer = `${dir}/${EP}_${p.part}_文字版.mp4`;
-    const textRow = existsSync(textVer)
-      ? `| | 文字版 | \`成片/${p.part}/${EP}_${p.part}_文字版.mp4\`　` +
-        `${mmss(videoLen(textVer) ?? m.duration + coverHold)}　**别开平台软字幕**，屏上已经有同一句了 |\n`
-      : '';
+    // ── 三版并存，但**只列真出了的那几版** ────────────────────────────
+    //
+    // 常规版 / 烧字幕版 / 文字版，文件名各不相同、谁也不覆盖谁，
+    // 但**一期不一定三版都出**：2026-08-26《不归你管》只出文字版
+    // （用户 08-24 定：这一期只要带字幕那一份，不用两份都出）。
+    //
+    // 所以这张表按文件在不在列。**表里写着的文件必须存在** ——
+    // 这份是照着传片的人看的，列一个不存在的路径比少列一行糟得多；
+    // 反过来，出了却不列**等于没出**，文件躺在目录里没人知道它在。
+    const rows: string[] = [];
+    const row = (name: string, file: string, tail = '') => {
+      const abs = `${dir}/${file}`;
+      if (!existsSync(abs)) return;
+      rows.push(`| ${rows.length ? '' : `**${p.partName ?? `${p.part}篇`}**`} | ${name} | ` +
+        `\`成片/${p.part}/${file}\`　${mmss(videoLen(abs) ?? m.duration + coverHold)}${tail} |`);
+    };
+    row('成片', `${EP}_${p.part}.mp4`);
+    row('文字版', `${EP}_${p.part}_文字版.mp4`, '　**别开平台软字幕**，屏上已经有同一句了');
+    row('烧字幕版', `${EP}_${p.part}_烧字幕.mp4`, '　字幕烧进画面，同上');
+    if (!rows.length) throw new Error(`${p.part} 篇一个 mp4 都没有 —— 先跑 zhiyu-video.ts`);
 
     files.push(
-      `| **${p.partName ?? `${p.part}篇`}** | 成片 | \`成片/${p.part}/${EP}_${p.part}.mp4\`　` +
-        `${mmss(videoLen(`${dir}/${EP}_${p.part}.mp4`) ?? m.duration + coverHold)} |\n` +
-        textRow +
-        `| | 字幕 | \`成片/${p.part}/${p.part}篇.srt\`（软字幕，没烧进画面） |\n` +
+      rows.join('\n') +
+        `\n| | 字幕 | \`成片/${p.part}/${p.part}篇.srt\`（软字幕，没烧进画面） |\n` +
         `| | 封面 | \`cover/${p.part}/upload-1280x720.png\` |\n` +
         `| | ${SKIN.squareName} | \`cover/${p.part}/${SKIN.square}\` |`
     );
   }
 
   // 「整本」那一套只有治愈线有（一本多期）。心理线是单期，没有播放列表封面。
-  if (SKIN.wholeBook)
+  //
+  // **`doc.cover` 也要有。** 那一档是 `zhiyu-cover.ts` 按 `发布.json` 的 `cover`
+  // 字段出的；没写这个字段的期（2026-08-26《不归你管》这种一次性的原创随笔，
+  // 没有「整本」可言）根本没跑过 `--part 总`，`cover/总/` 是空的。
+  // 而这张表**是照着传文件的人看的** —— 表里写着的文件必须存在，
+  // 「按线路一律列上」跟「这一期真有」不是一回事。
+  if (SKIN.wholeBook && doc.cover)
     files.push(
       `| **整本** | 播放列表封面 | \`cover/总/upload-1280x720.png\` |\n| | ${SKIN.squareName} | \`cover/总/${SKIN.square}\` |`
     );

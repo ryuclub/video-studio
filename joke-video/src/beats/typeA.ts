@@ -64,24 +64,60 @@ function buildTimelineA(cfg: JokeCfg): Timeline {
   });
 
   const freezeStart = t;
-  segments.push({ kind: 'freeze', start: freezeStart, end: freezeStart + freezeDur });
-  segments.push({ kind: 'hold', start: freezeStart + freezeDur, end: freezeStart + freezeDur + holdDur });
-  const duration = freezeStart + freezeDur + holdDur;
 
-  // 定格那一下：BGM 骤停 + 咚。
-  // **独白 deadpan 档要关掉**（cues.freezeThud: false）—— 那一声等于自己先敲了锣，
-  // 而落点最需要的是「什么都不发生」的半拍。
-  if (cfg.cues?.freezeThud ?? true) sfx.push({ name: 'thud', at: freezeStart });
-  // 定格之后的蝉鸣（死寂里的夏天）
-  if ((cfg.ambience ?? 'grass') !== 'none') {
-    sfx.push({ name: 'grass', at: 0, until: intro + 0.6 });
-    sfx.push({ name: 'cicada', at: freezeStart + 0.25, until: duration });
+  /** 收尾那几样两条路共用：定格的咚、蝉鸣、开场那一声嘶，最后打包返回 */
+  const finish = (duration: number) => {
+    // 定格那一下：BGM 骤停 + 咚。
+    // **独白 deadpan 档要关掉**（cues.freezeThud: false）—— 那一声等于自己先敲了锣，
+    // 而落点最需要的是「什么都不发生」的半拍。
+    if (cfg.cues?.freezeThud ?? true) sfx.push({ name: 'thud', at: freezeStart });
+    // 定格之后的蝉鸣（死寂里的夏天）
+    if ((cfg.ambience ?? 'grass') !== 'none') {
+      sfx.push({ name: 'grass', at: 0, until: intro + 0.6 });
+      sfx.push({ name: 'cicada', at: freezeStart + 0.25, until: duration });
+    }
+    // 开场的一声"嘶"（蛇专属，换成人物记得关掉）
+    // ⚠ intro 为 0 时不出：那一声本来是垫在空镜上的，没有空镜就直接压在第一个字上了
+    if ((cfg.cues?.introHiss ?? true) && intro > 0) sfx.push({ name: 'hiss', at: intro * 0.55 });
+    return { cfg, segments, duration, punchStart, punchEnd, freezeStart, sfx };
+  };
+
+  /**
+   * ── 片尾（老马线）：落点之后一共 **2 秒**，2 秒后直接结束 ──
+   *
+   * 2026-08-24 用户定的。原来是 定格 1.5 ＋ 尾卡 1.7 ＋ 收尾卡 2.6 = **5.8 秒**，
+   * 而收尾卡和尾卡从第一帧就在屏幕上 —— 后面那两三秒是一张不动的灰画面配一张不动的卡，
+   * **纯粹在撑时长**。
+   *
+   * > 用户原话：**别硬撑时间，有本事就完善稿子内容，让稿子把时间撑起来。**
+   *
+   * 所以老马线不再分 定格／尾卡／收尾卡 三段，就一段：**落点说完 → 卡和尾卡一起上 →
+   * 2 秒 → 结束。** 落点符号那 0.3 秒延迟仍在这 2 秒里（0.3→1.3 浮现完）。
+   *
+   * ⚠ **稿件里的 `freeze` / `hold` / `tailHold` 在老马线上从此不生效了**（16 条稿里都还留着）。
+   * 要给某一条留长一点，写 `endHold`。
+   */
+  const laoma = cfg.characters?.some((c) => c.rig === 'horse') ?? false;
+  if (laoma) {
+    const endDur = cfg.endHold ?? 2.0;
+    segments.push({ kind: 'freeze', start: freezeStart, end: freezeStart + endDur });
+    const duration = freezeStart + endDur;
+    return finish(duration);
   }
-  // 开场的一声"嘶"（蛇专属，换成人物记得关掉）
-  // ⚠ intro 为 0 时不出：那一声本来是垫在空镜上的，没有空镜就直接压在第一个字上了
-  if ((cfg.cues?.introHiss ?? true) && intro > 0) sfx.push({ name: 'hiss', at: intro * 0.55 });
 
-  return { cfg, segments, duration, punchStart, punchEnd, freezeStart, sfx };
+  segments.push({ kind: 'freeze', start: freezeStart, end: freezeStart + freezeDur });
+  /**
+   * 尾卡事实句（2026-08-24 立）：**落点定格之后、收尾卡之前**，自己占一段。
+   *
+   * 段子和《一页故事》那两条线走这儿；老马线上面已经 return 了。
+   */
+  const tailDur = cfg.tailCard ? cfg.tailHold ?? 1.7 : 0;
+  const tailStart = freezeStart + freezeDur;
+  if (tailDur > 0) segments.push({ kind: 'tail', start: tailStart, end: tailStart + tailDur });
+  segments.push({ kind: 'hold', start: tailStart + tailDur, end: tailStart + tailDur + holdDur });
+  const duration = tailStart + tailDur + holdDur;
+
+  return finish(duration);
 }
 
 /**

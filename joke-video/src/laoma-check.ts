@@ -32,7 +32,10 @@
 // 但形式硬伤值得拦 —— 因为它们不是品味问题，是规范里写死的数，
 // 而人照着结构填稿的时候，最容易漏掉的正是这些数。
 
+import { FONT_FILES } from './config.js';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { SYMBOLS as EMOTE_SYMBOLS } from '../horse/emote.mjs';
+import { MARKS } from '../horse/marks.mjs';
 import { lineText, dayNo, type JokeCfg, type LineCfg } from './types.js';
 // ⚠ **有效 intro，不是 `cfg.intro`。** 「先出声后出人」那一档空镜恒等于零，
 // 而稿子里那个 `intro: 1.2` 通常还留着 —— 直接读它，体检报的片长会比成片多出 1.2 秒。
@@ -224,6 +227,10 @@ interface LedgerEntry {
   /** 收尾卡上那个天数（1847…） */
   day: number;
   nums: number[];
+  /** 这一条挂没挂尾卡事实句。用来守「每五条最多一条」那条使用率 */
+  tail?: boolean;
+  /** 这一条用没用情绪符号（漫符）。同样是「近 5 条最多 1 条」 */
+  mark?: boolean;
   /** 入账日期。只是给人看的，校验不用它排序 —— 排序永远按天数 */
   at?: string;
 }
@@ -246,7 +253,7 @@ export function commitNumbers(cfg: JokeCfg): void {
   }
   const nums = [...new Set(extractNumbers(cfg.lines.map(lineText).join('')).filter((v) => v >= SIGNIFICANT_NUMBER))];
   const ledger = loadLedger().filter((e) => e.day !== day);
-  ledger.push({ day, nums, at: new Date().toISOString().slice(0, 10) });
+  ledger.push({ day, nums, tail: !!cfg.tailCard, mark: !!cfg.endMark || cfg.lines.some((l) => l.emote && MARKS[l.emote.kind]), at: new Date().toISOString().slice(0, 10) });
   ledger.sort((a, b) => a.day - b.day);
   writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + '\n', 'utf8');
   console.log(`  第 ${day} 天入账：${nums.length ? nums.join('、') : '（无显著数字）'} → ${LEDGER}`);
@@ -270,6 +277,125 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   /** 配额句的下标（0 起算）。稿件里的 `emotionLine` 是 1 起算的，这儿换算过 */
   const quotaIdx = typeof cfg.emotionLine === 'number' ? cfg.emotionLine - 1 : -1;
   const punch = punchIdx >= 0 ? cfg.lines[punchIdx] : null;
+  // ── 尾卡事实句（2026-08-24 立的规范）──────────────────────────
+  //
+  // **它必须是事实，不能是感想。** 老马的第一条硬禁令是不解释，
+  // 而金句是解释里最响的一种 —— 它把观众刚刚自己想到的东西又替他们说了一遍。
+  // 观众完成的那个「哦」，必须留给观众自己完成。
+  const tail = cfg.tailCard?.trim();
+  if (tail) {
+    const tLen = [...tail.replace(/[，。！？、,.!?：:；;「」“”‘’]/g, '')].length;
+    if (tLen > 16) err(`尾卡「${tail}」${tLen} 字，上限 16 —— 一行，不折行`);
+
+    // 人称：出现任何一个即为对观众说话，跟配额句是同一条闸门
+    const pron = ['你们', '你', '我们', '大家', '谁'].find((w) => tail.includes(w));
+    if (pron) err(`尾卡出现人称「${pron}」。**尾卡是说给画面的，不是说给观众的** —— 跟配额句同一条闸门`);
+
+    // 解释词：出现就说明它在解释，而不是在陈述后来发生的事
+    const TAIL_BAN = ['真实', '都懂', '就是这样', '扎心', '其实', '终究', '原来', '有些人', '成年人'];
+    const bad = TAIL_BAN.find((w) => tail.includes(w));
+    if (bad) err(`尾卡命中解释词「${bad}」。尾卡不解释刚才发生了什么，**只告诉你后来怎么样了**`);
+
+    // 跟配额句二选一：同一条里两个都上，等于连着捅两下，第二下必然弱
+    if (quotaIdx >= 0 && !cfg.allowBoth)
+      err(
+        `尾卡和配额句（第 ${quotaIdx + 1} 句）同时用了。**建议二选一** ——` +
+          `落点已经用了配额就把尾卡留空；真要都留，写 "allowBoth": true`
+      );
+
+    // 不许重复落点里的物件动作：落点写了「一口没喝」，尾卡就不能再写喝不喝
+    // ⚠ **要滤停用字。** 不滤的话「也 / 了 / 天」这种高频字随便就凑够四个，
+    // 这条检查会对任意两句中文都报警 —— 跟 §一之十四 判钩子回收是同一个道理。
+    const pw = new Set(keep(punch ? lineText(punch) : ''));
+    const dup = keep(tail).filter((c) => pw.has(c));
+    if (dup.length >= 4)
+      warn(
+        `尾卡跟落点有 ${dup.length} 个字重合（${dup.slice(0, 6).join('')}…）。` +
+          `§3④：不许重复落点里的物件动作，**要往后推到另一天、另一个人**`
+      );
+
+    // 使用率 ≤ 1/5：稀缺才有力量。每条都挂，两个月后它就成了片尾模板
+    const recent = loadLedger()
+      .filter((e) => e.day !== cfg.day)
+      .sort((a, b) => b.day - a.day)
+      .slice(0, 4)
+      .filter((e) => e.tail).length;
+    if (recent >= 1)
+      warn(`最近 4 条里已经有 ${recent} 条挂了尾卡，加上这条就超过 1/5。**稀缺才有力量**`);
+  }
+
+  // ── 落点符号：老马只用「没有情绪」的那一类 ────────────────────
+  //
+  // 汗滴是慌张、感叹号是兴奋、星星是可爱、井字纹是生气 —— 全都是画面替观众表态，
+  // 跟「只陈述不评论」的人设正相反。
+  /**
+   * 情绪符号（那套漫符：惊 / 汗 / 星 / 井字纹…）。
+   *
+   * **2026-08-24 从「一律禁用」改成「配额」**（用户定：偶尔用是可以的）。
+   * 理由照旧成立 —— 它们是**画面替观众表态**，跟「只陈述不评论」正相反；
+   * 但「偶尔」这个词本身就是配额，**写成数字机器才拦得住**：
+   * 写成提醒的话，提醒久了就麻木，迟早每条都有。
+   *
+   * 口径跟尾卡那条一样：**近 5 条最多 1 条**，共用同一个账本。
+   */
+  // 情绪符号用在哪儿都算进同一份配额：收尾卡那个（endMark）和停顿里那些（line.emote）
+  const moodPauses = cfg.lines.filter((l) => l.emote && MARKS[l.emote.kind]);
+  if (cfg.endMark || moodPauses.length) {
+    const where = [
+      ...(cfg.endMark ? [`收尾卡「${cfg.endMark.name}」`] : []),
+      ...moodPauses.map((l, i) => `第 ${cfg.lines.indexOf(l) + 1} 句「${l.emote!.kind}」`),
+    ].join('、');
+    const recentMark = loadLedger()
+      .filter((e) => e.day !== cfg.day)
+      .sort((a, b) => b.day - a.day)
+      .slice(0, 4)
+      .filter((e) => e.mark).length;
+    if (recentMark >= 1)
+      err(
+        `用了情绪符号（${where}），而近 4 条里已经有 ${recentMark} 条用过 —— **近 5 条最多 1 条**。` +
+          `这类符号是画面替观众表态，所以给的是配额不是自由`
+      );
+    else warn(`用了情绪符号（${where}），在配额内。**近 5 条最多 1 条**，下一条就别再用了`);
+  }
+  // ── 停顿符号（`line.emote`）────────────────────────────────────
+  //
+  // 三十秒一张不动的脸，中途全靠眼动撑着 —— 太冷场。这一层给中途的停顿一点东西看。
+  // 但它离「画面替观众表态」只有一步，所以位置、长度、个数三样都卡死。
+  const pauses = cfg.lines.filter((l) => l.emote);
+  if (pauses.length > 2)
+    err(`挂了 ${pauses.length} 个停顿符号，**全片最多 2 个**（加上落点符号最多 3 个）—— 满屏乱弹就成了表情包合集`);
+  cfg.lines.forEach((l, i) => {
+    if (!l.emote) return;
+    if (!EMOTE_SYMBOLS[l.emote.kind] && !MARKS[l.emote.kind])
+      err(
+        `第 ${i + 1} 句的停顿符号「${l.emote.kind}」两套库里都没有。
+` +
+          `  没有情绪的：${Object.keys(EMOTE_SYMBOLS).join(' / ')}
+` +
+          `  情绪符号　：${Object.keys(MARKS).join(' / ')}`
+      );
+    const pad = l.padAfter ?? (l.beat === 'punch' ? 0.35 : 0.2);
+    if (pad < 0.8)
+      err(
+        `第 ${i + 1} 句的停顿只有 ${pad.toFixed(2)}s，挂不了符号 —— **浮现就要半秒多**，` +
+          `0.3 秒的停顿里塞进去只会闪一下。要么把停顿放到 0.8 秒以上，要么这句别挂`
+      );
+    if (i >= punchIdx - 1)
+      err(
+        `第 ${i + 1} 句挂了停顿符号，而落点是第 ${punchIdx + 1} 句 —— ` +
+          `**落点句和它前一句的停顿里不许挂**，那是「这里好笑」的提示`
+      );
+    // ⚠ **不再拦「这个停顿里已经有闭目」**（2026-08-24 用户定）。
+    // 原来的理由是「一个停顿里两件事等于抢戏」，但**闭目和眨眼本来就是日常动作**，
+    // 不是一件跟符号抢戏的事 —— 人停下来的时候本来就会闭一下眼。
+  });
+  const kinds = pauses.map((l) => l.emote!.kind);
+  if (new Set(kinds).size !== kinds.length) warn('两个停顿符号用了同一个，换一个 —— 重复的符号是最明显的模板痕迹');
+
+  if (cfg.endEmote && !EMOTE_SYMBOLS[cfg.endEmote.kind ?? 'dots'])
+    err(`没有这个落点符号：${cfg.endEmote.kind}
+可用：${Object.keys(EMOTE_SYMBOLS).join(' / ')}`);
+
   // ── §二：落点之后还有话 → 废稿重写，不要抢救 ──
   if (punchIdx >= 0 && punchIdx !== cfg.lines.length - 1)
     err(
@@ -584,9 +710,32 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
         (l.padAfter ?? (l.beat === 'punch' ? 0.35 : 0.2)),
       0
     );
-    const total = introOf(cfg) + spoken + pad + (cfg.freeze ?? 2) + (cfg.hold ?? 4);
-    if (total > 35) err(`全片 ${total.toFixed(1)}s，超过 35。§四：超了砍字，**不要加速** —— 加速会毁掉所有停顿设计`);
-    else warn(`全片 ${total.toFixed(1)}s（区间 25–32）`);
+    /**
+     * 片尾 2026-08-24 改成**落点之后一共 2 秒**（`endHold`），
+     * 老马线上 `freeze` / `hold` 已经不生效了 —— 这儿也得跟着算，
+     * 不然体检报的片长比成片长三四秒，而**报出来的数是人拿去判断稿子长短的**。
+     */
+    const total = introOf(cfg) + spoken + pad + (cfg.endHold ?? 2);
+    // ⚠ **区间 2026-08-23 从 25–32 放宽到 18–32，而且措辞改了。**
+    //
+    // v3 那批稿子每条五句、写得更精炼，实测 19–24 秒。旧的下限 25 会对每一条报一次，
+    // 而人消掉这个提醒的办法只有一个：**把定格和收尾卡撑长**。
+    // 010 就是这么被撑到 25.2 的（freeze 1.6 / hold 3.0），看着不自然。
+    //
+    // ⚠ **2026-08-24 片尾砍到 2 秒之后，实测又短了两三秒**（1863 是 16.4）。
+    // 下限那条提醒会更常响 —— **它要的仍旧是回去看稿子，不是回去加停顿**。
+    // 用户原话：别硬撑时间，有本事就完善稿子内容，让稿子把时间撑起来。
+    //
+    // **片子首先要自然流畅，不是凑够一个数。** 所以下限只留一个「是不是漏了一拍」的
+    // 提醒，**永远不提「加长停顿」** —— 那是这条提醒唯一会被误用的方向。
+    if (total > 35)
+      err(`全片 ${total.toFixed(1)}s，超过 35。§四：超了砍字，**不要加速** —— 加速会毁掉所有停顿设计`);
+    else if (total < 18)
+      warn(
+        `全片 ${total.toFixed(1)}s，短于 18 —— **回头看是不是漏了一拍**（少了一句铺垫、或者落点前没留白）。` +
+          `**别靠拉长定格和收尾卡凑**：硬停出来的长度看着就是硬停的`
+      );
+    else warn(`全片 ${total.toFixed(1)}s`);
   }
 
   // ── 画面：抵消单调的工具用了几件 ──
@@ -812,6 +961,19 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     err(
       `收尾卡「${cfg.hook}」不是日子牌的字样。写成 \`老马的第 1847 天\`：` +
         `数字前后各一个空格、结尾不加标点。数字照 horse/CHANNEL_LAOMA.md §五之二 的分配表`
+    );
+
+  // ── 字体在不在 ──────────────────────────────────────────────────
+  //
+  // ⚠ **字体缺了不报错，只是悄悄回退。** `FONT_FILES` 是 `.filter(existsSync)`，
+  // 文件不在就少喂一个，resvg 跟着用系统字体 —— 字幕规范 §二 的原话是
+  // 「你只会觉得『字怎么没变』」。实测不喂文件时渲出来跟雅黑**字节数完全一样**。
+  //
+  // 所以在这儿拦一道：**没有字体就不该出片**，而不是出一条字体不对的片子。
+  if (!FONT_FILES.some((p) => p.includes('SmileySans')))
+    err(
+      '找不到得意黑字体文件（`fonts/smiley-sans-v2.0.1/SmileySans-Oblique.otf`）。' +
+        '**缺了不会报错，只会静默回退到系统黑体** —— 字幕就不是这条线的样子了。见 `fonts/README.md`'
     );
 
   return out;

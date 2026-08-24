@@ -74,12 +74,28 @@ const { id: EP, dir: PROJ } = resolveEp(process.argv.slice(2));
 const WIN = { x: 430, y: 132, w: 1190, h: 742 };
 /** 文字区相对窗子往里收多少 */
 const INSET = 34;
-/** 正文字号。一条最多 20 字（packLines 的 MAX_CHARS），20×44 = 880 < 文字区宽 */
-const SIZE = 44;
+/**
+ * 正文字号。**44 → 88（2026-08-24 用户定，翻倍）。**
+ *
+ * 翻倍不是只把这个数改掉就完了 —— 一行装得下几个字跟着砍一半，见 `MAX_LINE`。
+ * 原来这儿写着「一条最多 20 字（packLines 的 MAX_CHARS），20×44 = 880 < 文字区宽」，
+ * 那句话在 88 下是错的：20×88 = 1760，比整扇窗还宽。
+ */
+const SIZE = 88;
 /** 行距 = 字号 × 这个系数 */
 const LH_K = 1.78;
 /** 正文左边距（相对文字区左边） */
 const TEXT_PAD = 46;
+/** 一行真正能用的宽度 */
+const TEXT_W = WIN.w - INSET * 2 - TEXT_PAD;
+/**
+ * 一行几个字。**从字号反推，不写死。**
+ *
+ * `packLines` 的缺省 20 是给 `.srt` 定的（13px 那一档字幕），
+ * 这一层的字是它的六七倍大，照抄那个数会横着冲出窗子 ——
+ * 而 **libass 不会因为画到窗外报错**，只会把字压在木格窗框上，图照出。
+ */
+const MAX_LINE = Math.floor(TEXT_W / SIZE);
 
 // ── 动效 ──────────────────────────────────────────────────────────────
 //
@@ -180,9 +196,38 @@ interface PubDoc {
 
 interface Line { text: string; start: number }
 
-/** 一段话 → 若干小句 ＋ 每句的起点。断句和分时跟字幕完全一致 */
+/**
+ * 断行。**还是 `packLines`，只是把上限换成这一层自己的 `MAX_LINE`。**
+ *
+ * 算法跟 `.srt` 共用这一件事没有变（两处各写一套迟早对不上，
+ * 而那种错要等到有人开着软字幕看才发现）—— 变的只有「一行几个字」，
+ * 因为这一层的字号是字幕的六七倍，**同一个数在两边不可能同时对**。
+ *
+ * 后面那道再切：`packLines` **只在小句超过 `max × 1.4` 时才硬切**，
+ * 所以它吐出来的行最长可以到 1.4 倍。字幕那一档多出 40% 只是挤一点，
+ * 88px 这一档多出 40% 就是冲出窗外。**这里按显示字数（标点也占宽）再切一刀。**
+ *
+ * 切法是**均分，不是切满即溢出**：14 个字切成 7+7，不是 12+2。
+ * 后者会在整块字底下吊一个两字的尾巴，一段话里最显眼的就成了那行空白。
+ * （`chapterCols` 那儿是同一条理由、同一个写法。）
+ */
+function fitLines(text: string): string[] {
+  const out: string[] = [];
+  for (const l of packLines(text, MAX_LINE)) {
+    const cs = [...l];
+    if (cs.length <= MAX_LINE) {
+      out.push(l);
+      continue;
+    }
+    const per = Math.ceil(cs.length / Math.ceil(cs.length / MAX_LINE));
+    for (let i = 0; i < cs.length; i += per) out.push(cs.slice(i, i + per).join(''));
+  }
+  return out;
+}
+
+/** 一段话 → 若干小句 ＋ 每句的起点。分时跟字幕同一套（按字数比例内插） */
 function linesOf(c: Cue): Line[] {
-  const parts = packLines(c.text);
+  const parts = fitLines(c.text);
   const total = parts.reduce((s, l) => s + weigh(l), 0) || 1;
   const out: Line[] = [];
   let t = c.start;
@@ -215,8 +260,12 @@ function build(p: PubDoc['parts'][number], doc: PubDoc, coverSec: number): strin
    * 太长的段落。**只报不拦** —— 装得下不等于好看：
    * 一段铺满整扇窗就是一堵字墙，而这一档的卖点恰恰是「一次只来一句」。
    * 报出来让写稿的人决定要不要在那儿断一段，不替他改。
+   *
+   * **6 这个数是 44px 那一档的**（窗里排得下 9 行，6 行就算墙了）。
+   * 字号翻倍之后窗里一共才 4 行，写死 6 等于这条提醒永远不响 ——
+   * 所以按「装得下的行数减一」算：**顶到上限那一段，先报出来。**
    */
-  const WALL = 6;
+  const WALL = Math.max(3, Math.floor(WIN.h / lh) - 1);
   const walls: string[] = [];
 
   for (const c of m.cues) {

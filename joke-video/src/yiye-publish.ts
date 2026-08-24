@@ -28,7 +28,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { OUT_JOKE } from './paths.js';
 import { projectDir, findProjectDir, filmFile, coverFile } from './preview.js';
-import type { JokeCfg } from './types.js';
+import { dayNo, type JokeCfg } from './types.js';
 import { buildTimeline } from './beats/typeA.js';
 
 const arg = process.argv[2];
@@ -394,7 +394,36 @@ ${ch.intros.map((i) => `### ${i.name}　${i.where}\n\n\`\`\`\n${i.text}\n\`\`\`\
 
 `
       : ''
-  }## 文件
+  }${
+  isLaoma && cfg.replies?.length
+    ? `## 评论区应答
+
+发布后 **2 小时内回 3–5 条**。优先回**讲自己经历的**，不回单纯夸的。
+
+> **老马从不给答案，他只是再补一个事实。** 评论区的老马和视频里的老马是同一个人：
+> 他不知道自己好笑，不觉得自己在运营账号，也不认为有人在等他回话。
+>
+> 四条硬规则：**不解释视频**（他不知道那是他的作品）· **不共情**（最容易破功的一条，
+> 「我懂」「抱抱」一句都不许）· **不给建议**（该不该辞职一律不答，把问题往侧面推）·
+> **不承认自己好笑**（不写「哈哈」「谢谢喜欢」，**表情一个都不用**）。
+>
+> 格式：≤15 字，一句，句号收尾。
+
+| 可能的评论 | 老马的回复 | 回法 |
+|---|---|---|
+${cfg.replies.map((r) => `| ${r.q} | ${r.a} | ${r.type ?? ''} |`).join('\n')}
+
+回完记一条进 \`comments-log.jsonl\`（跟这份文案同目录）：
+
+\`\`\`json
+{"day":${dayNo(cfg) ?? 0},"platform":"channels","q":"${cfg.replies[0].q}","a":"${cfg.replies[0].a}","type":"${cfg.replies[0].type ?? ''}","liked":0}
+\`\`\`
+
+攒到两百条就是**老马直播提示词的训练集** —— 到那时候不用凭空编他该怎么说话，有真实样本。
+
+`
+    : ''
+}## 文件
 
 路径都相对本目录。
 

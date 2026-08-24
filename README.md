@@ -163,6 +163,17 @@ cp .env.example .env      # 填入 API key
 本仓库用 npm workspaces，根目录这一条会把 `joke-video`（情景对话段子）和
 `voice-clone`（音色实验室）的依赖一起装好，子目录里不需要也不要再单独 `npm install`。
 
+**音色实验室怎么起**（试新角色的声音）——在根目录，不用 cd：
+
+```bash
+npm run doctor -w voice-clone     # 头一回：必须看到「rubberband 滤镜：可用」
+npm run lab    -w voice-clone     # → http://localhost:5178
+```
+
+拖「音色地图」调音高与共振峰，满意的收藏后导出 `voice-clone/out/voices.selected.json`，
+解说管线能直接读。详见 [voice-clone/README.md](voice-clone/README.md)。
+**已定稿的角色不在这儿改** —— 那些在 `joke-video/src/cast.ts` 的共享预设里（改完跑 `npm run cast:check`）。
+
 **ffmpeg（Windows）**：去 https://www.gyan.dev/ffmpeg/builds/ 下载 release full build，
 解压后把 `bin` 目录加进 PATH。命令行里 `ffmpeg -version` 有输出就算装好。
 必须是 full build —— essentials 版没有编译 `libass`，烧字幕会直接报错。

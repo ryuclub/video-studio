@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>laoma-011 稿件预览</title>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #fffdf8; --ink: #23303d; --dim: #6b7785;
+  --line: #e0dace; --accent: #1f3a5f; --hot: #c8452e; --gold: #d8a53a;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171a1d; --card:#20252a; --ink:#e8e4da; --dim:#9aa4ae;
+          --line:#2f363d; --accent:#7fa8d8; --hot:#e2694f; --gold:#e0b954; }
+}
+* { box-sizing: border-box; }
+body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
+  font:15px/1.7 "Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+/* 有侧栏时改成两栏；没侧栏（单条稿件页）时 .wrap 保持原样居中 */
+.layout { max-width: 1360px; margin:0 auto; display:grid;
+  grid-template-columns: 250px minmax(0,1fr); gap:34px; align-items:start; }
+.layout > .wrap { max-width:none; margin:0; }
+
+/* ── 左侧稿件导航 ── */
+.side { position:sticky; top:24px; max-height:calc(100vh - 48px);
+  display:flex; flex-direction:column; background:var(--card);
+  border:1px solid var(--line); border-radius:14px; padding:16px 12px 12px; }
+.side-head { font-size:13px; font-weight:700; color:var(--dim); letter-spacing:1px;
+  padding:0 8px 12px; border-bottom:1px solid var(--line); margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between; }
+.side-count { background:var(--accent); color:#fff; font-size:11px; font-weight:600;
+  min-width:20px; height:20px; padding:0 6px; border-radius:10px;
+  display:inline-flex; align-items:center; justify-content:center; }
+/* min-height:0 不能省：flex 子项默认不肯缩到内容高度以下，
+   少了它 overflow-y 不生效，稿件一多侧栏就会顶穿 max-height */
+.side-list { overflow-y:auto; min-height:0; display:flex; flex-direction:column; gap:4px; }
+.nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
+  text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
+.nav-item:hover { background:rgba(127,127,127,.1); }
+/* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
+.nav-col { color:var(--accent); font-weight:700; }
+.nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
+/* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
+@media (prefers-color-scheme: dark) {
+  .nav-item.active { background:rgba(127,168,216,.16); }
+}
+.nav-thumb { width:34px; height:60px; object-fit:cover; border-radius:5px;
+  border:1px solid var(--line); flex:none; display:block; }
+.nav-thumb.ph { background:rgba(127,127,127,.12); }
+.nav-body { display:flex; flex-direction:column; min-width:0; gap:1px; }
+.nav-title { font-size:13px; font-weight:700; line-height:1.35;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* 序号做成小方牌：目录长了之后"第几条"比标题更快定位 */
+.nav-num { display:inline-block; min-width:15px; margin-right:5px; padding:0 3px;
+  border-radius:3px; background:var(--accent); color:#fff;
+  font-size:10px; font-weight:700; text-align:center; vertical-align:1px; }
+.nav-date { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+.nav-meta { font-size:11px; color:var(--dim); }
+.nav-cast { font-size:11px; color:var(--accent); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.side-top { margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+  font-size:12px; color:var(--dim); text-decoration:none; text-align:center; }
+.side-top:hover { color:var(--accent); }
+/* 锚点跳转时标题不被贴顶 */
+.joke { scroll-margin-top:24px; }
+h1 { font-size:26px; margin:0 0 6px; letter-spacing:.5px; }
+.sub { color:var(--dim); margin:0 0 32px; font-size:14px; }
+.joke { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:24px 26px 20px; margin-bottom:34px; }
+.joke > header { border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:20px; }
+h2 { font-size:20px; margin:0 0 8px; }
+h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
+.facts { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--dim); font-size:13px; }
+.alarm { background:rgba(200,69,46,.1); border-left:3px solid var(--hot);
+  padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
+/* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
+.film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+/* 成片旁边那栏发片信息（老马线）。**成片固定 250px，剩下全给它** ——
+   关键词那串很长，给固定宽度会一直换行 */
+.film.with-pub { align-items:flex-start; gap:22px; }
+.film.with-pub .film-main { flex:0 0 auto; }
+.film.with-pub .pub { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:9px;
+  border-left:2px solid var(--line); padding-left:16px; }
+.pub-row { display:flex; gap:10px; align-items:baseline; font-size:13px; }
+.pub-row .k { flex:0 0 46px; color:var(--dim); font-size:12px; }
+.pub-row .v { flex:1 1 auto; min-width:0; word-break:break-word; }
+.pub-row .v.title { font-size:16px; font-weight:700; line-height:1.35; }
+.pub-row .v.tags { color:var(--dim); font-size:12px; line-height:1.5; }
+.pub-row .v.plat code { font-size:11px; }
+.pub-row .v.slot { font-variant-numeric:tabular-nums; }
+/* 排期那一行三种态：待发（默认）／已发（灰下去）／未排期（提示要补） */
+.pub-row .v.slot em { font-style:normal; font-size:11px; padding:1px 6px; border-radius:9px;
+  background:var(--line); color:var(--dim); }
+.pub-row .v.slot.done { color:var(--dim); }
+.pub-row .v.slot.none { color:#B0563F; }
+.film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
+  background:#000; display:block; }
+.film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
+.film-none { color:var(--dim); font-size:13px; margin-bottom:20px;
+  padding:10px 14px; border:1px dashed var(--line); border-radius:8px; }
+.rows { display:flex; flex-direction:column; gap:18px; }
+.row { display:grid; grid-template-columns:150px 1fr; gap:20px; align-items:start;
+  padding:14px; border-radius:10px; border:1px solid transparent; }
+.row.punch { border-color:var(--gold); background:rgba(216,165,58,.07); }
+.shot { position:relative; }
+.shot img { width:100%; border-radius:8px; display:block; border:1px solid var(--line); }
+.noshot { aspect-ratio:9/16; display:grid; place-items:center; color:var(--dim);
+  border:1px dashed var(--line); border-radius:8px; font-size:12px; }
+.ts { position:absolute; left:6px; bottom:6px; background:rgba(0,0,0,.6); color:#fff;
+  font-size:11px; padding:1px 6px; border-radius:4px; }
+.beat { font-size:12px; color:var(--dim); letter-spacing:1px; }
+.who { font-weight:700; color:var(--accent); margin:2px 0 6px; }
+.text { font-size:18px; margin:0 0 10px; line-height:1.6; }
+.text em { font-style:normal; color:var(--gold); font-weight:700; }
+.voice { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:4px; }
+.pill { background:var(--accent); color:#fff; font-size:12px; padding:2px 10px; border-radius:20px; }
+.pill.alt { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+.meta { color:var(--dim); font-size:12px; }
+.meta.warn { color:var(--hot); }
+.extras { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:16px; }
+.extras figure { margin:0; }
+/* 公用素材区 */
+.assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+/* 符号库：一格一个符号，比角色/场景那种小得多 —— 一屏要看得全 */
+.symbols-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; }
+.symbols-grid .asset img { background:#FBF8F1; }
+.symbols-grid figcaption { gap:1px; margin-top:4px; font-size:10px; line-height:1.35; }
+.symbols-grid figcaption b { font-size:11px; }
+.symbols-grid .vpill { font-size:9px; padding:1px 5px; }
+.symbols-grid .note { font-size:9px; opacity:.75; }
+.asset { margin:0; }
+.asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
+.asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
+.asset figcaption b { font-size:13px; color:var(--ink); }
+.asset figcaption code { font-size:10px; word-break:break-all; }
+.asset figcaption .src { opacity:.7; font-size:10px; }
+.asset.unrigged img { opacity:.72; border-style:dashed; }
+.voice-row { display:flex; align-items:center; gap:6px; margin:3px 0 1px; flex-wrap:wrap; }
+.vpill { background:var(--accent); color:#fff; font-size:10px; padding:1px 7px; border-radius:20px; white-space:nowrap; }
+.asset audio { height:26px; max-width:100%; flex:1 1 110px; min-width:100px; }
+.badge { background:var(--hot); color:#fff; font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; vertical-align:middle; margin-left:4px; }
+.assets h3:first-of-type { margin-top:6px; }
+.extras figure.is-cover img { border:2px solid var(--gold); }
+.extras figure.is-cover figcaption { color:var(--gold); font-weight:700; }
+.extras img { width:100%; border-radius:8px; border:1px solid var(--line); display:block; }
+figcaption { font-size:12px; color:var(--dim); margin-top:6px; }
+.ts-inline { opacity:.7; }
+.hook { margin-top:20px; padding:12px 16px; background:rgba(31,58,95,.08);
+  border-radius:8px; font-size:15px; }
+.analysis { margin-top:24px; border-top:1px solid var(--line); padding-top:14px; }
+summary { cursor:pointer; color:var(--dim); font-size:14px; font-weight:600; }
+.analysis h2,.analysis h3 { font-size:15px; margin:18px 0 8px; color:var(--ink); }
+.analysis p { margin:6px 0; font-size:14px; }
+.analysis ul { margin:6px 0; padding-left:22px; font-size:14px; }
+.analysis li.task { list-style:none; margin-left:-18px; }
+.analysis blockquote { margin:8px 0; padding:6px 12px; border-left:3px solid var(--line);
+  color:var(--dim); font-size:13px; }
+.analysis .note { color:var(--accent); font-style:normal; font-size:13px; }
+summary .src { float:right; font-weight:600; font-size:12px; color:var(--accent);
+  text-decoration:none; }
+/* 分镜表可能很宽，让它自己横向滚，别把整页撑出横条 */
+.tw { overflow-x:auto; margin:10px 0; }
+.tw table { border-collapse:collapse; font-size:13px; min-width:100%; }
+.tw th,.tw td { border:1px solid var(--line); padding:6px 9px; text-align:left;
+  vertical-align:top; }
+.tw th { background:rgba(127,127,127,.10); font-weight:700; white-space:nowrap; }
+.tw td:first-child { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--dim); }
+code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; font-size:13px; }
+/* 窄屏：侧栏收到顶部，横向滚动 */
+@media (max-width:900px){
+  .layout { grid-template-columns:1fr; gap:20px; }
+  .side { position:static; max-height:none; }
+  .side-list { flex-direction:row; overflow-x:auto; padding-bottom:4px; }
+  .nav-item { flex:none; width:190px; }
+  .side-top { display:none; }
+}
+@media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+
+</style>
+</head>
+<body id="top">
+<div class="wrap"><h1>laoma-011</h1>
+<p class="sub">成片 · 场景图 · 对话内容 · 音色设置 · 分析思路</p>
+<section class="joke" id="laoma-011">
+  <header>
+    <h2>laoma-011</h2>
+    <div class="facts">
+      <span>A 类 · office-desk</span>
+      <span>片长 17.5s</span>
+      <span>笑点 13.9s</span>
+      <span>定格 15.5s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">这瓶水我拧了四下</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.97s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.4s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">手心印出一圈齿</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.48s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">4.9s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">老马把瓶子递给小李，小李一下就开了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.36s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">9.8s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">小李说这瓶本来就松了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.18s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.9s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">那瓶水我一口没喝</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 1.65s</div>
+  </div>
+</div></div>
+  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="stills/00-开场.png" alt="开场物件" loading="lazy">
+  <figcaption>开场物件　<span class="ts-inline">1.0s</span></figcaption></figure>
+<figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">16.0s</span></figcaption></figure>
+<figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
+  <figcaption>结尾钩子　<span class="ts-inline">16.9s</span></figcaption></figure></div>
+  <div class="hook">结尾钩子：<strong>老马的第 1861 天</strong></div>
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>老马的第 1861 天　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
+<li><strong>一句话讲什么</strong>　（？）</li>
+<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
+<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
+</ul>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.0</td><td>场景 <code>office-desk</code>　在场 ma　单人镜</td><td><strong>ma</strong>：这瓶水我拧了四下</td><td>—</td></tr><tr><td>0:02.4–0:03.9</td><td>同上</td><td><strong>ma</strong>：手心印出一圈齿</td><td>—</td></tr><tr><td>0:04.9–0:08.3</td><td>同上</td><td><strong>ma</strong>：老马把瓶子递给小李，小李一下就开了</td><td>—</td></tr><tr><td>0:09.8–0:12.0</td><td>同上</td><td><strong>ma</strong>：小李说这瓶本来就松了</td><td>—</td></tr><tr><td>0:13.9–0:15.5</td><td>同上</td><td><strong>ma</strong>：那瓶水我一口没喝</td><td>—</td></tr><tr><td>0:15.5–0:17.5</td><td>定格去色 + 钩子字幕「老马的第 1861 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>office-desk</code></p>
+<p><strong>节奏</strong>　<code>banter</code></p>
+<p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 17.55s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. （？）</p>
+<p>  2. （？）</p>
+<p>  3. （？）</p>
+<ul>
+<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
+<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
+<li><strong>话题标签</strong>　（？#xxx）</li>
+<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>封面大字</strong>　``</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section></div>
+
+</body>
+</html>

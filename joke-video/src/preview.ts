@@ -14,6 +14,8 @@
 import { OUT_JOKE, OUT_LAOMA } from './paths.js';
 // 栏目从场景反查（每个场景在 horse/scenes.mjs 里声明了自己属于哪个栏目）
 import { SCENES as HORSE_SCENE_TABLE } from '../horse/scenes.mjs';
+import { emote, SYMBOLS as EMOTE_SYMBOLS } from '../horse/emote.mjs';
+import { MARKS, mark as markSvg } from '../horse/marks.mjs';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { basename, relative, sep } from 'node:path';
 import { FPS } from './config.js';
@@ -43,6 +45,66 @@ export interface PreviewShot {
   lineIndex: number | null;
 }
 
+/**
+ * 发片信息：**标题、关键词、排期时刻**，摆在成片旁边。
+ *
+ * ── 为什么要摆在旁边 ──
+ *
+ * 预览页原来只有画面和台词，发布那头的东西全在 `发布文案.md` 里 ——
+ * 而审片时真正要一起看的正是这两样：**这条片子长这样，它顶着的标题是这个**。
+ * 分在两处的结果是，标题从来没在成片旁边被看过一眼。
+ *
+ * ⚠ **只读，不生成。** 文案的唯一出处仍是 `发布文案.md`（`yiye-publish.ts` 生成）——
+ * 这儿把它抠出来显示，**不做第二份**。抠不到就不显示那一栏，不猜、不兜底。
+ */
+export interface PublishInfo {
+  title?: string;
+  sub?: string;
+  tags?: string;
+  /** `_待发` / `_已发` */
+  bucket?: string;
+  /** 目录名前缀里那个时刻，例：2026-09-06 21:00 JST */
+  slot?: string;
+  /** 各平台时刻，从 publish.json 来 */
+  platforms?: Array<[string, string]>;
+}
+
+/** 抠出 `## 标题` 那类小节里第一个代码块的内容 */
+function blockAfter(md: string, head: string): string | undefined {
+  const re = new RegExp("^## " + head + "\\s*$[\\s\\S]*?" + "```" + "\\n([\\s\\S]*?)" + "```", "m");
+  return md.match(re)?.[1].trim();
+}
+
+export function readPublishInfo(dir: string): PublishInfo {
+  const out: PublishInfo = {};
+  const md = dir + "/发布文案.md";
+  if (existsSync(md)) {
+    const t = readFileSync(md, "utf8");
+    out.title = blockAfter(t, "标题");
+    out.sub = blockAfter(t, "副标题");
+    out.tags = blockAfter(t, "关键词与标签");
+  }
+  // 排期：目录名前缀 ＋ publish.json
+  const name = basename(dir);
+  const m = /^(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})JST_/.exec(name);
+  if (m) out.slot = m[1] + " " + m[2] + ":" + m[3] + " JST";
+  else if (/^未排期_/.test(name)) out.slot = "未排期";
+  const b = /[/\\](_待发|_已发)[/\\]/.exec(dir.replace(/\\/g, "/"));
+  if (b) out.bucket = b[1];
+  const pj = dir + "/publish.json";
+  if (existsSync(pj)) {
+    try {
+      const j = JSON.parse(readFileSync(pj, "utf8")) as { platforms?: Record<string, { at?: string }> };
+      const ps = Object.entries(j.platforms ?? {})
+        .filter(([, v]) => v?.at)
+        .map(([k, v]) => [k, String(v.at)] as [string, string]);
+      if (ps.length) out.platforms = ps;
+    } catch {
+      /* 坏 json 就当没有 —— 预览页不该因为一个字段打不开 */
+    }
+  }
+  return out;
+}
 /** 这一条是不是老马线。判据跟 `cover.ts`、`yiye-publish.ts`、`cli.ts` 的体检闸是同一条 */
 export const isLaoma = (cfg: JokeCfg): boolean => !!cfg.characters?.some((c) => c.rig === 'horse');
 
@@ -284,13 +346,59 @@ function mdToHtml(md: string): string {
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** 一条稿件的区块：场景图 + 对话 + 分析 */
+/**
+ * 成片那一块：**左边成片，右边发片信息**（2026-08-23 改，原来只有成片一栏）。
+ *
+ * 右边那栏是审片时要跟画面一起看的几样：**排期 / 标题 / 副标题 / 关键词 / 各平台时刻**。
+ * 抠不到就整栏不出 —— 不猜、不兜底、不做第二份文案。
+ */
+function filmBlock(prefix: string, video?: string, pub?: PublishInfo): string {
+  const row = (k: string, v: string, cls = "") =>
+    `<div class="pub-row"><span class="k">${k}</span><span class="v ${cls}">${v}</span></div>`;
+  const side = !pub
+    ? ""
+    : [
+        pub.slot
+          ? row(
+              "排期",
+              esc(pub.slot) + (pub.bucket ? "　<em>" + esc(pub.bucket.replace("_", "")) + "</em>" : ""),
+              "slot" + (pub.bucket === "_已发" ? " done" : pub.slot === "未排期" ? " none" : "")
+            )
+          : "",
+        pub.title ? row("标题", esc(pub.title), "title") : "",
+        pub.sub ? row("副标题", esc(pub.sub)) : "",
+        pub.tags ? row("关键词", esc(pub.tags), "tags") : "",
+        pub.platforms?.length
+          ? row(
+              "各平台",
+              pub.platforms
+                .map(([k, at]) => esc(k) + " <code>" + esc(at.replace("T", " ").replace(/(\+\d\d):\d\d$/, " $1")) + "</code>")
+                .join("<br>"),
+              "plat"
+            )
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+  const film = video
+    ? `<video src="${prefix}${esc(video)}" controls preload="metadata" playsinline></video>` +
+      `<div class="film-note">成片　<code>${esc(video)}</code></div>`
+    : '<div class="film-none">还没出片　<code>npm run build</code></div>';
+  return (
+    '<div class="film' + (side ? " with-pub" : "") + '">' +
+    '<div class="film-main">' + film + "</div>" +
+    (side ? '<aside class="pub">' + side + "</aside>" : "") +
+    "</div>"
+  );
+}
 export function jokeSection(
   cfg: JokeCfg,
   shots: PreviewShot[],
   analysis: string,
   assetPrefix = '',
   video?: string,
-  cover?: string
+  cover?: string,
+  pub?: PublishInfo
 ): string {
   const tl = buildTimeline(cfg);
   const byLine = new Map<number, PreviewShot>();
@@ -369,14 +477,7 @@ export function jokeSection(
     </div>
   </header>
   ${dupe}
-  ${
-    video
-      ? `<div class="film">
-    <video src="${assetPrefix}${esc(video)}" controls preload="metadata" playsinline></video>
-    <div class="film-note">成片　<code>${esc(video)}</code></div>
-  </div>`
-      : '<div class="film-none">还没出片　<code>npm run build</code></div>'
-  }
+  ${filmBlock(assetPrefix, video, pub)}
   <div class="rows">${rows}</div>
   ${extraShots ? `<h3>${cover ? '封面 / ' : ''}开场 / 定格 / 钩子</h3><div class="extras">${extraShots}</div>` : ''}
   ${cfg.hook ? `<div class="hook">结尾钩子：<strong>${esc(cfg.hook)}</strong></div>` : ''}
@@ -390,7 +491,14 @@ export function jokeSection(
 /**
  * 左侧导航的一项。缩略图用开场那一张（空镜／黑底大字卡）——扫一眼就知道是哪条片子。
  */
-export function navEntry(cfg: JokeCfg, shots: PreviewShot[], assetPrefix = '', index?: number): string {
+export function navEntry(
+  cfg: JokeCfg,
+  shots: PreviewShot[],
+  assetPrefix = '',
+  index?: number,
+  /** 栏目（工位 / 一个人住 / 众目睽睽 / 回家）。老马线传，别的线不传 */
+  column = ''
+): string {
   const tl = buildTimeline(cfg);
   const thumb = shots.find((s) => ['开场空镜', '开场大字', '开场物件'].includes(s.label)) ?? shots[0];
   const casts = cfg.characters.map((c) => c.cast ?? '?').join(' · ');
@@ -404,16 +512,21 @@ export function navEntry(cfg: JokeCfg, shots: PreviewShot[], assetPrefix = '', i
   <span class="nav-body">
     <span class="nav-title">${index != null ? `<b class="nav-num">${index}</b>` : ''}${esc(title)}</span>
     ${date ? `<span class="nav-date">${esc(date)}</span>` : ''}
-    <span class="nav-meta">${esc(cfg.type)} 类 · ${tl.duration.toFixed(1)}s · ${cfg.lines.length} 句</span>
+    <span class="nav-meta">${column ? `<b class="nav-col">${esc(column)}</b> · ` : ''}${esc(cfg.type)} 类 · ${tl.duration.toFixed(1)}s · ${cfg.lines.length} 句</span>
     <span class="nav-cast">${esc(casts)}</span>
   </span>
 </a>`;
 }
 
-/** 把若干导航项包成侧栏 */
-export function navPanel(items: string[]): string {
+/**
+ * 把若干导航项包成侧栏。
+ *
+ * @param title 侧栏抬头。缺省「稿件目录」（段子画廊、老马那两页）；
+ *   醒木不响那页列的是片子，叫别的名字
+ */
+export function navPanel(items: string[], title = '稿件目录'): string {
   return `<nav class="side" id="side">
-  <div class="side-head">稿件目录<span class="side-count">${items.length}</span></div>
+  <div class="side-head">${esc(title)}<span class="side-count">${items.length}</span></div>
   <div class="side-list">${items.join('\n')}</div>
   <a class="side-top" href="#top">回到顶部</a>
 </nav>`;
@@ -473,6 +586,68 @@ export async function buildVoiceSamples(
     const src = await synth(`_sample/${r.key}`, r.voice, VOICE_SAMPLE);
     if (src && existsSync(src)) writeFileSync(dst, readFileSync(src));
   }
+}
+
+/**
+ * 符号库：老马页顶上那一排。**写稿的人得先看得见有哪些符号，才谈得上点名。**
+ *
+ * 两类符号在同一张表上，但**分开标**：
+ * `endEmote`（落点符号）和 `line.emote`（停顿符号）用的是同一批「没有情绪」的八个；
+ * 那套漫符（惊/汗/星/井字纹…）是**替观众表态**的一类，配额制，不列在这儿。
+ */
+function emoteGallery(): string {
+  const dir = `${OUT_LAOMA}/_symbols`;
+  mkdirSync(dir, { recursive: true });
+  const cells = Object.entries(EMOTE_SYMBOLS)
+    .map(([k, note]) => {
+      const f = `_symbols/${k}.png`;
+      if (!existsSync(`${OUT_LAOMA}/${f}`)) {
+        // 单独渲一格：符号本身画在 (0,0)，外面套一张 260×200 的纸
+        const svg =
+          `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="200" viewBox="0 0 260 200">` +
+          `<rect width="260" height="200" fill="#FBF8F1"/>` +
+          `<g transform="translate(130,104) scale(0.8)">${emote(k, { p: 1, x: 0, y: 0, W: 0, H: 0, value: '26' })}</g>` +
+          `</svg>`;
+        writeFileSync(`${OUT_LAOMA}/${f}`, svgToPng(svg));
+      }
+      const [name, ...rest] = String(note).split(/\s{2,}/);
+      return `<figure class="asset">
+  <img src="${f}" alt="${esc(k)}" loading="lazy">
+  <figcaption><b>${esc(k)}</b><span class="voice-row"><span class="vpill">${esc(name.trim())}</span></span><span class="note">${esc(rest.join(' ').trim())}</span></figcaption>
+</figure>`;
+    })
+    .join('\n');
+  // 情绪符号（漫符）：2026-08-24 起可以用了，配额制 —— 库要摆出来，不然没人知道有哪些
+  const markCells = Object.entries(MARKS)
+    .map(([k, v]) => {
+      const f = `_symbols/mark-${k}.png`;
+      if (!existsSync(`${OUT_LAOMA}/${f}`)) {
+        const svg =
+          `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="200" viewBox="0 0 260 200">` +
+          `<rect width="260" height="200" fill="#FBF8F1"/>` +
+          markSvg(k, { size: 110, seed: 5, pop: 1, x: 130, y: 96 }) +
+          `</svg>`;
+        writeFileSync(`${OUT_LAOMA}/${f}`, svgToPng(svg));
+      }
+      const meta = v as { label?: string; note?: string };
+      return `<figure class="asset">
+  <img src="${f}" alt="${esc(k)}" loading="lazy">
+  <figcaption><b>${esc(k)}</b><span class="voice-row"><span class="vpill">${esc(meta.label ?? '')}</span></span>${
+        meta.note ? `<span class="note">${esc(meta.note)}</span>` : ''
+      }</figcaption>
+</figure>`;
+    })
+    .join('\n');
+
+  return `<section class="card" id="_symbols">
+  <h2>符号库　<span class="sub-inline">两套，各有各的规矩</span></h2>
+  <p class="sub"><b>没有情绪的八个</b>　落点符号写 <code>endEmote</code>（全片 ≤1，落点定格里延后 0.3 秒起）；
+  停顿符号写 <code>line.emote</code>（全片 ≤2，只挂 ≥0.8 秒的句末停顿，落点句和它前一句不许挂）。</p>
+  <div class="symbols-grid">${cells}</div>
+  <p class="sub"><b>情绪符号十个</b>　它们是<b>画面替观众表态</b>，所以给的是配额不是自由：<b>近 5 条最多 1 条</b>
+  （收尾卡 <code>endMark</code> 和停顿 <code>line.emote</code> 共用同一份账）。用在停顿里的写法跟上面一样。</p>
+  <div class="symbols-grid">${markCells}</div>
+</section>`;
 }
 
 function assetGallery(): string {
@@ -537,6 +712,13 @@ export function syncProjects(
   // 页里的图片链接是**相对汇总页**的，混在一张里那半边全是死链。
   const sections: Record<string, string[]> = { joke: [], laoma: [] };
   const navItems: Record<string, string[]> = { joke: [], laoma: [] };
+  /**
+   * 老马的条目先收着，最后统一排序：**未发布在前，已发布在后**，各自按天数号从小到大。
+   *
+   * 文件名顺序（laoma-001…016）对不上发布顺序 —— 天数号是跳着走的，而且改期只改目录名。
+   * **要看的永远是「接下来发什么」，已经发过的往后放。**
+   */
+  const laomaRows: Array<{ cfg: JokeCfg; shots: PreviewShot[]; prefix: string; sec: string; bucket: string; day: number }> = [];
 
   for (const f of files) {
     const cfg = JSON.parse(readFileSync(`jokes/${f}`, 'utf8')) as JokeCfg;
@@ -551,10 +733,30 @@ export function syncProjects(
     const k = laoma ? 'laoma' : 'joke';
     // 相对汇总页的路径：老马那张页在 `projects/老马/`，条目在 `段子/_待发/<名>/`
     const prefix = laoma ? `${relative(OUT_LAOMA, dir).split(sep).join('/')}/` : `${basename(dir)}/`;
-    sections[k].push(jokeSection(cfg, shots, analysis, prefix, film, cover));
-    navItems[k].push(navEntry(cfg, shots, prefix, navItems[k].length + 1));
+    if (laoma) {
+      // **先收着，排完序再出 html** —— 序号要跟最终顺序对上，所以 navEntry 不能在这儿调
+      const pub = readPublishInfo(dir);
+      laomaRows.push({
+        cfg,
+        shots,
+        prefix,
+        sec: jokeSection(cfg, shots, analysis, prefix, film, cover, pub),
+        bucket: pub.bucket ?? '_待发',
+        day: dayNo(cfg) ?? 0,
+      });
+    } else {
+      sections[k].push(jokeSection(cfg, shots, analysis, prefix, film, cover, undefined));
+      navItems[k].push(navEntry(cfg, shots, prefix, navItems[k].length + 1));
+    }
     if (!opts.quiet) console.log(`  ${cfg.id}${reuse ? '（复用已有场景图）' : ` ${shots.length} 张场景图`}`);
   }
+
+  // 老马：未发布在前、已发布在后，组内按天数号
+  laomaRows.sort((a, b) => (a.bucket === b.bucket ? a.day - b.day : a.bucket === '_待发' ? -1 : 1));
+  laomaRows.forEach((r, i) => {
+    sections.laoma.push(r.sec);
+    navItems.laoma.push(navEntry(r.cfg, r.shots, r.prefix, i + 1, dirColumn(r.cfg)));
+  });
 
   // 段子与儿童故事：公用素材区摆在所有稿件前面（写新稿件先看这里有什么现成的）
   mkdirSync(OUT_JOKE, { recursive: true });
@@ -569,18 +771,28 @@ ${sections.joke.join('\n')}`;
 </a>`;
   writeFileSync(`${OUT_JOKE}/index.html`, page('段子稿件预览', body, navPanel([galleryNav, ...navItems.joke])));
 
-  // 老马：没有公用素材区（它的角色和场景是外挂的 `horse/`），直接列条目
+  // 老马：角色和场景是外挂的 `horse/`，所以没有段子那种公用素材区；
+  // 但**符号库要摆在最前面** —— 写稿的人得先看得见有哪些符号，才谈得上点名
   if (sections.laoma.length) {
     mkdirSync(OUT_LAOMA, { recursive: true });
     const lbody = `<h1>老马 · 稿件与成片</h1>
 <p class="sub">共 ${sections.laoma.length} 条 · 目录名带发布日和时刻，排期见 joke-video/horse/SCHEDULE.md</p>
+${emoteGallery()}
 ${sections.laoma.join('\n')}`;
     writeFileSync(`${OUT_LAOMA}/index.html`, page('老马 · 稿件与成片', lbody, navPanel(navItems.laoma)));
   }
   return files.length;
 }
 
-export function page(title: string, body: string, nav?: string): string {
+/**
+ * 预览页的外壳。**仓库里几张 HTML 页共用这一份**（段子画廊、老马、醒木不响），
+ * 所以配色变量和暗色适配只有这一处。
+ *
+ * @param extraCss 这一页自己的样式。骨架里那套是给「稿件 + 竖版成片 + 场景图」排的，
+ *   别的页（比如醒木不响那张要横版成片和一张档期表）**往这儿加，不要去改骨架** ——
+ *   骨架一改，三张页一起变。
+ */
+export function page(title: string, body: string, nav?: string, extraCss = ''): string {
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -621,6 +833,8 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item { display:flex; gap:10px; align-items:center; padding:8px; border-radius:9px;
   text-decoration:none; color:inherit; border:1px solid transparent; transition:background .12s; }
 .nav-item:hover { background:rgba(127,127,127,.1); }
+/* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
+.nav-col { color:var(--accent); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -657,6 +871,24 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
   padding:10px 14px; border-radius:6px; margin-bottom:18px; font-size:14px; }
 /* 成片：竖版，别让它撑满一屏，跟右边的对话能同时看见 */
 .film { display:flex; gap:16px; align-items:flex-end; margin-bottom:22px; }
+/* 成片旁边那栏发片信息（老马线）。**成片固定 250px，剩下全给它** ——
+   关键词那串很长，给固定宽度会一直换行 */
+.film.with-pub { align-items:flex-start; gap:22px; }
+.film.with-pub .film-main { flex:0 0 auto; }
+.film.with-pub .pub { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:9px;
+  border-left:2px solid var(--line); padding-left:16px; }
+.pub-row { display:flex; gap:10px; align-items:baseline; font-size:13px; }
+.pub-row .k { flex:0 0 46px; color:var(--dim); font-size:12px; }
+.pub-row .v { flex:1 1 auto; min-width:0; word-break:break-word; }
+.pub-row .v.title { font-size:16px; font-weight:700; line-height:1.35; }
+.pub-row .v.tags { color:var(--dim); font-size:12px; line-height:1.5; }
+.pub-row .v.plat code { font-size:11px; }
+.pub-row .v.slot { font-variant-numeric:tabular-nums; }
+/* 排期那一行三种态：待发（默认）／已发（灰下去）／未排期（提示要补） */
+.pub-row .v.slot em { font-style:normal; font-size:11px; padding:1px 6px; border-radius:9px;
+  background:var(--line); color:var(--dim); }
+.pub-row .v.slot.done { color:var(--dim); }
+.pub-row .v.slot.none { color:#B0563F; }
 .film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
   background:#000; display:block; }
 .film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
@@ -685,6 +917,13 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
 .extras figure { margin:0; }
 /* 公用素材区 */
 .assets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:18px; }
+/* 符号库：一格一个符号，比角色/场景那种小得多 —— 一屏要看得全 */
+.symbols-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:10px; }
+.symbols-grid .asset img { background:#FBF8F1; }
+.symbols-grid figcaption { gap:1px; margin-top:4px; font-size:10px; line-height:1.35; }
+.symbols-grid figcaption b { font-size:11px; }
+.symbols-grid .vpill { font-size:9px; padding:1px 5px; }
+.symbols-grid .note { font-size:9px; opacity:.75; }
 .asset { margin:0; }
 .asset img { width:100%; border-radius:9px; border:1px solid var(--line); display:block; background:#EFE9DC; }
 .asset figcaption { display:flex; flex-direction:column; gap:3px; margin-top:7px; font-size:11px; color:var(--dim); }
@@ -732,6 +971,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   .side-top { display:none; }
 }
 @media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
+${extraCss}
 </style>
 </head>
 <body id="top">
@@ -755,7 +995,14 @@ ${
     Object.keys(seen).forEach(function (id) { if (seen[id] > bestV) { bestV = seen[id]; best = id; } });
     if (best) mark(best);
   }, { threshold: [0, 0.15, 0.4, 0.75, 1], rootMargin: '-10% 0px -55% 0px' });
-  document.querySelectorAll('section.joke').forEach(function (s) { io.observe(s); });
+  // **盯的是目录项指到的那些块**，不是某个写死的 class。
+  // 原来写的是 'section.joke'，那是段子画廊的类名 —— 醒木不响那页的块叫 .ep，
+  // 目录能点、但滚动时不会跟着高亮，而且不报错（就是不动）。
+  // 每一项本来就带 data-target，照它去找就跟页面长什么样无关了。
+  items.forEach(function (a) {
+    var el = document.getElementById(a.dataset.target);
+    if (el) io.observe(el);
+  });
   if (items.length) items[0].classList.add('active');
 })();
 </script>`

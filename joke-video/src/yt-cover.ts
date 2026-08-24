@@ -28,6 +28,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { resolveEp } from './shuoshu-ep.js';
+import { resolveEp as resolveZhiyuEp, LINE as ZHIYU_LINE } from './zhiyu-ep.js';
 
 // ── §一 画布与安全区 ──────────────────────────────────────────────────
 const W = 1280;
@@ -81,6 +82,8 @@ const SQ_HOOK_Y1 = 880;
 export interface YtPalette {
   bg: string;
   ink: string;
+  /** 副标字色。不给就是白（深底档）*/
+  hook?: string;
   acc: string;
   mute: string;
   seal: string;
@@ -90,8 +93,31 @@ export const PALETTES: Record<string, YtPalette> = {
   ink: { bg: '#141C24', ink: '#F2EFE8', acc: '#D6452F', mute: '#5C6B75', seal: '#D6452F' },
   /** 治愈 / 助眠 / 古典随笔 / 禅佛典。错位影用暖月色，**不用朱砂** */
   night: { bg: '#142234', ink: '#F1EDE3', acc: '#E8C87A', mute: '#3A4E66', seal: '#C4432F' },
+  /**
+   * `paper` —— **治愈线保留自己的和纸画风，只借 V3 的版式**（2026-08-24 用户定）。
+   *
+   * 色值原样搬自 `zhiyu-cover.ts`：纸 #F6F2E8、远景墨绿 #2F4A3F、暖带 #E8A95E、印 #C0503C。
+   * 所以它跟片内画面、片头首帧仍是同一套颜色，只有排版换成了 V3。
+   *
+   * ⚠ **这一档是知情地违反 §二 的。** 规范把治愈线定在 `night`（深靛底），
+   * 理由写在 §〇：浅米白封面在 YouTube 的白界面里没有边界、直接融进背景，
+   * 那是点击率被压住的直接原因。选 `paper` 等于把那条结论换成「风格统一」优先。
+   * **要验就看 210 试样贴在白底上像不像一块**，不是看 1280 好不好看。
+   *
+   * 朱砂只留在印章里（这条跟 night 档一致）：错位影和副标重点词都走暖带色 `acc`。
+ *
+ * ⚠ **`mute` 在这一档是「副标的字色」，不是「远山的淡色」。** 第一版给了 #AEBFB0，
+ * 山画得挺好看，副标在米白纸上白花花一片读不出来 —— 深底档是灰蓝配纸白字，
+ * 浅底档整个反过来。要更淡的层次只能在 motif 里靠形状叠，不能靠再要一个色。
+   */
+  paper: { bg: '#E8DFCB', ink: '#2F4A3F', acc: '#E8A95E', mute: '#7E9184', seal: '#C0503C', hook: '#5B6F63' },
 };
 /** 副标固定纯白：比主字的纸白更实，压在错位影上不会被拖糊（§二末） */
+/**
+ * 副标字色的**兜底**。深底档就是纸白，浅底档必须在色板里另给一个（`YtPalette.hook`）——
+ * 写死白色的时候，`paper` 档的副标在米白纸上整行看不见，而四项自动检测全绿：
+ * 它们查的是位置、宽度、安全区，**没有一项在查「看不看得见」**。
+ */
 const HOOK_FILL = '#FFFFFF';
 
 // ── §三 字体 ─────────────────────────────────────────────────────────
@@ -126,6 +152,43 @@ const n = (v: number) => Math.round(v * 100) / 100;
 export type Motif = (C: YtPalette) => string;
 
 export const YT_MOTIFS: Record<string, Motif> = {
+  /**
+   * `snow_boat` —— **治愈 taoan-E01《痴人夜行》。** 一轮暖月、两层山影、一道湖面、
+   * 湖上一条小得几乎看不见的船。出处是这一期的原文：「舟中人两三粒而已」。
+   *
+   * 跟 ink / night 那几个 motif 不一样，这一档要的是**这条线自己的插画语气**
+   * （层叠山影、暖日轮），不是三色平涂的符号。但下面两条仍旧照 §六 守：
+   *
+   * ① **只用色板里的色，一个都不外加。** 探针那一步靠「把五个色全换成纯蓝、再量蓝色外接框」
+   *    定眉标右界；motif 里出现色板之外的颜色，那一块就量不到，眉标会压上去。
+   * ② **不用半透明。** 同理：opacity < 1 的地方在探针图里不是纯蓝，一样量不到。
+   *    所以三层深浅只能靠 ink / mute 两个实色 ＋ 暖月 acc 来分。
+   *
+   * ⚠ 船只有 150×34。**210px 下它只剩 25×6 像素**，读出来的是"湖上有个小东西"，
+   * 不是"一条船" —— 这是知情的：这一期要的就是"两三粒"，看不清正是那句原文的意思。
+   * 真觉得不行就把船去掉，只留月和山，别把它放大到看得清（放大就不是那句话了）。
+   */
+  snow_boat: (C) => {
+    const cx = MOTIF_CX;
+    // 暖月：压在山后只露上半个。**别画大** —— 它是月不是太阳，大了整张的重心就跑到右边去
+    const moon = `<circle cx="${cx + 112}" cy="178" r="62" fill="${C.acc}"/>`;
+    // 远山：连绵的缓峰，不是孤立三角。**峰要多、要不等高**，那是这条线插画的语气
+    const far =
+      `<path d="M 758 430 L 830 340 L 884 380 L 952 302 L 1020 372 L 1082 326 L 1178 430 Z" fill="${C.mute}"/>`;
+    // 近山：深的一层压在前面。**山脚停在 430**，下面留一条纸的空当给船
+    const near =
+      `<path d="M 758 430 L 852 368 L 918 410 L 1002 352 L 1064 406 L 1178 430 Z" fill="${C.ink}"/>`;
+    // 水平线：一道细带，是雪面不是水，用中间那一色
+    const lake = `<rect x="758" y="486" width="420" height="10" fill="${C.mute}"/>`;
+    // 小船：坐在水平线上，**整条落在山脚与线之间那块纸上** ——
+    // 第一版把它画在山脚同一高度、又是同色，等于没画（1280 上都找不着）
+    const bx = cx - 74, by = 486;
+    const boat =
+      `<path d="M ${bx - 60} ${by - 22} L ${bx + 60} ${by - 22} L ${bx + 42} ${by} L ${bx - 42} ${by} Z" fill="${C.ink}"/>` +
+      `<rect x="${bx - 22}" y="${by - 42}" width="44" height="20" fill="${C.ink}"/>`;
+    return moon + far + near + lake + boat;
+  },
+
   /**
    * `smile_flat` —— **E05《婴宁》新增。**
    *
@@ -240,20 +303,102 @@ export const YT_MOTIFS: Record<string, Motif> = {
 };
 
 // ── 版式 ─────────────────────────────────────────────────────────────
+//
+// 两种，靠 `YtSpec.layout` 选。**不是「改一下数值」，是两套排法。**
+//
+// ── `hook`（缺省，V3 原版）──
+//
+//   眉标（线名 · 篇名）
+//   主字（两个字，250px，钩子不是书名）
+//   ▂▂ 斜杠
+//   副标两行，各 ≤10 字，第二行错行缩进
+//
+// 靠「两个大字」把人从信息流里拽住，篇名退到眉标、解释交给副标。
+//
+// ── `title`（2026-08-24 加）──
+//
+//   眉标（频道名）
+//   标题全文，按标点断行，字号自动收到装得下为止
+//   ▂▂ 斜杠
+//
+// **副标没有了，主位放的是完整标题。** 跟 `hook` 版的取舍正好相反：
+// 那一版赌的是「两个字够勾人」，这一版赌的是「把话说全了更可信」。
+// 标题本来就写成了一句话（「别人怎么看你，不归你管」），拆成
+// 主字「不归」＋副标两行，等于把同一句话拆开又拼回去 —— 拆的那一下就漏了。
+//
+// 代价写在明处：主字从 250px 掉到 ~108px。**这是知情的**，
+// §七.4 那条「主字外接高度 ≥ 画面 30%」靠的是**整块标题的外接框**，
+// 不是单个字 —— 两行 108px 的块高约 229px，正好在线上。
+// 再长的标题会自动降字号，降到块高不够就报警：那说明标题该改短，不是版式不行。
 
 export interface YtSpec {
-  /** `线名 · 篇名`。书名放这里，不放主字位（§五） */
+  /**
+   * 排法。缺省 `hook`（V3 原版，两个大字 ＋ 副标两行）。
+   *
+   * `title` = 主位放完整标题、没有副标（见上面那段）。
+   */
+  layout?: 'hook' | 'title';
+  /** `线名 · 篇名`。书名放这里，不放主字位（§五）。`title` 版这里放频道名就够了 */
   kicker: string;
-  /** **两个字、简体、是钩子不是书名。** 优先用说破层的诊断词（§五） */
+  /**
+   * 主位的字。
+   *
+   *   `hook` 版：**两个字、简体、是钩子不是书名**（§五）
+   *   `title` 版：**完整标题**，按 `，、。；｜/` 断行（标点本身不上屏），最多三行
+   */
   big: string;
-  /** 副标两行，各 ≤10 字。用 {} 圈重点词，圈对照关系的两端（§五末） */
-  hook: [string, string];
+  /**
+   * 副标两行，各 ≤10 字。用 {} 圈重点词，圈对照关系的两端（§五末）。
+   * **`title` 版没有副标**，写了也不画，只报一句。
+   */
+  hook?: [string, string];
   motif: string;
-  palette: 'ink' | 'night';
+  palette: 'ink' | 'night' | 'paper';
   /** 副标重点词提示。默认 color；主字笔画少、影子红得整时换 underline（§九） */
   mark?: 'none' | 'color' | 'underline';
   /** 印章那个字 */
   seal?: string;
+}
+
+// ── `title` 版的数值 ────────────────────────────────────────────────
+//
+// 只有这一版用得上，所以摆在一起，别跟上面 V3 那组混着改。
+
+/** 标题右界。图形最左伸到 758，留 38px 的间隙 */
+const TITLE_MAX_X = 720;
+/** 标题字号的上下限。自动从上限往下收，收到装得下为止 */
+const TITLE_PT_MAX = 108;
+const TITLE_PT_MIN = 52;
+/** 行距系数 */
+const TITLE_LH = 1.24;
+/**
+ * 整块标题的纵向中线。
+ *
+ * `hook` 版是 266，因为它下面还压着斜杠和两行副标。这一版下面空出来了，
+ * 再钉在 266 就是整块字往上飘、底下空掉三分之一。
+ *
+ * **392 是对着图形的重心定的，不是对着 `MOTIF_CY`（344）。** 那个数是图形的
+ * 几何中心，而 `snow_boat` 的分量全压在山上（y 300–496），月亮只是个点。
+ * 按 344 排出来，左边一栏整体比右边那座山高一截，看着像没坐稳。
+ */
+const TITLE_CY = 392;
+/** 斜杠跟在标题块下面多远。它在这一版里是收尾，不是分隔 */
+const TITLE_RULE_GAP = 54;
+/** 方版：整块标题的纵向中线 */
+const SQ_TITLE_CY = 700;
+
+/**
+ * 标题断行。**按标点断，标点本身不上屏。**
+ *
+ * 「别人怎么看你，不归你管」→ 两行。断在标点上是因为那儿本来就是气口，
+ * 按字数硬切会把词劈开（「别人怎么看」/「你，不归你管」），
+ * 而封面上一个被劈开的词比字小更伤。
+ */
+function titleLines(big: string): string[] {
+  return big
+    .split(/[，,。、；;：:｜|/\n]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 /** 把 `压垮她的不是{官司}` 拆成 [文字, 是否重点] */
@@ -274,7 +419,7 @@ function hookLine(line: string, x: number, cy: number, size: number, C: YtPalett
   let cx = x;
   const out: string[] = [];
   for (const [text, hot] of marks(line)) {
-    const fill = hot && mark === 'color' ? C.acc : HOOK_FILL;
+    const fill = hot && mark === 'color' ? C.acc : C.hook ?? HOOK_FILL;
     out.push(
       `<text x="${n(cx)}" y="${n(cy + size * 0.36)}" font-family="${SANS_FAMILY}" font-weight="700" font-size="${n(size)}" fill="${fill}">${esc(text)}</text>`
     );
@@ -306,6 +451,12 @@ const ruleBar = (r: { x0: number; y0: number; x1: number; y1: number; h: number 
 /** 主字：宋体 Black，一层朱砂错位影在下（§四 / §九「朱砂错位影对笔画少的字露怯」） */
 function mainText(big: string, x: number, baseline: number, size: number, fill: string): string {
   return `<text x="${n(x)}" y="${n(baseline)}" font-family="${SERIF_FAMILY}" font-weight="900" font-size="${n(size)}" fill="${fill}">${esc(big)}</text>`;
+}
+
+/** `title` 版的主位：同一种字，多行左对齐 */
+function titleText(lines: string[], x: number, baseline: number, size: number, fill: string): string {
+  const gap = size * TITLE_LH;
+  return lines.map((l, i) => mainText(l, x, baseline + i * gap, size, fill)).join('\n');
 }
 
 // ── §七 程序必须自动做的四件事：全靠位图扫描 ──────────────────────────
@@ -368,18 +519,44 @@ export function renderYt(spec: YtSpec): YtOut {
   const motif = YT_MOTIFS[spec.motif];
   if (!motif) throw new Error(`没有这个 motif：${spec.motif}\n可用：${Object.keys(YT_MOTIFS).join(' / ')}`);
   const mark = spec.mark ?? 'color';
+  const layout = spec.layout ?? 'hook';
+  const isTitle = layout === 'title';
 
-  const bigChars = [...spec.big].length;
-  if (bigChars > 3) issues.push({ level: 'error', msg: `主字「${spec.big}」${bigChars} 字。规范 §五：两个字，三字只在图形让位时才允许` });
-  else if (bigChars === 3) issues.push({ level: 'warn', msg: `主字「${spec.big}」3 字，字号要降到 ${MAIN_PT_3}px —— 高度会跌到画面的 26%，只在图形让位时才用` });
-  const mainSize = bigChars >= 3 ? MAIN_PT_3 : MAIN_PT;
-
-  for (const [i, line] of spec.hook.entries()) {
-    const len = [...plain(line)].length;
-    if (len > 10) issues.push({ level: 'warn', msg: `副标第 ${i + 1} 行「${plain(line)}」${len} 字，超过 10 字（§五）` });
+  // ── 主位：两种版式各有各的字号规则 ──
+  const lines = isTitle ? titleLines(spec.big) : [spec.big];
+  let mainSize: number;
+  if (isTitle) {
+    if (!lines.length) throw new Error(`title 版式的 big 是空的：「${spec.big}」`);
+    if (lines.length > 3)
+      issues.push({ level: 'error', msg: `标题断出 ${lines.length} 行（上限 3）。封面不是简介栏 —— 标题该改短` });
+    // 自动收字号：从上限往下 2px 一档，收到最宽那行装进 TITLE_MAX_X 为止
+    const widest = Math.max(...lines.map((l) => textW(l, 1)));
+    mainSize = TITLE_PT_MAX;
+    while (mainSize > TITLE_PT_MIN && MAIN_X + widest * mainSize > TITLE_MAX_X) mainSize -= 2;
+    if (mainSize !== TITLE_PT_MAX)
+      issues.push({ level: 'warn', msg: `标题放不下，字号从 ${TITLE_PT_MAX} 收到 ${mainSize}（最长一行「${lines.reduce((a, b) => (a.length > b.length ? a : b))}」）` });
+  } else {
+    const bigChars = [...spec.big].length;
+    if (bigChars > 3) issues.push({ level: 'error', msg: `主字「${spec.big}」${bigChars} 字。规范 §五：两个字，三字只在图形让位时才允许` });
+    else if (bigChars === 3) issues.push({ level: 'warn', msg: `主字「${spec.big}」3 字，字号要降到 ${MAIN_PT_3}px —— 高度会跌到画面的 26%，只在图形让位时才用` });
+    mainSize = bigChars >= 3 ? MAIN_PT_3 : MAIN_PT;
   }
-  const hotCount = spec.hook.reduce((a, l) => a + marks(l).filter(([, h]) => h).length, 0);
-  if (hotCount > 2) issues.push({ level: 'warn', msg: `副标圈了 ${hotCount} 处重点词，两行合计最多两处 —— 多了就没有落点了（§五末）` });
+
+  // ── 副标：只有 hook 版有 ──
+  //
+  // **title 版写了 hook 也不画**，但要说一句：数据留在 发布.json 里没人删，
+  // 下次有人换回 hook 版才发现副标是三个月前的 —— 不如现在就报出来。
+  const hook = spec.hook;
+  if (isTitle && hook) issues.push({ level: 'warn', msg: `title 版式没有副标，发布.json 里那两行（「${plain(hook[0])}」…）不会上图` });
+  if (!isTitle && !hook) throw new Error('hook 版式必须给副标两行（要没有副标就用 "layout": "title"）');
+  if (!isTitle && hook) {
+    for (const [i, line] of hook.entries()) {
+      const len = [...plain(line)].length;
+      if (len > 10) issues.push({ level: 'warn', msg: `副标第 ${i + 1} 行「${plain(line)}」${len} 字，超过 10 字（§五）` });
+    }
+    const hotCount = hook.reduce((a, l) => a + marks(l).filter(([, h]) => h).length, 0);
+    if (hotCount > 2) issues.push({ level: 'warn', msg: `副标圈了 ${hotCount} 处重点词，两行合计最多两处 —— 多了就没有落点了（§五末）` });
+  }
 
   // ── probe：一次渲染，量三样 ──
   //   红 = 主字（量外接框，好把它按 (64, 266) 左对齐＋纵向居中）
@@ -388,7 +565,7 @@ export function renderYt(spec: YtSpec): YtOut {
   const PROBE_BASE = 300;
   const probeSvg = wrap(
     `<g fill="#0000FF">${motif({ ...C, bg: '#000000', ink: '#0000FF', acc: '#0000FF', mute: '#0000FF', seal: '#0000FF' })}</g>` +
-      mainText(spec.big, MAIN_X, PROBE_BASE, mainSize, '#FF0000') +
+      titleText(lines, MAIN_X, PROBE_BASE, mainSize, '#FF0000') +
       `<text x="${KICKER_X}" y="${KICKER_CY + HOOK_PT * 0.36}" font-family="${SANS_FAMILY}" font-weight="700" font-size="${HOOK_PT}" letter-spacing="8" fill="#00FF00">${esc(spec.kicker)}</text>`,
     '#000000'
   );
@@ -400,16 +577,26 @@ export function renderYt(spec: YtSpec): YtOut {
   const motifInBand = bboxOf(probe, [0, 0, 255], { y0: 52, y1: 126 });
   const kickerMaxX = motifInBand.empty ? W - M : motifInBand.x0 - KICKER_PAD;
 
-  // 主字按实测外接框摆正：x 左缘对到 64，纵向中线对到 266
+  // 主位按实测外接框摆正：x 左缘对到 64，纵向中线对到 266（title 版是 344）
+  const mainCy = isTitle ? TITLE_CY : MAIN_CY;
   const mainDx = MAIN_X - mainBox.x0;
-  const mainDy = MAIN_CY - (mainBox.y0 + mainBox.y1) / 2;
+  const mainDy = mainCy - (mainBox.y0 + mainBox.y1) / 2;
   const mainBaseline = PROBE_BASE + mainDy;
   const mainLeft = MAIN_X + mainDx;
 
-  // §七.4 主字高度检测
+  // §七.4 主字高度检测。**title 版量的是整块标题的外接框** ——
+  // 那一版单个字只有 ~108px，按单字量必然报警，而它本来就不靠单个字大。
   const mainH = mainBox.y1 - mainBox.y0 + 1;
   if (mainH / H < 0.3)
-    issues.push({ level: 'warn', msg: `主字外接高度 ${mainH}px = 画面的 ${((mainH / H) * 100).toFixed(0)}%，低于 30%（§七.4）` });
+    issues.push({
+      level: 'warn',
+      msg:
+        `${isTitle ? '标题整块' : '主字'}外接高度 ${mainH}px = 画面的 ${((mainH / H) * 100).toFixed(0)}%，低于 30%（§七.4）` +
+        (isTitle ? `　—— 标题太长把字号压下去了，改短标题，别调版式` : ''),
+    });
+
+  // title 版的斜杠跟着标题块走（它在那一版里是收尾，不是分隔）
+  const ruleH = isTitle ? { ...RULE, y0: mainBox.y1 + mainDy + TITLE_RULE_GAP, y1: mainBox.y1 + mainDy + TITLE_RULE_GAP + 11 } : RULE;
 
   // 眉标：实测宽度超过右界才缩，不为长度改文案（§九「固定的横向阈值是错的」）
   let kickerSize = HOOK_PT;
@@ -420,10 +607,16 @@ export function renderYt(spec: YtSpec): YtOut {
 
   // §七.2 副标自动降档：含缩进后超过 x=690 则逐级减 2pt
   let hookSize = HOOK_PT;
-  const overflow = (s: number) =>
-    Math.max(HOOK_X + textW(plain(spec.hook[0]), s), HOOK_X + HOOK_INDENT + textW(plain(spec.hook[1]), s)) > TEXT_MAX_X;
-  while (hookSize > 34 && overflow(hookSize)) hookSize -= 2;
-  if (hookSize !== HOOK_PT) issues.push({ level: 'warn', msg: `副标放不下，字号从 ${HOOK_PT} 降到 ${hookSize}（§七.2）` });
+  if (hook) {
+    const overflow = (s: number) =>
+      Math.max(HOOK_X + textW(plain(hook[0]), s), HOOK_X + HOOK_INDENT + textW(plain(hook[1]), s)) > TEXT_MAX_X;
+    while (hookSize > 34 && overflow(hookSize)) hookSize -= 2;
+    if (hookSize !== HOOK_PT) issues.push({ level: 'warn', msg: `副标放不下，字号从 ${HOOK_PT} 降到 ${hookSize}（§七.2）` });
+  }
+
+  // 错位影跟着字号走。**13px 是配 250px 主字的** ——
+  // title 版的字只有 108px，照抄 13 会把影子糊到笔画里，看着像重影不像错位。
+  const shadow = isTitle ? Math.max(4, Math.round((SHADOW_OFF * mainSize) / MAIN_PT)) : SHADOW_OFF;
 
   // ── 正式渲染 ──
   const sealCh = spec.seal ?? '醒';
@@ -432,40 +625,53 @@ export function renderYt(spec: YtSpec): YtOut {
       motif(C),
       sealMark(sealCh, C, SEAL_C.x, SEAL_C.y),
       kickerText(spec.kicker, KICKER_X, KICKER_CY, kickerSize, C.seal),
-      // 主字：先影后字
-      mainText(spec.big, mainLeft + SHADOW_OFF, mainBaseline + SHADOW_OFF, mainSize, C.acc),
-      mainText(spec.big, mainLeft, mainBaseline, mainSize, C.ink),
-      ruleBar(RULE, C.acc),
-      // 副标两行，第二行错行缩进 64
-      hookLine(spec.hook[0], HOOK_X, HOOK_Y1, hookSize, C, mark),
-      hookLine(spec.hook[1], HOOK_X + HOOK_INDENT, HOOK_Y1 + HOOK_GAP, hookSize, C, mark),
+      // 主位：先影后字
+      titleText(lines, mainLeft + shadow, mainBaseline + shadow, mainSize, C.acc),
+      titleText(lines, mainLeft, mainBaseline, mainSize, C.ink),
+      ruleBar(ruleH, C.acc),
+      // 副标两行，第二行错行缩进 64。**title 版没有这一段**
+      ...(hook && !isTitle
+        ? [
+            hookLine(hook[0], HOOK_X, HOOK_Y1, hookSize, C, mark),
+            hookLine(hook[1], HOOK_X + HOOK_INDENT, HOOK_Y1 + HOOK_GAP, hookSize, C, mark),
+          ]
+        : []),
     ].join('\n'),
     C.bg
   );
 
   // ── 方版：同样的元素，纵向排开 ──
   //
-  // 主字的字号跟横版一样（250px），所以横版量出来的那两个偏移直接复用 ——
+  // 主字的字号跟横版一样，所以横版量出来的那两个偏移直接复用 ——
   // 同字号同字体，外接框跟画布无关。**不用再跑一次 probe。**
   let sqKicker = SQ_KICKER_PT;
   const sqKickerMaxX = SQ_MOTIF.cx - (400 * SQ_MOTIF.scale) / 2 - KICKER_PAD;
   while (sqKicker > 34 && SQ_KICKER_X + textW(spec.kicker, sqKicker) > sqKickerMaxX) sqKicker -= 2;
   let sqHook = HOOK_PT;
-  const sqOverflow = (s: number) =>
-    Math.max(HOOK_X + textW(plain(spec.hook[0]), s), HOOK_X + HOOK_INDENT + textW(plain(spec.hook[1]), s)) > SQ - M;
-  while (sqHook > 34 && sqOverflow(sqHook)) sqHook -= 2;
+  if (hook) {
+    const sqOverflow = (s: number) =>
+      Math.max(HOOK_X + textW(plain(hook[0]), s), HOOK_X + HOOK_INDENT + textW(plain(hook[1]), s)) > SQ - M;
+    while (sqHook > 34 && sqOverflow(sqHook)) sqHook -= 2;
+  }
 
-  const sqBaseline = mainBaseline + (SQ_MAIN_CY - MAIN_CY);
+  const sqBaseline = mainBaseline + ((isTitle ? SQ_TITLE_CY : SQ_MAIN_CY) - mainCy);
+  const sqRule = isTitle
+    ? { ...SQ_RULE, y0: mainBox.y1 + (sqBaseline - PROBE_BASE) + TITLE_RULE_GAP, y1: mainBox.y1 + (sqBaseline - PROBE_BASE) + TITLE_RULE_GAP + 11 }
+    : SQ_RULE;
   const squareSvg = wrap(
     [
       `<g transform="translate(${n(SQ_MOTIF.cx - MOTIF_CX)},${n(SQ_MOTIF.cy - MOTIF_CY)}) translate(${MOTIF_CX},${MOTIF_CY}) scale(${SQ_MOTIF.scale}) translate(${-MOTIF_CX},${-MOTIF_CY})">${motif(C)}</g>`,
       sealMark(sealCh, C, SQ_SEAL.x, SQ_SEAL.y),
       kickerText(spec.kicker, SQ_KICKER_X, SQ_SEAL.y, sqKicker, C.seal),
-      mainText(spec.big, mainLeft + SHADOW_OFF, sqBaseline + SHADOW_OFF, mainSize, C.acc),
-      mainText(spec.big, mainLeft, sqBaseline, mainSize, C.ink),
-      ruleBar(SQ_RULE, C.acc),
-      hookLine(spec.hook[0], HOOK_X, SQ_HOOK_Y1, sqHook, C, mark),
-      hookLine(spec.hook[1], HOOK_X + HOOK_INDENT, SQ_HOOK_Y1 + sqHook * 1.32, sqHook, C, mark),
+      titleText(lines, mainLeft + shadow, sqBaseline + shadow, mainSize, C.acc),
+      titleText(lines, mainLeft, sqBaseline, mainSize, C.ink),
+      ruleBar(sqRule, C.acc),
+      ...(hook && !isTitle
+        ? [
+            hookLine(hook[0], HOOK_X, SQ_HOOK_Y1, sqHook, C, mark),
+            hookLine(hook[1], HOOK_X + HOOK_INDENT, SQ_HOOK_Y1 + sqHook * 1.32, sqHook, C, mark),
+          ]
+        : []),
     ].join('\n'),
     C.bg,
     SQ,
@@ -515,7 +721,87 @@ export function renderYt(spec: YtSpec): YtOut {
 // 数据放在期目录 `scenes.json` 的 `yt` 块里，跟 `cover` 并排 ——
 // 加一期只写一次数据，跟封面那边是同一条纪律。
 
+/**
+ * 治愈 / 心理洞察 / 小故事大道理 那三条线的封面。
+ *
+ * **跟说书线是两条路，因为项目结构不一样**：那边一期一个目录、数据在 `scenes.json`；
+ * 这边一本书一个目录、一本书可能有上下两期，数据在 `发布.json` 的 `parts[].yt`。
+ *
+ * **不碰片头首帧。** 规范 §〇：缩略图和首帧是两回事，这条线的首帧是和纸插画那张
+ * （`zhiyu-cover.ts` 出的 `first-frame-1920x1080.png`），成片认的也是它。
+ * 说书线 2026-08-23 把两张并成一张是那条线知情的例外，不推广到这儿。
+ *
+ * **但方版和横版要一起换。** 同一期两种版式并存，等于频道有两套脸。
+ */
+function mainZhiyu(): void {
+  const { id, dir, book } = resolveZhiyuEp(process.argv.slice(2));
+  const doc = JSON.parse(readFileSync(`${dir}/发布.json`, 'utf8')) as {
+    parts: { part: string; epTitle?: string; yt?: YtSpec }[];
+  };
+  const want = flagOf('--part');
+  const parts = doc.parts.filter((p) => !want || p.part === want);
+  const todo = parts.filter((p) => p.yt);
+  if (!todo.length) {
+    console.log(`《${book}》${want ? `（${want} 篇）` : ''}的 发布.json 里没有 yt 那一块。照这个写，放进 parts[i] 里：
+`);
+    console.log(
+      JSON.stringify(
+        {
+          yt: {
+            kicker: '陶庵梦忆 · 痴人夜行',
+            big: '看雪',
+            hook: ['他半夜出门都是{闲事}', '白天的{正事}一字没写'],
+            motif: 'snow_boat',
+            palette: 'paper',
+            seal: '醒',
+          },
+        },
+        null,
+        2
+      )
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(`《${book}》封面（${ZHIYU_LINE}线，V3 版式 ＋ 本线画风）`);
+  let bad = false;
+  for (const p of todo) {
+    const name = p.epTitle ?? p.part;
+    const r = renderYt(p.yt!);
+    const coverDir = `${dir}/cover/${p.part}`;
+    mkdirSync(coverDir, { recursive: true });
+    writeFileSync(`${dir}/YT_${name}.png`, r.png);
+    writeFileSync(`${coverDir}/YT-check-210.png`, r.preview);
+    // 横版和方版一起换：留着旧版式那两张，频道就有两套脸了
+    writeFileSync(`${coverDir}/upload-1280x720.png`, r.png);
+    writeFileSync(`${coverDir}/wechat-1080x1080.png`, r.square);
+    writeFileSync(`${coverDir}/check-square-200.png`, r.squareCheck);
+
+    console.log(`
+  ${p.part} 篇　主字「${p.yt!.big}」　眉标「${p.yt!.kicker}」　图形 ${p.yt!.motif}　配色 ${p.yt!.palette}`);
+    if (!r.issues.length) console.log('  ✓ 四项自动检测都过了');
+    for (const i of r.issues) console.log(`  ${i.level === 'error' ? '✗' : '!'} ${i.msg}`);
+    if (r.issues.some((i) => i.level === 'error')) bad = true;
+    console.log(`  → YT_${name}.png　cover/${p.part}/{upload-1280x720, wechat-1080x1080, YT-check-210}.png`);
+  }
+  console.log(
+    `
+**先看 cover/<篇>/YT-check-210.png 再上传** —— 210px 是唯一的验收标准。
+` +
+      `片头首帧没动（first-frame-1920x1080.png 还是 zhiyu-cover.ts 出的那张，成片认它）。`
+  );
+  if (bad) process.exitCode = 1;
+}
+
+const flagOf = (k: string) => {
+  const i = process.argv.indexOf(k);
+  return i < 0 ? undefined : process.argv[i + 1];
+};
+
 function main() {
+  // --line 一给就是治愈那三条线（治愈 / 心理 / 禅佛典），不给就是说书
+  if (process.argv.includes('--line')) return mainZhiyu();
   const { id, dir } = resolveEp(process.argv.slice(2));
   const doc = JSON.parse(readFileSync(`${dir}/scenes.json`, 'utf8')) as { yt?: YtSpec };
   if (!doc.yt) {

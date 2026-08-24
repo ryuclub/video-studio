@@ -3,7 +3,7 @@
 
 import { piece, tornRect, n } from './style/papercut.js';
 import { P } from './style/palette.js';
-import { W, FONT, FONT_HEAVY } from './config.js';
+import { W, FONT, FONT_HEAVY, FONT_LAOMA } from './config.js';
 import { clamp, easeOutBack } from './anim.js';
 import { tidyCaption } from './shuoshu-srt.js';
 
@@ -28,6 +28,31 @@ function wrap(text: string, fs: number, maxW: number): string[] {
   }
   if (cur) lines.push(cur);
   return lines;
+}
+
+/**
+ * 折行**均分**，不要贪心塞满第一行。
+ *
+ * 中文没有词间空格，贪心填行会把词从中间劈开：
+ * 「系统里一直显示待审批」十个字按宽度贪心是 **6/4** —— 断在「显/示」中间。
+ * 均分成 **5/5** 就落在「一直 | 显示」的缝上。**不是因为均分懂中文**，
+ * 是因为一行填满时断点落在哪儿纯属巧合，而均分至少让两行都不满、
+ * 断点有机会挪到词边界上。
+ *
+ * ⚠ **只重排，不改行数。** 行数由贪心那一遍定（那一遍才知道宽度装得下几行），
+ * 这儿只是把字重新摊平；摊完还要再验一遍宽度，装不下就退回贪心的结果。
+ */
+function wrapBalanced(text: string, fs: number, maxW: number): string[] {
+  const greedy = wrap(text, fs, maxW);
+  if (greedy.length < 2) return greedy;
+  const chars = [...text];
+  const per = Math.ceil(chars.length / greedy.length);
+  const out: string[] = [];
+  for (let i = 0; i < chars.length; i += per) out.push(chars.slice(i, i + per).join(''));
+  // 摊平之后行数变多、或者哪一行超宽，都退回贪心
+  if (out.length !== greedy.length) return greedy;
+  if (out.some((l) => textWidth(l, fs) > maxW)) return greedy;
+  return out;
 }
 
 function tspans(line: string, highlight: string | undefined, ink: (c: string) => string): string {
@@ -129,9 +154,16 @@ export function hookStrip(
   ink: (c: string) => string,
   seed: number,
   prog = 1,
-  plain = false
+  plain = false,
+  /**
+   * 字号。缺省 52 是字幕规范 §三「签名」那一档的数。
+   *
+   * ⚠ **老马线传 72。** 那张卡是**日子牌**（「老马的第 1858 天」），
+   * 它不只是签名 —— 观众要在定格那几秒里读出那个数、并且自己算一下那是多久
+   * （CHANNEL_LAOMA §五之二：「数字本身就是内容」）。52 号在竖屏上偏小，读不出分量。
+   */
+  fs = 52
 ): string {
-  const fs = 52;
   const lines = wrap(tidyCaption(text, { keepTone: true }), fs, W - 260);
   const lh = fs * 1.4;
   const padX = 28;
@@ -415,6 +447,35 @@ const SIDE_HALO = {
 };
 
 /**
+ * 老马线字幕的三档规格（字幕规范 §三，2026-08-23 接进来）。
+ *
+ * ── 两个颜色都不用纯的 ──
+ *
+ * 纯白配纯黑在暖色场景里会显得硬、显得是外挂上去的 UI。
+ * 奶白和深墨取自纸白配棕的调色板，**字幕才融得进画面**。
+ *
+ * ── 落点是「放大 ＋ 换色」两件事一起做 ──
+ *
+ * 落点比铺垫大 25% 并且换成琥珀。**只放大或只换色都不够** ——
+ * 规范原话。琥珀一条片子只用一次，就是落点那一句。
+ *
+ * ⚠ **字号是照规范抄的，但规范假设的是整幅 900px 宽的横排字幕。**
+ * 这条线的字幕排在角色旁边那一列，实测只有 515px 宽 ——
+ * 所以 80 号一行放得下六个字左右，**长句必须折行**（用户 2026-08-23 明确要折行）。
+ * 折行行距 1.25 也是规范给的。
+ */
+const LAOMA_SUB = {
+  /** 铺垫 */
+  setup: { fs: 80, fill: '#FAF6EC', line: '#2B2622' },
+  /** 落点：大 25% ＋ 换琥珀 */
+  punch: { fs: 100, fill: '#F0B72E', line: '#2B2622' },
+  /** 描边宽 ÷ 字号（规范给的是 15/80 和 19/100，两个都约等于这个数） */
+  strokeK: 0.19,
+  /** 折行行距 ÷ 字号 */
+  lineH: 1.25,
+} as const;
+
+/**
  * 侧边字幕。**没有衬底、没有动效**，一小句一行。
  *
  * 「没有衬底」是有意的，而且**现在也仍然没有衬底** —— 柔光描边（见上面那段）
@@ -433,31 +494,46 @@ export function sideText(
     cy: number;
     ink: (c: string) => string;
     fontSize?: number;
+    /** 哪一档：铺垫 / 落点。落点整屏换琥珀并放大 25%（字幕规范 §三） */
+    tier?: 'setup' | 'punch';
     highlight?: string;
     halo?: boolean;
     /** @deprecated 旧名。这一层早先是投影，现在是描边 —— 见 SIDE_HALO 顶上那段 */
     shadow?: boolean;
   }
 ): string {
-  // **字号按最长的那一小句自适应。** 写死字号的话，只要有一句比别的长，
-  // 它就会被折成两行 —— 而按逗号断行的全部意义就是「一小句一行」，
-  // 折了就等于没断。所以宁可全篇小一号，也不要有一句破相。
+  // ⚠ **2026-08-23 改：字号定死，长句折行 —— 不再靠缩字号硬塞一行。**
+  //
+  // 原来的做法是「字号按最长那一小句自适应」，理由写着「按逗号断行的全部意义
+  // 就是一小句一行，折了就等于没断，所以宁可全篇小一号」。
+  // 那条在字号 48 的年代成立；换到规范的 80 / 100 之后不成立了 ——
+  // 这一列只有 515px 宽，**一句十个字按老逻辑会被一路缩回 48**，
+  // 规范那三档就等于没接。用户要的是**折行**，不是缩字号。
+  //
+  // 缩字号只剩兜底：**一个字都放不下**的时候（列被角色挤得极窄）才动。
+  const spec = LAOMA_SUB[opts.tier ?? 'setup'];
   const want = clauses(tidyCaption(text, { keepTone: true }));
+  let fs = opts.fontSize ?? spec.fs;
   const MIN_FS = 34;
-  let fs = opts.fontSize ?? 52;
-  while (fs > MIN_FS && want.some((c) => textWidth(c, fs) > opts.colW)) fs -= 2;
-  const lh = fs * 1.5;
-  // 缩到下限还装不下的（罕见，一小句二十多字）才按宽度折，这是兜底不是常态
-  const lines = want.flatMap((c) => wrap(c, fs, opts.colW));
+  while (fs > MIN_FS && textWidth('测', fs) > opts.colW) fs -= 2;
+  const lh = fs * LAOMA_SUB.lineH;
+  const lines = want.flatMap((c) => wrapBalanced(c, fs, opts.colW));
   const top = opts.cy - ((lines.length - 1) * lh) / 2;
   const haloInk = opts.ink(P.paper);
   const glyphs = (l: string, i: number, pass: 'halo' | 'fill') =>
     `<text x="${n(opts.colX)}" y="${n(top + i * lh)}" ` +
-    `font-family="${FONT}" font-size="${fs}" font-weight="700" text-anchor="start" xml:space="preserve" ` +
+    // ⚠ **老马线用得意黑**（字幕规范 §二）。它只有一个字重而且是斜体，
+    // **层次只能靠字号和颜色做，不能靠字重** —— 所以这儿不再写 font-weight。
+    `font-family="${FONT_LAOMA}" font-size="${fs}" text-anchor="start" xml:space="preserve" ` +
     (pass === 'halo'
-      ? `fill="none" stroke="${haloInk}" stroke-width="${n(fs * SIDE_HALO.k)}" ` +
+      ? `fill="none" stroke="${opts.ink(spec.line)}" stroke-width="${n(fs * LAOMA_SUB.strokeK)}" ` +
+        // ⚠ round 别漏 —— 不加的话笔画拐角会长出尖刺（字幕规范 §三）
         `stroke-linejoin="round" stroke-linecap="round">${escapeXml(l)}`
-      : `fill="${opts.ink(P.ink)}">${tspans(l, opts.highlight, opts.ink)}`) +
+      // ⚠ **落点那一屏整屏就是琥珀，不再单独染词。** 规范要的是「放大 ＋ 换色」
+      // 两件事一起做；整屏已经是琥珀了，里面再挑一个词染同一个色没有意义。
+      : `fill="${opts.ink(spec.fill)}">${
+          opts.tier === 'punch' ? escapeXml(l) : tspans(l, opts.highlight, opts.ink)
+        }`) +
     `</text>`;
   // **描边整块画在前面，正文再压上去。** 逐行「描边＋填充」交替画的话，
   // 下一行的描边会啃掉上一行的填充 —— 行距 1.5 倍、描边半宽 0.068 × 字号，够得着。

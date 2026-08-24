@@ -189,6 +189,46 @@ export function nextSlot(line: string, from = new Date()): { date: Date; tag: st
   throw new Error(`${line} 一年之内都排满了？该查查目录名是不是不对`);
 }
 
+/** 往后几周排成什么样。一行 = 一档 */
+export interface Slot {
+  date: string;
+  /** 星期几，中文单字 */
+  wd: string;
+  /** 18:00 这种带冒号的 */
+  time: string;
+  /** 这一档归哪条线 */
+  line: string;
+  /** 占了这一档的那一期，空着就是 undefined */
+  by?: Booked;
+}
+
+/**
+ * 排期表的**数据形态**。CLI 和醒木不响那张 index.html 都从这儿取。
+ *
+ * **别在别处再抄一遍这个循环** —— 两处各算一套，迟早出现「命令行说空着、
+ * 网页说排上了」，而那种不一致没人核得出来是哪边错的。
+ */
+export function upcoming(weeks: number, from = new Date()): Slot[] {
+  const all = booked();
+  const base = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const out: Slot[] = [];
+  for (let i = 0; i < weeks * 7; i++) {
+    const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
+    for (const [line, s] of Object.entries(LINES)) {
+      if (!s.scheduled || !s.weekdays.includes(d.getDay())) continue;
+      const time = s.times[d.getDay()];
+      out.push({
+        date: ymd(d),
+        wd: WD[d.getDay()],
+        time: time.replace(/(\d\d)(\d\d)/, '$1:$2'),
+        line,
+        by: taken(ymd(d), time, all),
+      });
+    }
+  }
+  return out;
+}
+
 // ── CLI ──────────────────────────────────────────────────────────────
 
 function main() {
@@ -205,15 +245,14 @@ function main() {
   }
   console.log(`\n往后 ${weeks} 周：\n`);
 
-  for (let i = 0; i < weeks * 7; i++) {
-    const d = new Date(from.getFullYear(), from.getMonth(), from.getDate() + i);
-    for (const [line, s] of Object.entries(LINES)) {
-      if (!s.scheduled || !s.weekdays.includes(d.getDay())) continue;
-      const time = s.times[d.getDay()];
-      const b = taken(ymd(d), time, all);
-      const who = b ? `${b.slug}` : '—— 空';
-      console.log(`  ${ymd(d)} 周${WD[d.getDay()]} ${time.replace(/(\d\d)(\d\d)/, '$1:$2')}  ${line.padEnd(7)}${who}`);
-    }
+  // **排期表只算一遍**（`upcoming()`），这儿只负责把它印成人看的样子。
+  // 网页那张（醒木不响的 index.html）取的是同一份数据。
+  for (const s of upcoming(weeks, from)) {
+    // **占了别人档的要说出来。** 一档只发一条，所以哪条线的片子都能占任意一档；
+    // 但只印篇名的话，2026-08-26 那一行看着就是「小故事大道理 别人怎么看你-E01」——
+    // 一支治愈线的片子被印成了禅佛典线的期。**账本印错比空着更糟。**
+    const who = s.by ? (s.by.line === s.line ? s.by.slug : `${s.by.slug}　← ${s.by.line}线占了这一档`) : '—— 空';
+    console.log(`  ${s.date} 周${s.wd} ${s.time}  ${s.line.padEnd(7)}${who}`);
   }
 
   const legacy = Object.entries(LINES)

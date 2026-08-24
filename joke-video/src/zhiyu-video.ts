@@ -48,6 +48,7 @@ import { fileURLToPath } from 'node:url';
 import { packLines, toSrt, shiftSrt, type SrtCue } from './shuoshu-srt.js';
 import { SW, SH, STEP } from './zhiyu-scene.js';
 import { mmss } from './zhiyu-audio.js';
+import { buildWave, WAVE_POS_ZHIYU, WAVE_BARS_ZHIYU } from './wave.js';
 
 const { id: EP, dir: PROJ, book: BOOK } = resolveEp(process.argv.slice(2));
 
@@ -119,7 +120,7 @@ function textLayer(dir: string, coverHold: number): string | null {
   return `ass=文字.ass:fontsdir=${rel}`;
 }
 
-function build(part: string, coverHold: number, burn: boolean, textVer: boolean) {
+function build(part: string, coverHold: number, burn: boolean, textVer: boolean, wantWave: boolean) {
   const dir = `${PROJ}/成片/${part}`;
   const mPath = `${dir}/manifest.json`;
   if (!existsSync(mPath)) throw new Error(`没有 ${mPath}\n先跑：npx tsx src/zhiyu-episode.ts --part ${part}`);
@@ -186,18 +187,59 @@ function build(part: string, coverHold: number, burn: boolean, textVer: boolean)
         odd.slice(0, 4).map((f) => `  ${size(f)}　${f}`).join('\n')
     );
 
-  const vf = [`scale=${SW}:${SH}`, 'fps=25'];
+  // ── 音波层（四条静态线共用，见 wave.ts）──
+  // 这条线的片内参数全在往「无聊」上调，音波是**唯一一个动的东西** ——
+  // 它不换画面、不换字，只在下沿那一行跳，跟「不给人睁眼的理由」不冲突。
+  //
+  // **占满一整行贴着下沿**（`WAVE_POS_ZHIYU`，65 根柱子 = 1920px），字幕排在它上面。
+  // 说书线不是这么放的（左上角 22 根）—— 两条线的画面留白位置不一样。
+  // 不要的话传 --no-wave。
+  const wave = wantWave
+    ? buildWave({ wavPath: wav, outDir: `${dir}/_wave`, delay: coverHold, dur: m.duration, bars: WAVE_BARS_ZHIYU })
+    : null;
+  if (wave) console.log(`  音波 ${wave.frames} 帧（真渲 ${wave.unique} 张）${wave.w}×${wave.h} @ ${WAVE_POS_ZHIYU.x},${WAVE_POS_ZHIYU.y}`);
+
+  // ── 滤镜串 ──
+  // **filter_complex 不是 -vf**：音波是第二路输入，-vf 只吃得下一路
+  const chain: string[] = [];
+  let vlab = 'bg';
+  chain.push(`[0:v]scale=${SW}:${SH},fps=25[bg]`);
+  if (wave) {
+    chain.push(`[bg][1:v]overlay=${WAVE_POS_ZHIYU.x}:${WAVE_POS_ZHIYU.y}:eof_action=pass[wv]`);
+    vlab = 'wv';
+  }
   if (burn) {
     // 相对路径 + cwd：subtitles 滤镜里 Windows 盘符的冒号要三重转义，
     // 与其跟转义较劲，不如把工作目录切到片子目录，只传文件名
-    vf.push(
-      `subtitles=${part}篇.srt:force_style='FontName=Noto Serif SC,FontSize=13,` +
-        `PrimaryColour=&H00665A4A,OutlineColour=&HC0E8F2F6,BorderStyle=1,Outline=1,Shadow=0,Alignment=2,MarginV=18'`
+    //
+    // **FontSize 13 → 26（2026-08-24 翻倍）**，三条线（治愈 / 小故事大道理 / 心理洞察）一起。
+    // **MarginV 18 → 34**：音波改成占满下面一整行了，字幕要排到它上面去。
+    //
+    // ⚠ **同一串 force_style 里，这两个数不是一把尺子**（2026-08-24 在成片上量的）：
+    //
+    //   · `FontSize` 的倍率是 **≈2.6** —— 26 出来一个汉字宽 67.5px
+    //   · `MarginV` 的倍率是 **≈3.77** —— MarginV 每加 1，字幕往上抬 3.77px
+    //
+    // 差别来自 libass 对 4:3 脚本配 16:9 画面做的横向补偿：竖直方向按 1080/288=3.75 缩放，
+    // 字号还额外挨了一次横向修正。**别拿一个倍率去推另一个**，要哪个就量哪个。
+    //
+    // 实测落点：MarginV=34 → 字幕占 y 875–938；音波柱子最高够到 y 962。中间留 24px。
+    // 音波那头动了（`WAVE_POS_ZHIYU`），这个数要跟着重量一次。
+    chain.push(
+      `[${vlab}]subtitles=${part}篇.srt:force_style='FontName=Noto Serif SC,FontSize=26,` +
+        `PrimaryColour=&H00665A4A,OutlineColour=&HC0E8F2F6,BorderStyle=1,Outline=1,Shadow=0,Alignment=2,MarginV=34'[sb]`
     );
+    vlab = 'sb';
   }
   // 文字层排在字幕之后：真要两个一起烧的话，字幕在最上层
   const tl = textVer ? textLayer(dir, coverHold) : null;
-  if (tl) vf.push(tl);
+  if (tl) {
+    chain.push(`[${vlab}]${tl}[tx]`);
+    vlab = 'tx';
+  }
+  const ai = wave ? 2 : 1;
+  // 片头封面是静的，音轨整体后推，不是把开场那句盖掉
+  if (coverHold > 0) chain.push(`[${ai}:a]adelay=${Math.round(coverHold * 1000)}:all=1[aout]`);
 
   // 产物名带上版本后缀，**常规版永远不被覆盖**
   const suffix = textVer ? '_文字版' : burn ? '_烧字幕' : '';
@@ -205,10 +247,11 @@ function build(part: string, coverHold: number, burn: boolean, textVer: boolean)
   const args = [
     '-y', '-v', 'warning', '-stats',
     '-f', 'concat', '-safe', '0', '-i', abs(listPath),
+    ...(wave ? ['-f', 'concat', '-safe', '0', '-i', abs(wave.list)] : []),
     '-i', abs(wav),
-    '-vf', vf.join(','),
-    // 片头封面是静的，音轨整体后推，不是把开场那句盖掉
-    ...(coverHold > 0 ? ['-af', `adelay=${Math.round(coverHold * 1000)}:all=1`] : []),
+    '-filter_complex', chain.join(';'),
+    '-map', `[${vlab}]`,
+    '-map', coverHold > 0 ? '[aout]' : `${ai}:a`,
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p',
     '-tune', 'stillimage',
     '-c:a', 'aac', '-b:a', '192k',
@@ -243,7 +286,7 @@ function main() {
   const made: string[] = [];
   for (const p of doc.parts) {
     if (only && p.part !== only) continue;
-    made.push(build(p.part, coverHold, burn, textVer));
+    made.push(build(p.part, coverHold, burn, textVer, !argv.includes('--no-wave')));
   }
   console.log('');
   for (const f of made) console.log(`→ ${f}`);

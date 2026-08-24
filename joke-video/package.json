@@ -34,7 +34,8 @@
     "laoma:publish": "tsx src/yiye-publish.ts",
     "frame": "tsx src/cli.ts frame",
     "schedule": "tsx src/schedule.ts",
-    "deliver": "tsx src/deliver.ts"
+    "deliver": "tsx src/deliver.ts",
+    "xingmu:index": "tsx src/xingmu-index.ts"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

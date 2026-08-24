@@ -16,10 +16,12 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { resolve, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { resolveEp } from './shuoshu-ep.js';
 import { shiftSrt } from './shuoshu-srt.js';
 import { SW, SH } from './shuoshu-scene.js';
+import { buildWave, WAVE_POS } from './wave.js';
 
 interface Cue {
   no: number;
@@ -36,28 +38,56 @@ interface SceneSpec {
 }
 
 /**
- * 字幕样式。两个坑：
+ * 字幕样式。几个坑：
  *
- * ① **宣纸底上要深色字。** 白字配米黄纸等于没有。
- * ② **FontSize / MarginV 不是像素。** libass 把 srt 转成 ass 时用默认的
- *    PlayRes 384×288，force_style 里的数值都在那个坐标系里，渲到 1080p
- *    要乘 3.75。第一版写 FontSize=21 出来是 79px 的巨字，MarginV=58
- *    把字顶到了画面 3/4 高的地方，压在画上。现在的数值是按 ÷3.75 反推的：
- *    FontSize 14 → 约 52px，MarginV 16 → 约 60px。
- * ③ 字体名要用**系统里真有的族名**。写 "Noto Serif CJK SC"（那是思源的旧名）
- *    匹配不上，libass 静默回退到黑体，跟题字的宋体对不上。
+ * ① **宣纸底上白字要靠描边立住。** 白字配米黄纸本身等于没有 ——
+ *    2026-08-24 改成白字黑边（`Outline=2` ≈ 7.5px），撑住的是那圈黑，不是白。
+ *    原来是深墨字配纸色描边，那一版的道理写在这儿留个底：底色浅就用深字。
+ * ② **FontSize / MarginV 不是像素。** libass 把 srt 转成 ass 时用的是自己的
+ *    PlayRes 坐标系，force_style 里的数都在那个坐标系里。
+ *    ⚠ 这儿原来写着「乘 3.75」，**那个数是错的**：2026-08-24 在成片上量了
+ *    字幕块的外接框，`FontSize=15` 出来一个汉字宽 **39.5px**、30 出来 **79px**，
+ *    真实倍率是 **≈2.63**，不是 3.75（16:9 的画面配 4:3 的脚本，libass 还做了
+ *    一次横向补偿，两下叠起来就不是那个整数了）。
+ *    **要知道多大就去量，别按公式推。**
+ *    现在：FontSize 30 → 字宽 79px（2026-08-24 从 15 翻倍），MarginV 16 → 约 60px。
+ *    一行最多 **24 个字**（1920 ÷ 79）。E05 中位数 13 字，最长一条 23 字，
+ *    左右各剩 30px 正好塞下；再长就折成两行，字块往上长到 200px 高。
+ * ③ 字体名要用**当时真取得到的族名**：喂了 `fontsdir` 就写仓库那几个 otf 的族名
+ *    `Noto Serif CJK SC`，没喂就只能写系统装了的 `Noto Serif SC` —— 写错那一边，
+ *    libass 静默回退到黑体，跟题字的宋体对不上。
+ * ④ **字幕不再受题字压制**（2026-08-24 改）。以前的规矩是「字幕必须比题字小一档」，
+ *    现在字幕 79px、题字 60px，主次改由颜色和描边分：
+ *    字幕白底黑边（前景），题字白字黑边但细一圈、且贴在右栏边上（背景）。
+ *    **这是知情的取舍**：字幕现在是画面上最大的东西。
+ * ⑤ **`Bold=1` 光写没用。** 系统里装的是 `NotoSerifSC-VF.ttf`（可变字体），
+ *    libass 拿到它只有默认实例，**加粗静默失效**：实测 `Bold=0` 和 `Bold=1`
+ *    烧出来的 PNG **字节数一模一样**。所以这里要连 `fontsdir` 一起给，
+ *    指到仓库的 `fonts/NotoSerifCJKsc/OTF/`（一档一个文件的静态字重）。
+ *    这跟场景图那头是同一个坑、同一个解法（`inkwash.ts` 的 `INK_FONT_FILES`），
+ *    只是一个走 resvg 一个走 libass，两处要各喂一次。
+ *    加粗要解决的是：宣纸底 + 深墨细宋体，缩到手机上笔画会糊进纸纹里。
  */
-const SUB_STYLE = [
-  'FontName=Noto Serif SC',
-  'FontSize=14',
-  'PrimaryColour=&H00281A1A', // ABGR：深墨
-  'OutlineColour=&HB0D2E4ED', // 纸色描边，半透明
-  'BorderStyle=1',
-  'Outline=1',
-  'Shadow=0',
-  'Alignment=2',
-  'MarginV=16',
-].join(',');
+function subStyle(realBold: boolean): string {
+  return [
+    `FontName=${realBold ? 'Noto Serif CJK SC' : 'Noto Serif SC'}`,
+    'FontSize=30',
+    'Bold=1',
+    'PrimaryColour=&H00FFFFFF', // ABGR：纯白
+    'OutlineColour=&H00000000', // 纯黑描边，不透明——白字全靠它
+    'BorderStyle=1',
+    'Outline=2',
+    'Shadow=0',
+    'Alignment=2',
+    'MarginV=16',
+  ].join(',');
+}
+
+/**
+ * 字重文件在哪儿。**传给滤镜的是相对路径** —— subtitles 滤镜里的 Windows 盘符冒号
+ * 要三重转义，跟 srt 那个文件名同一个理由：切了工作目录，只传相对路径就没这回事。
+ */
+const FONT_DIR = fileURLToPath(new URL('../../fonts/NotoSerifCJKsc/OTF/SimplifiedChinese', import.meta.url));
 
 function main() {
   const argv = process.argv.slice(2);
@@ -136,10 +166,36 @@ function main() {
   const drift = argv.includes('--drift');
   const sub = !argv.includes('--no-sub');
   const srt = `${tag}.srt`;
-  const vf: string[] = [`scale=${SW}:${SH}`, 'fps=30'];
-  if (drift)
-    // 极缓慢的推镜。zoompan 是对已有位图做缩放，不重渲 SVG，所以代价只在编码
-    vf.push(`zoompan=z='min(zoom+0.00012,1.06)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${SW}x${SH}`);
+
+  // ── 音波层 ──
+  // 二十分钟一张静图配音，最怕「像张图不像个片子」。这一条跟着声音跳的柱子
+  // 是四条静态线共用的解药（`wave.ts`）。**它吃的是整期那条 wav**，
+  // 所以音频重出之后波形自动跟着变，不用对时。
+  const wave = argv.includes('--no-wave')
+    ? null
+    : buildWave({
+        wavPath: `${audioDir}/${tag}.wav`,
+        outDir: `${audioDir}/_wave`,
+        delay: coverHold,
+        dur: manifest.duration,
+      });
+  if (wave) console.log(`音波　${wave.frames} 帧（真渲 ${wave.unique} 张）　${wave.w}×${wave.h} @ ${WAVE_POS.x},${WAVE_POS.y}`);
+
+  // ── 滤镜串 ──
+  // **用 filter_complex 不用 -vf**：音波是第二路输入，-vf 只吃得下一路。
+  const chain: string[] = [];
+  let vlab = 'bg';
+  chain.push(
+    `[0:v]scale=${SW}:${SH},fps=30` +
+      // 极缓慢的推镜。zoompan 是对已有位图做缩放，不重渲 SVG，所以代价只在编码
+      (drift ? `,zoompan=z='min(zoom+0.00012,1.06)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=${SW}x${SH}` : '') +
+      `[bg]`
+  );
+  if (wave) {
+    // eof_action=pass：音波比画面短一点点也不掐掉画面
+    chain.push(`[bg][1:v]overlay=${WAVE_POS.x}:${WAVE_POS.y}:eof_action=pass[wv]`);
+    vlab = 'wv';
+  }
   let burnSrt = srt;
   if (sub) {
     if (!existsSync(`${audioDir}/${srt}`)) throw new Error(`没有 ${audioDir}/${srt}`);
@@ -154,17 +210,32 @@ function main() {
     }
     // **相对路径 + cwd**：subtitles 滤镜里的 Windows 盘符冒号要三重转义，
     // 与其跟转义较劲，不如把工作目录切到音频目录，只传文件名
-    vf.push(`subtitles=${burnSrt}:force_style='${SUB_STYLE}'`);
+    const realBold = existsSync(FONT_DIR);
+    if (!realBold)
+      console.log(
+        '! 没找到 fonts/NotoSerifCJKsc/OTF/ —— 字幕的加粗会静默失效（烧出来是常规字重）。\n' +
+          '  下载方式见 fonts/README.md'
+      );
+    const fontsdir = realBold ? `:fontsdir=${relative(resolve(audioDir), FONT_DIR).replace(/\\/g, '/')}` : '';
+    chain.push(`[${vlab}]subtitles=${burnSrt}${fontsdir}:force_style='${subStyle(realBold)}'[sub]`);
+    vlab = 'sub';
   }
+
+  // 音轨那一路也放进 filter_complex：-af 跟 -map 混用容易出「滤镜没接上还不报错」，
+  // 片头的静音推迟写在这儿一目了然
+  const ai = wave ? 2 : 1;
+  if (coverHold > 0) chain.push(`[${ai}:a]adelay=${Math.round(coverHold * 1000)}:all=1[aout]`);
 
   // **按 slug 命名，不按 EP** —— EP 的前缀是档期，挪档就变；slug 是身份，永不变
   const out = `${dir}/${slug}.mp4`;
   const args = [
     '-y', '-v', 'warning', '-stats',
     '-f', 'concat', '-safe', '0', '-i', resolve(listPath).replace(/\\/g, '/'),
+    ...(wave ? ['-f', 'concat', '-safe', '0', '-i', resolve(wave.list).replace(/\\/g, '/')] : []),
     '-i', `${tag}.wav`,
-    '-vf', vf.join(','),
-    ...(coverHold > 0 ? ['-af', `adelay=${Math.round(coverHold * 1000)}:all=1`] : []),
+    '-filter_complex', chain.join(';'),
+    '-map', `[${vlab}]`,
+    '-map', coverHold > 0 ? '[aout]' : `${ai}:a`,
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p',
     '-c:a', 'aac', '-b:a', '192k',
     '-shortest', '-movflags', '+faststart',
@@ -183,7 +254,7 @@ function main() {
         `${durs[i].toFixed(0).padStart(3)}s  ${s.comp.padEnd(5)} ${s.title}`
     );
   });
-  console.log(`\n字幕 ${sub ? '烧进画面' : '不烧'}　推镜 ${drift ? '开' : '关'}\n编码中…`);
+  console.log(`\n字幕 ${sub ? '烧进画面' : '不烧'}　推镜 ${drift ? '开' : '关'}　音波 ${wave ? '开' : '关'}\n编码中…`);
 
   const t0 = Date.now();
   const r = spawnSync('ffmpeg', args, { cwd: resolve(audioDir), encoding: 'utf8', stdio: ['ignore', 'inherit', 'inherit'] });

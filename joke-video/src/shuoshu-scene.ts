@@ -19,11 +19,16 @@
 //
 // 留白是主角。**主体占满画面就成了插画，不是水墨。**
 //
-// ⚠ **右边那一栏是禁区：x > 1680、y 560–980，不要放深墨的东西。**
+// ⚠ **右边那一栏是禁区：x > 1620、y 90–1050，不要放深墨的东西。**
 //
-// 题字从 (1740, 150) 往下竖排，朱印跟在题字末尾 —— 印的 y 是
-// `150 + 字数 × 字号 × 1.18 + 30`，所以**题字越长，印越往下**，
-// 一句 6 字的印在 y≈576，一句 11 字的印在 y≈906。整段都要空出来。
+// 右栏现在是**两列**（2026-08-24 改，见 §「右栏」）：
+//   · 题字：从 (1740, 120) 往下竖排，字号 60（超 12 字降到 50），**700 字重**
+//   · 幕名：从 (1836, 120) 往下竖排，字号 40，700 字重 —— 竖排是从右往左读，
+//     所以「幕三·花与笑」在题字**右边**，先读到它再读题字
+//
+// 朱印跟在题字末尾，y 是 `120 + (字数-1) × 字号 × 1.18 + 字号 + 30`，
+// 所以**题字越长，印越往下**：6 字的印在 y≈564，12 字的印在 y≈989（离下边还剩 23px）。
+// 整段都要空出来。
 //
 // E05 撞了三次才发现：灯市 / 满阶花 / 灯下 的屋顶伸到 x≈1750，
 // 印章正好压在瓦上。**这不是渲染报错，是出片之后用眼睛才看得见的那类问题** ——
@@ -32,7 +37,8 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import {
-  INK, INK_FONT, n, rng, path, brush, ridge, splatter, vtext, seal, sealDefs, paperBg, paperDefs, wetFilter, escapeXml,
+  INK, INK_FONT, INK_FONT_FILES, warnIfNoWeights,
+  n, rng, path, brush, ridge, splatter, vtext, seal, sealDefs, paperBg, paperDefs, wetFilter, escapeXml,
 } from './style/inkwash.js';
 import { resolveEp } from './shuoshu-ep.js';
 
@@ -969,16 +975,65 @@ export interface SceneSpec {
   seed?: number;
 }
 
+// ── 右栏：题字 / 幕名 / 朱印 ──────────────────────────────────────────
+//
+// 三个数字是一起定的，改一个要重算另外两个（`titleSize()` 的注释里有那道不等式）。
+
+/** 右栏两列共用的顶端。原来是 150，字号调大之后要往上挪，不然长题字的印会掉出画面 */
+const COL_TOP = 120;
+/** 题字那一列的中线 */
+const TITLE_X = 1740;
+/** 幕名那一列的中线。竖排从右往左读，幕名在题字右边＝先读到 */
+const ACT_X = 1836;
+/** 幕名字号。比题字小一档：它是路标，不是画面里的那句话。但小归小，要一眼看得见 */
+const ACT_SIZE = 50;
+
 /**
- * 左下角的幕名。**只有「幕X」才显示。**
+ * 右栏两列的颜色：**白字黑边**（2026-08-24 改，跟字幕统一）。
+ *
+ * 宣纸底上白字本身是看不见的，立住它的是那圈黑边 —— 所以描边是这套配色的
+ * 承重墙，不是装饰。**画面里唯一的彩色仍旧是那方朱印**（这一条没破）。
+ * 描边的画法见 `vtext` 的注释：一个字画两遍，只能这么画。
+ *
+ * 边用的是 `INK.ink`（#1A2028）不是纯黑 —— 这套画风里「墨带一点蓝才像墨」，
+ * 纯黑跟画面上所有的墨色都对不上。肉眼分不出，但混在一张画里分得出。
+ */
+const WHITE_ON_BLACK = { fill: '#FFFFFF', outline: INK.ink } as const;
+
+/**
+ * 题字字号。**下边界是硬约束**：
+ *
+ *     COL_TOP + (字数-1)×字号×1.18 + 字号 + 30（印的间距）+ 68（印） ≤ 1080
+ *
+ * 12 字取 60 时右边是 1057，剩 23px。**再大一档（64）就是 1114，印掉到画面外面**——
+ * 而 resvg 不会因为画到画外报错，只会安静地少画一块。
+ */
+function titleSize(len: number): number {
+  return len > 12 ? 50 : 60;
+}
+
+/**
+ * 右栏的幕名。**只有「幕X」才显示。**
  *
  * 「冷开场」「引入」「收束」是**写稿的结构标签，不是章节名**——
  * 打在成片上等于把脚手架露给观众看。而「幕二 · 疑」是故事内部的段落，
  * 观众看见它知道自己走到哪儿了。
+ *
+ * 2026-08-24 从左下角挪到右栏，字号 30 → 40 并加粗：
+ * 左下角那一版又小又淡（opacity 0.45），十七分钟的片子里几乎没人注意到它，
+ * 「观众知道自己走到哪儿」那个作用等于没起。挪到右栏跟题字排在一起，
+ * 它才是**画面上的第二条信息**。但仍旧比题字小一档、淡一点 ——
+ * 抢过题字就本末倒置了。
+ *
+ * 「幕三 · 花与笑」竖排要去掉 · 两边的空格：`vtext` 一个字一行，
+ * 空格也占一行，留着就是中间空两格。
  */
 function actLabel(act: string): string {
   if (!/^幕/.test(act)) return '';
-  return `<text x="72" y="${SH - 60}" font-family="${INK_FONT}" font-size="30" fill="${INK.ink}" opacity="0.45">${escapeXml(act)}</text>`;
+  // opacity 0.85：原来 0.45 在宣纸上几乎看不见，加粗也白加 ——
+  // **淡到看不见的字等于没有，字号和字重都是白给的。**
+  // 仍旧比题字低半档（0.92）+ 小一档（50 vs 60）：主次靠这两处分，不靠让它看不清
+  return vtext(ACT_X, COL_TOP, act.replace(/\s+/g, ''), ACT_SIZE, { weight: 700, opacity: 0.95, ...WHITE_ON_BLACK });
 }
 
 export function sceneSvg(spec: SceneSpec, act: string, sealText: string): string {
@@ -986,7 +1041,11 @@ export function sceneSvg(spec: SceneSpec, act: string, sealText: string): string
   if (!draw) throw new Error(`没有这个构图：${spec.comp}\n可用：${COMPOSITION_NAMES.join(' / ')}`);
   const seed = spec.seed ?? spec.no * 37 + 11;
 
-  const titleSize = spec.title.length > 12 ? 46 : 56;
+  const size = titleSize(spec.title.length);
+  const gap = size * 1.18;
+  // 印跟在最后一个字下面。**按「最后一字的基线 + 一个字高」算，不按字数×行距算** ——
+  // 后者多算一整行，字号一调大就把印顶出画面
+  const sealY = COL_TOP + (spec.title.length - 1) * gap + size + 30;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${SW}" height="${SH}" viewBox="0 0 ${SW} ${SH}">
 <defs>
   ${paperDefs()}
@@ -998,8 +1057,8 @@ export function sceneSvg(spec: SceneSpec, act: string, sealText: string): string
 ${paperBg(SW, SH, seed)}
 ${draw(seed)}
 <g>
-  ${vtext(1740, 150, spec.title, titleSize)}
-  ${seal(1740 - 34, 150 + spec.title.length * titleSize * 1.18 + 30, 68, sealText)}
+  ${vtext(TITLE_X, COL_TOP, spec.title, size, { weight: 700, opacity: 1, ...WHITE_ON_BLACK })}
+  ${seal(TITLE_X - 34, sealY, 68, sealText)}
 </g>
 ${actLabel(act)}
 </svg>`;
@@ -1011,6 +1070,7 @@ function main() {
   if (!existsSync(specPath))
     throw new Error(`没有 ${specPath}\n先写一份：[{ "no": 1, "comp": "画皮", "title": "…", "act": "冷开场" }, …]\n可用构图：${COMPOSITION_NAMES.join(' / ')}`);
 
+  warnIfNoWeights();
   const doc = JSON.parse(readFileSync(specPath, 'utf8')) as { seal?: string; scenes: SceneSpec[] };
   const outDir = `${dir}/scenes`;
   // **先清空。** 改版之后场景数会变（E01 v1 是 26 张，v2 是 41 张），
@@ -1026,7 +1086,13 @@ function main() {
     const svg = sceneSvg(s, act, doc.seal ?? '聊斋');
     const png = new Resvg(svg, {
       fitTo: { mode: 'original' },
-      font: { loadSystemFonts: true, defaultFontFamily: INK_FONT.split(',')[0].trim() },
+      font: {
+        // 有仓库字体就只认仓库字体：系统里的同名族会抢，而系统那份是可变字体，
+        // 抢到手之后 `font-weight` 就白写了（`inkwash.ts` 的 INK_FONT_FILES 说明）
+        fontFiles: INK_FONT_FILES,
+        loadSystemFonts: INK_FONT_FILES.length === 0,
+        defaultFontFamily: INK_FONT.split(',')[0].trim(),
+      },
     })
       .render()
       .asPng();

@@ -3,8 +3,15 @@
 // 这一层是整套方案里最值钱的部分：换段子、换动物、换人都不改这里。
 
 import { lineText, type JokeCfg, type Timeline, type Segment, type SfxCue } from '../types.js';
-import { clauseGap, type Pace } from '../pace.js';
+import { clauseGap, getPace, type Pace } from '../pace.js';
 
+/**
+ * 「留一拍」多停多久（秒）。《累积式_出片方案》§二 定的 0.8。
+ *
+ * **不做成可调的**：可调的话它迟早会被用来凑片长，而那正是这条规矩要挡的事
+ * （「别硬撑时间，有本事让稿子把时间撑起来」）。留一拍是节奏设计，不是旋钮。
+ */
+export const BEAT_PAUSE = 0.8;
 
 /** 没有配音时的时长估算：中文约每字 0.22s */
 export function estimateDur(text: string): number {
@@ -40,10 +47,33 @@ function buildTimelineA(cfg: JokeCfg): Timeline {
   let punchStart = intro;
   let punchEnd = intro;
 
+  /**
+   * 句间停顿的缺省值走**节奏预设**，不再写死。
+   *
+   * ⚠ **接进来的时候一个像素都没动**：A 类的缺省预设是 `banter`，
+   * 而它的 `padBefore/padAfter` 正好就是原来写死的 0.15 / 0.2 ——
+   * 已出片的 17 条稿子（全部写着 `"pace": "banter"` 或不写）算出来的时间轴逐字节不变。
+   *
+   * 要它的是累积式：`standup-fast` 把句间压到 0.1 + 0.3，**排比才不会散**。
+   * 落点前后那两个数（0.4 / 0.35）仍旧是硬编码的 —— 那是「落点该有多少留白」，
+   * 跟「这条线说话有多密」是两件事，两个体裁都成立。
+   */
+  const pace = getPace(cfg.pace, 'banter');
+
   cfg.lines.forEach((line, i) => {
-    const padBefore = voiceFirst && i === 0 ? 0 : line.padBefore ?? (line.beat === 'punch' ? 0.4 : 0.15);
-    const dur = line.dur ?? estimateDur(lineText(line));
-    const padAfter = line.padAfter ?? (line.beat === 'punch' ? 0.35 : 0.2);
+    const padBefore = voiceFirst && i === 0 ? 0 : line.padBefore ?? (line.beat === 'punch' ? 0.4 : pace.padBefore);
+    // 无声字幕的时长是**稿子定的**，不是量出来的 —— 写在前面，
+    // 免得 `align` 没跑过的时候它去按字数估一个长度出来
+    const dur = line.silent ?? line.dur ?? estimateDur(lineText(line));
+    /**
+     * **「留一拍」**（累积式，见 `types.ts` 的 `beatPause`）：这一句说完额外多停 0.8 秒。
+     *
+     * ⚠ **是加上去的，不是替换。** 写了 `padAfter` 的那一句照样多停 ——
+     * 覆盖的话，「我给了这一句多少停顿」和「这里要留一拍」会互相吃掉，
+     * 而 JSON 上看不出是哪一个赢了。
+     */
+    const padAfter =
+      (line.padAfter ?? (line.beat === 'punch' ? 0.35 : pace.padAfter)) + (line.beatPause ? BEAT_PAUSE : 0);
     const start = t + padBefore;
     const end = start + dur;
     segments.push({ kind: 'line', start, end: end + padAfter, line, lineIndex: i });
@@ -227,6 +257,10 @@ export function segAt(tl: Timeline, t: number): Segment {
 export function speakingAt(tl: Timeline, t: number): { line: import('../types.js').LineCfg; index: number; local: number } | null {
   for (const s of tl.segments) {
     if (s.kind !== 'line' || !s.line) continue;
+    // ⚠ **无声字幕不算「在说话」。** 这个函数是按 `dur` 判的、**不看配音包络** ——
+    // 不挡的话，一张只上字的卡会让说话放射亮起来、眼睛按「说话时定住」排，
+    // 而那一段他根本没开口。两处都不报错，只是不对。
+    if (s.line.silent) continue;
     const dur = s.line.dur ?? estimateDur(lineText(s.line));
     if (t >= s.start && t < s.start + dur) return { line: s.line, index: s.lineIndex!, local: t - s.start };
   }

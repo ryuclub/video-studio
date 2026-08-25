@@ -71,6 +71,18 @@ function loadCfg(p?: string): { cfg: JokeCfg; path: string } {
  */
 function laomaOk(cfg: JokeCfg, argv: string[], act: string): boolean {
   if (!cfg.characters?.some((c) => c.rig === 'horse')) return true;
+  // ⚠ **长片不进这道闸。** 它查的全是短片的东西 —— 落点、铺垫几句、物件、
+  // 日子牌、片长 18–45 秒。拿去判一条五分钟的稿子，报出来的每一条都是错的，
+  // 而**天天报错的闸门，人只会学会加 `--anyway`**（那才是真正的损失：
+  // 累积式和单点式那两道有用的闸也跟着不被当回事了）。
+  //
+  // 长片自己的规范还没写（素材包里那份方案只到「先录音」那一步），
+  // 有了再往这儿接一道 —— **在那之前，它是没有闸的，写稿的人心里得有数。**
+  if (cfg.format === 'long') {
+    console.log('\n长片：不走短片那道体检（落点／铺垫／物件／日子牌／片长全是短片的判据）。');
+    console.log('长片自己的规范还没写 —— **这条线现在没有闸**，稿子对不对只能靠人看。\n');
+    return true;
+  }
   console.log('\n稿件体检（老马线）');
   if (laomaGate(cfg)) return true;
   console.log('');
@@ -85,6 +97,10 @@ function voiceDir(cfg: JokeCfg) {
 
 /** 找第 i 句的配音文件：支持 1-who.wav / 1.wav / 01.wav */
 function findVoice(cfg: JokeCfg, i: number): string | null {
+  // ⚠ **无声字幕必须在这儿就挡掉。** 下面那个「按文件名排序取第 i 个 wav」的兜底
+  // 会让编号错位 —— 静音句没有 wav，第 i 个 wav 是它**邻居**的配音，
+  // 而拿邻居的音频当自己的**不报错**：出来是一条口型对不上、时间轴整体前移的片子。
+  if (cfg.lines[i]?.silent) return null;
   const dir = voiceDir(cfg);
   if (!existsSync(dir)) return null;
   const who = cfg.lines[i].who;
@@ -477,6 +493,13 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     let found = 0;
 
     cfg.lines.forEach((line, i) => {
+      // 无声字幕：时长是稿子定的，不量、不回填 audio。**这不是「没找到配音」**
+      if (line.silent) {
+        line.dur = line.silent;
+        delete line.audio;
+        console.log(`  第 ${i + 1} 句 [无声字幕] ${line.silent}s：「${lineText(line)}」`);
+        return;
+      }
       const p = findVoice(cfg, i);
       if (!p) {
         console.log(`  第 ${i + 1} 句：未找到配音（放到 voice/${cfg.id}/${i + 1}-${line.who}.wav）`);

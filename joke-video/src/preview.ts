@@ -145,8 +145,34 @@ export const dirTitle = (cfg: JokeCfg): string =>
  *
  * ⚠ **反查只认最后那个天数号**，中间三截都会变。
  */
-export const laomaDirName = (cfg: JokeCfg, no: number): string =>
-  ['未排期', '段子', dirColumn(cfg), dirTitle(cfg), String(no)].filter(Boolean).join('_');
+export const laomaDirName = (cfg: JokeCfg, key: string): string =>
+  ['未排期', '段子', dirColumn(cfg), dirTitle(cfg), key].filter(Boolean).join('_');
+
+/**
+ * 目录名最后那一截 —— **这条片子的身份**，反查只认它。
+ *
+ * - 单点式：**天数号**（1874）。它是老马的工龄，一条一格，永不改动。
+ * - 累积式：**`闲聊-<稿件号>`**（闲聊-017）。累积式不占那条时间轴，没有天数号
+ *   （《累积式_出片方案》§五：什么时候发都不突兀）。
+ *
+ * ⚠ **方案里写的是「最后一截换成 `闲聊`」，这儿多带了稿件号，是有意的。**
+ * 光一个「闲聊」不是身份 —— 同一个栏目下第二条累积式的目录名会跟第一条只差
+ * 中间那截标题，而**中间几截全是会变的**（改期、改标题、换场景）。
+ * 反查一旦对不上，`findProjectDir` 就会**再建一个新目录**，
+ * 同一条片子从此有两个家。带上稿件号才是「改什么都还认得出自己」。
+ */
+export function laomaKey(cfg: JokeCfg): string {
+  if (cfg.format === 'cumulative') return `闲聊-${cfg.id.match(/(\d+)\s*$/)?.[1] ?? cfg.id}`;
+  const no = dayNo(cfg);
+  if (no === null)
+    throw new Error(
+      `${cfg.id} 读不出天数号：\`day\` 和收尾卡 \`hook\` 都没有。\n` +
+        `天数号是单点式的身份（目录名、排期、数字账本都用它），` +
+        `不出收尾卡的条目也要写 \`"day": 1848\`（CHANNEL_LAOMA §五之二）。\n` +
+        `累积式不用天数号 —— 那种稿子要写 \`"format": "cumulative"\`。`
+    );
+  return String(no);
+}
 
 /**
  * 成品目录。老马走排期树，其余线照旧 `<日期>_<id>`。
@@ -158,26 +184,29 @@ export const laomaDirName = (cfg: JokeCfg, no: number): string =>
  * 校验会一直提醒还有几条没排期。
  */
 export function projectDir(cfg: JokeCfg, date?: string): string {
-  if (isLaoma(cfg)) {
-    const no = dayNo(cfg);
-    if (no === null)
-      throw new Error(
-        `${cfg.id} 读不出天数号：\`day\` 和收尾卡 \`hook\` 都没有。\n` +
-          `天数号是老马这条线的身份（目录名、排期、数字账本都用它），` +
-          `不出收尾卡的条目也要写 \`"day": 1848\`（CHANNEL_LAOMA §五之二）。`
-      );
-    return `${LAOMA_TREE}/_待发/${laomaDirName(cfg, no)}`;
-  }
+  // 长片是第三条线：**横屏、五分钟、另算发布策略**，它不属于「段子」那棵排期树
+  // （那棵树的规矩是天数号、跳号、一周三档，长片一条都不适用）。
+  // 单独一枝 `projects/老马/长片/<id>/`，排期校验只扫 `段子/`，互不打扰。
+  if (cfg.format === 'long') return `${OUT_LAOMA}/长片/${cfg.id}`;
+  if (isLaoma(cfg)) return `${LAOMA_TREE}/_待发/${laomaDirName(cfg, laomaKey(cfg))}`;
   const d = date ?? new Date().toISOString().slice(0, 10);
   return `${OUT_JOKE}/${d}_${cfg.id}`;
 }
 
 /** 已经建过的项目目录（同一条稿子不重复建新目录） */
 export function findProjectDir(cfg: JokeCfg): string | null {
+  if (cfg.format === 'long') {
+    const d = `${OUT_LAOMA}/长片/${cfg.id}`;
+    return existsSync(d) ? d : null;
+  }
   if (isLaoma(cfg)) {
-    const no = dayNo(cfg);
-    if (no === null) return null;
-    // ⚠ **只认尾巴上那个天数号。**
+    let no: string;
+    try {
+      no = laomaKey(cfg);
+    } catch {
+      return null; // 天数号都读不出来的稿子，也不会有目录
+    }
+    // ⚠ **只认尾巴上那一截身份**（天数号／闲聊-稿件号）。
     // 目录名是 `<日期>_<时刻>JST_段子_<名称>_<天数号>` —— 前面三截都会变
     // （改期改前缀、改标题改名称），**只有天数号是身份**。
     // 拿标题去反查的话，改一次标题就找不到自己的目录了，然后建一个新的。
@@ -465,11 +494,13 @@ export function jokeSection(
       : '';
   })();
 
-  return `<section class="joke" id="${esc(cfg.id)}">
+  return `<section class="joke" id="${esc(cfg.id)}"${
+    cfg.characters.some((c) => c.rig === 'horse') ? ` data-fmt="${cfg.format === 'cumulative' ? 'cum' : 'one'}"` : ''
+  }>
   <header>
     <h2>${esc(cfg.id)}</h2>
     <div class="facts">
-      <span>${esc(cfg.type)} 类 · ${esc(cfg.scene)}</span>
+      <span>${cfg.characters.some((c) => c.rig === 'horse') ? `${formatBadge(cfg)}式 · ` : `${esc(cfg.type)} 类 · `}${esc(cfg.scene)}</span>
       <span>片长 ${tl.duration.toFixed(1)}s</span>
       <span>笑点 ${tl.punchStart.toFixed(1)}s</span>
       <span>定格 ${tl.freezeStart.toFixed(1)}s</span>
@@ -489,6 +520,37 @@ export function jokeSection(
 }
 
 /**
+ * 发布状态牌（左侧目录）。三态，**分得清「发过了」和「排好了但还没到日子」**：
+ *
+ * | | 目录在哪 ＋ 目录名 | 读作 |
+ * |---|---|---|
+ * | **已发** | `_已发/` | 发过了，成片不回改（收尾卡、日子牌都烧进去了） |
+ * | **待发 2026-09-06** | `_待发/` ＋ 日期前缀 | 排好了，还没到日子 |
+ * | **未排期** | `_待发/未排期_…` | 出了片，日子还没定 —— **这是个正常状态，不是错** |
+ *
+ * ⚠ **状态只从目录来**（`readPublishInfo`：在哪个桶里 ＋ 目录名前缀），
+ * 不另记一份 —— 目录树本身就是排期账本，两头记必然对不上。
+ */
+function pubMark(pub?: PublishInfo): string {
+  if (!pub?.bucket) return '';
+  const done = pub.bucket === '_已发';
+  const slot = pub.slot && pub.slot !== '未排期' ? pub.slot.replace(/ \d{2}:\d{2} JST$/, '') : '';
+  const label = done ? '已发' : slot ? '待发' : '未排期';
+  const cls = done ? 'st-done' : slot ? 'st-todo' : 'st-none';
+  return `<span class="nav-st"><b class="${cls}">${label}</b>${slot ? `<span>${esc(slot)}</span>` : ''}</span>`;
+}
+
+/**
+ * 体裁牌：**单点** / **累积**。老马线两种体裁的判据好几处是反过来的
+ * （落点、字幕、片长、日子牌），扫目录的时候得一眼分得出这条是哪一种 ——
+ * 不然「这条落点怎么是句感想」这种问题每次都要翻稿件才能回答。
+ *
+ * ⚠ 只给老马线用（判据跟别处一样：传了栏目就是老马线）。
+ */
+const formatBadge = (cfg: JokeCfg): string =>
+  cfg.format === 'cumulative' ? '<b class="tag-cum">累积</b>' : '<b class="tag-one">单点</b>';
+
+/**
  * 左侧导航的一项。缩略图用开场那一张（空镜／黑底大字卡）——扫一眼就知道是哪条片子。
  */
 export function navEntry(
@@ -497,7 +559,15 @@ export function navEntry(
   assetPrefix = '',
   index?: number,
   /** 栏目（工位 / 一个人住 / 众目睽睽 / 回家）。老马线传，别的线不传 */
-  column = ''
+  column = '',
+  /**
+   * 发布状态。老马线传，别的线不传（那几条线没有排期树，也就无所谓发没发）。
+   *
+   * **发没发是扫目录时最先要知道的一件事** —— 「这条能不能改」「下一条发什么」
+   * 全看它。原来只能靠顺序猜（未发布在前、已发布在后），
+   * 而顺序在筛掉一半条目之后就不成立了。
+   */
+  pub?: PublishInfo
 ): string {
   const tl = buildTimeline(cfg);
   const thumb = shots.find((s) => ['开场空镜', '开场大字', '开场物件'].includes(s.label)) ?? shots[0];
@@ -507,12 +577,17 @@ export function navEntry(
   const title = cfg.title ?? cfg.hook ?? cfg.id;
   // 日期从项目目录名取（projects/段子与儿童故事/2026-08-18_mouse-cake/），那是出片日期的唯一真相。
   const date = /^(\d{4}-\d{2}-\d{2})_/.exec(assetPrefix)?.[1] ?? '';
-  return `<a class="nav-item" href="#${esc(cfg.id)}" data-target="${esc(cfg.id)}">
+  // 体裁标在 data 上，筛选条按它显隐。**只有老马线标**（判据跟别处一样：传了栏目）——
+  // 别的线没有体裁这回事，标了就得给它们也做一条筛选。
+  return `<a class="nav-item${pub?.bucket === '_已发' ? ' is-done' : ''}" href="#${esc(cfg.id)}" data-target="${esc(
+    cfg.id
+  )}"${column ? ` data-fmt="${cfg.format === 'cumulative' ? 'cum' : 'one'}"` : ''}>
   ${thumb ? `<img class="nav-thumb" src="${assetPrefix}${thumb.file}" alt="" loading="lazy">` : '<span class="nav-thumb ph"></span>'}
   <span class="nav-body">
     <span class="nav-title">${index != null ? `<b class="nav-num">${index}</b>` : ''}${esc(title)}</span>
     ${date ? `<span class="nav-date">${esc(date)}</span>` : ''}
-    <span class="nav-meta">${column ? `<b class="nav-col">${esc(column)}</b> · ` : ''}${esc(cfg.type)} 类 · ${tl.duration.toFixed(1)}s · ${cfg.lines.length} 句</span>
+    ${pubMark(pub)}
+    <span class="nav-meta">${column ? `<b class="nav-col">${esc(column)}</b> · ${formatBadge(cfg)} · ` : `${esc(cfg.type)} 类 · `}${tl.duration.toFixed(1)}s · ${cfg.lines.length} 句</span>
     <span class="nav-cast">${esc(casts)}</span>
   </span>
 </a>`;
@@ -523,10 +598,13 @@ export function navEntry(
  *
  * @param title 侧栏抬头。缺省「稿件目录」（段子画廊、老马那两页）；
  *   醒木不响那页列的是片子，叫别的名字
+ * @param extra 抬头和列表之间插一块（老马那页的体裁筛选条）。
+ *   **不写就一个字节都不多** —— 别的页不受影响
  */
-export function navPanel(items: string[], title = '稿件目录'): string {
+export function navPanel(items: string[], title = '稿件目录', extra = ''): string {
   return `<nav class="side" id="side">
   <div class="side-head">${esc(title)}<span class="side-count">${items.length}</span></div>
+  ${extra}
   <div class="side-list">${items.join('\n')}</div>
   <a class="side-top" href="#top">回到顶部</a>
 </nav>`;
@@ -639,16 +717,88 @@ function emoteGallery(): string {
     })
     .join('\n');
 
-  return `<section class="card" id="_symbols">
-  <h2>符号库　<span class="sub-inline">两套，各有各的规矩</span></h2>
+  return `<details class="card fold" id="_symbols">
+  <summary><h2>符号库　<span class="sub-inline">没有情绪的 ${Object.keys(EMOTE_SYMBOLS).length} 个 · 情绪符号 ${
+    Object.keys(MARKS).length
+  } 个</span></h2></summary>
   <p class="sub"><b>没有情绪的八个</b>　落点符号写 <code>endEmote</code>（全片 ≤1，落点定格里延后 0.3 秒起）；
   停顿符号写 <code>line.emote</code>（全片 ≤2，只挂 ≥0.8 秒的句末停顿，落点句和它前一句不许挂）。</p>
   <div class="symbols-grid">${cells}</div>
   <p class="sub"><b>情绪符号十个</b>　它们是<b>画面替观众表态</b>，所以给的是配额不是自由：<b>近 5 条最多 1 条</b>
   （收尾卡 <code>endMark</code> 和停顿 <code>line.emote</code> 共用同一份账）。用在停顿里的写法跟上面一样。</p>
   <div class="symbols-grid">${markCells}</div>
-</section>`;
+</details>`;
 }
+
+/** 累积式稿件库的一条（`horse/累积式_稿件库.json`）。全文在 `horse/累积式_出片计划.md` */
+interface CumEntry {
+  no: number;
+  set: number;
+  title: string;
+  scene: string;
+  weight: string;
+  ox?: boolean;
+  beat?: string;
+  note?: string;
+  clash?: string;
+}
+
+/**
+ * 累积式出片计划：35 条还剩哪些没做。
+ *
+ * ⚠ **「做了没有」是反查出来的，不是表里手写的** —— 出了片的那条稿件写
+ * `"sourceNo": N`，这儿拿 `jokes/*.json` 里所有的 `sourceNo` 去比。
+ * 手写状态的表迟早会停在「待做」上，而那时候片子已经发出去两个月了
+ * （跟目录树当排期账本是同一条道理：**状态要从事实推出来，别另记一份**）。
+ */
+function cumulativePlan(made: Map<number, JokeCfg>): string {
+  const p = 'horse/累积式_稿件库.json';
+  if (!existsSync(p)) return '';
+  let lib: CumEntry[];
+  try {
+    lib = JSON.parse(readFileSync(p, 'utf8')) as CumEntry[];
+  } catch {
+    return '';
+  }
+  const done = lib.filter((e) => made.has(e.no)).length;
+  const cols = new Map<string, number>();
+  for (const e of lib) if (!made.has(e.no)) cols.set(colOf(e.scene), (cols.get(colOf(e.scene)) ?? 0) + 1);
+  const rows = lib
+    .map((e) => {
+      const cfg = made.get(e.no);
+      const tips = [e.beat && `留一拍：${e.beat}`, e.note, e.clash && `⚠ 撞车：${e.clash}`].filter(Boolean).join('　');
+      return `<tr class="${cfg ? 'done' : ''}${e.ox ? ' ox' : ''}">
+  <td class="no">${e.no}</td>
+  <td class="ttl">${esc(e.title)}${e.ox ? '<span class="badge">两人镜</span>' : ''}</td>
+  <td>${esc(colOf(e.scene))}</td>
+  <td class="mono">${esc(e.scene)}</td>
+  <td class="w-${esc(e.weight === '—' ? 'na' : e.weight)}">${esc(e.weight)}</td>
+  <td>${cfg ? `<a href="#${esc(cfg.id)}">已出片 ${esc(cfg.id)}</a>` : '待做'}</td>
+  <td class="tip">${esc(tips)}</td>
+</tr>`;
+    })
+    .join('\n');
+  const left = [...cols.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ');
+  // **折叠**：35 行的表摆在页顶，往下翻三屏才见得着第一条片子。
+  // 摘要行里留着「多少条、做了几条、下一条该做谁」——**收起来也还看得见要紧的数**。
+  return `<details class="card fold" id="_cumplan">
+  <summary><h2>累积式出片计划　<span class="sub-inline">${lib.length} 条，已出片 ${done}，待做 ${
+    lib.length - done
+  }</span></h2></summary>
+  <p class="sub">稿源是素材包三辑（<code>E:\\ryu\\laoma\\</code>），全文抄在
+  <code>joke-video/horse/累积式_出片计划.md</code> 里，<b>抄进来之后以那一份为准</b>。
+  场景是建议，栏目从场景反查。<b>状态不手写</b>——稿件里写 <code>sourceNo</code>，这张表自己去比。</p>
+  <p class="sub">待做的栏目分布：<b>${esc(left)}</b>　——
+  单点式那 16 条把工位堆到了一半，累积式往「一个人住」倾斜，两条线合起来才回得去 40%。</p>
+  <div class="plan-wrap"><table class="plan">
+  <thead><tr><th>#</th><th>篇名</th><th>栏目</th><th>场景建议</th><th>重量</th><th>状态</th><th>出片提示</th></tr></thead>
+  <tbody>${rows}</tbody>
+  </table></div>
+</details>`;
+}
+
+/** 场景 → 栏目。跟 `dirColumn` 同一张表，只是这儿手上只有场景名 */
+const colOf = (scene: string): string => HORSE_SCENE_TABLE[scene]?.column ?? '—';
 
 function assetGallery(): string {
   const dir = `${OUT_JOKE}/_assets`;
@@ -718,10 +868,14 @@ export function syncProjects(
    * 文件名顺序（laoma-001…016）对不上发布顺序 —— 天数号是跳着走的，而且改期只改目录名。
    * **要看的永远是「接下来发什么」，已经发过的往后放。**
    */
-  const laomaRows: Array<{ cfg: JokeCfg; shots: PreviewShot[]; prefix: string; sec: string; bucket: string; day: number }> = [];
+  const laomaRows: Array<{ cfg: JokeCfg; shots: PreviewShot[]; prefix: string; sec: string; bucket: string; day: number; pub: PublishInfo }> = [];
 
   for (const f of files) {
     const cfg = JSON.parse(readFileSync(`jokes/${f}`, 'utf8')) as JokeCfg;
+    // ⚠ **长片不进汇总页。** 这张页是「一句一张场景图」，
+    // 一条长片有一百多句、分镜表上却只有 16 镜 —— 逐句出图对它没有意义，
+    // 而且那是一百多次渲染。等长片的画面真做起来了再单开一张页。
+    if (cfg.format === 'long') continue;
     const dir = findProjectDir(cfg) ?? projectDir(cfg);
     mkdirSync(dir, { recursive: true });
     const reuse = opts.renderFor !== undefined && cfg.id !== opts.renderFor;
@@ -741,6 +895,7 @@ export function syncProjects(
         shots,
         prefix,
         sec: jokeSection(cfg, shots, analysis, prefix, film, cover, pub),
+        pub,
         bucket: pub.bucket ?? '_待发',
         day: dayNo(cfg) ?? 0,
       });
@@ -751,11 +906,20 @@ export function syncProjects(
     if (!opts.quiet) console.log(`  ${cfg.id}${reuse ? '（复用已有场景图）' : ` ${shots.length} 张场景图`}`);
   }
 
-  // 老马：未发布在前、已发布在后，组内按天数号
-  laomaRows.sort((a, b) => (a.bucket === b.bucket ? a.day - b.day : a.bucket === '_待发' ? -1 : 1));
+  // 老马：未发布在前、已发布在后；**组内先单点式后累积式**，单点式按天数号。
+  //
+  // ⚠ **累积式不能跟单点式混着按天数号排** —— 它没有天数号（`dayNo` 是 null，
+  // 这儿退成 0），混排的话它永远排在所有待发条目最前面，
+  // 而那个位置的含义是「下一条发这个」，它并不是。
+  const fmtRank = (c: JokeCfg) => (c.format === 'cumulative' ? 1 : 0);
+  laomaRows.sort((a, b) => {
+    if (a.bucket !== b.bucket) return a.bucket === '_待发' ? -1 : 1;
+    const f = fmtRank(a.cfg) - fmtRank(b.cfg);
+    return f !== 0 ? f : a.day - b.day || a.cfg.id.localeCompare(b.cfg.id);
+  });
   laomaRows.forEach((r, i) => {
     sections.laoma.push(r.sec);
-    navItems.laoma.push(navEntry(r.cfg, r.shots, r.prefix, i + 1, dirColumn(r.cfg)));
+    navItems.laoma.push(navEntry(r.cfg, r.shots, r.prefix, i + 1, dirColumn(r.cfg), r.pub));
   });
 
   // 段子与儿童故事：公用素材区摆在所有稿件前面（写新稿件先看这里有什么现成的）
@@ -775,11 +939,38 @@ ${sections.joke.join('\n')}`;
   // 但**符号库要摆在最前面** —— 写稿的人得先看得见有哪些符号，才谈得上点名
   if (sections.laoma.length) {
     mkdirSync(OUT_LAOMA, { recursive: true });
+    const cum = laomaRows.filter((r) => r.cfg.format === 'cumulative');
+    const made = new Map<number, JokeCfg>();
+    for (const r of laomaRows) if (typeof r.cfg.sourceNo === 'number') made.set(r.cfg.sourceNo, r.cfg);
+    const planNav = `<a class="nav-item" href="#_cumplan" data-target="_cumplan">
+  <span class="nav-thumb ph"></span>
+  <span class="nav-body"><span class="nav-title">累积式出片计划</span><span class="nav-meta">35 条 · 已出片 ${made.size}</span></span>
+</a>`;
     const lbody = `<h1>老马 · 稿件与成片</h1>
-<p class="sub">共 ${sections.laoma.length} 条 · 目录名带发布日和时刻，排期见 joke-video/horse/SCHEDULE.md</p>
+<p class="sub">共 ${sections.laoma.length} 条 —— <b class="tag-one">单点</b>式 ${
+      sections.laoma.length - cum.length
+    } 条（带日子牌，占天数号）· <b class="tag-cum">累积</b>式 ${cum.length} 条（排比自嘲，不占时间轴）。
+两种体裁的判据好几处是<b>反过来</b>的，见 joke-video/horse/单点式_出片方案.md ／ 累积式_出片方案.md。
+目录名带发布日和时刻，排期见 horse/SCHEDULE.md</p>
+${cumulativePlan(made)}
 ${emoteGallery()}
 ${sections.laoma.join('\n')}`;
-    writeFileSync(`${OUT_LAOMA}/index.html`, page('老马 · 稿件与成片', lbody, navPanel(navItems.laoma)));
+    /**
+     * 体裁筛选条。**两种体裁的判据好几处是反过来的**，看的时候常常只想看一种：
+     * 「累积式到今天为止长什么样」「单点式那 16 条的收尾卡是怎么处理的」。
+     *
+     * 纯前端显隐，不另出一张页 —— 一份内容两张页，改了一处忘了另一处是迟早的事。
+     */
+    const one = sections.laoma.length - cum.length;
+    const filter = `<div class="fmt-filter" role="group" aria-label="体裁筛选">
+  <button type="button" data-fmt="all" class="on">全部 <b>${sections.laoma.length}</b></button>
+  <button type="button" data-fmt="one">单点 <b>${one}</b></button>
+  <button type="button" data-fmt="cum">累积 <b>${cum.length}</b></button>
+</div>`;
+    writeFileSync(
+      `${OUT_LAOMA}/index.html`,
+      page('老马 · 稿件与成片', lbody, navPanel([planNav, ...navItems.laoma], '稿件目录', filter))
+    );
   }
   return files.length;
 }
@@ -835,6 +1026,51 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item:hover { background:rgba(127,127,127,.1); }
 /* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
 .nav-col { color:var(--accent); font-weight:700; }
+/* 体裁牌：两种体裁的判据好几处是反过来的，得一眼分得出 */
+.tag-one, .tag-cum { display:inline-block; padding:0 5px; border-radius:3px;
+  font-size:10px; font-weight:700; vertical-align:1px; color:#fff; }
+.tag-one { background:var(--accent); }
+.tag-cum { background:var(--gold); color:#3a2c07; }
+/* 页顶那两个块。⚠ **.card 原来是个没有任何规则的类名**（符号库一直是裸着排在页面上的）——
+   折叠之后它得看着像个可点的条，所以补上跟稿件块同一套框 */
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:18px 26px; margin-bottom:18px; }
+details.card[open] { padding-bottom:22px; }
+/* 可折叠的大块（出片计划、符号库）。摘要行本身就是标题，收起来也看得见那几个数 */
+details.fold > summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; }
+details.fold > summary::-webkit-details-marker { display:none; }
+details.fold > summary::before { content:'▸'; color:var(--dim); font-size:13px; flex:none;
+  transition:transform .15s; }
+details.fold[open] > summary::before { transform:rotate(90deg); }
+details.fold > summary h2 { margin:0; }
+details.fold > summary:hover h2 { color:var(--accent); }
+/* 体裁筛选条：两种体裁的判据好几处是反过来的，常常只想看一种 */
+.fmt-filter { display:flex; gap:4px; margin:8px 0 2px; }
+.fmt-filter button { flex:1; padding:5px 2px; border-radius:7px; cursor:pointer;
+  border:1px solid var(--line); background:transparent; color:var(--dim);
+  font-size:11px; font-family:inherit; }
+.fmt-filter button b { font-variant-numeric:tabular-nums; }
+.fmt-filter button:hover { border-color:var(--accent); color:var(--ink); }
+.fmt-filter button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+.is-off { display:none !important; }
+/* 累积式出片计划那张表 */
+.plan-wrap { overflow-x:auto; }
+table.plan { border-collapse:collapse; width:100%; font-size:12.5px; }
+table.plan th, table.plan td { border-bottom:1px solid var(--line); padding:5px 8px;
+  text-align:left; vertical-align:top; }
+table.plan th { font-size:11px; color:var(--dim); font-weight:700; white-space:nowrap; }
+table.plan td.no { font-variant-numeric:tabular-nums; color:var(--dim); width:1%; }
+table.plan td.ttl { font-weight:700; white-space:nowrap; }
+table.plan td.mono { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; color:var(--dim); }
+table.plan td.tip { color:var(--dim); font-size:11.5px; line-height:1.5; }
+table.plan tr.done { background:rgba(127,127,127,.07); }
+table.plan tr.done td.ttl { color:var(--dim); }
+table.plan tr.ox td.ttl .badge { margin-left:6px; }
+/* 重量档：重的那几条要一眼看得见，因为「重的别连着放」 */
+td.w-重 { color:var(--hot); font-weight:700; }
+td.w-中 { color:var(--ink); }
+td.w-轻, td.w-na { color:var(--dim); }
+td.w-老牛 { color:var(--gold); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -851,6 +1087,16 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
   border-radius:3px; background:var(--accent); color:#fff;
   font-size:10px; font-weight:700; text-align:center; vertical-align:1px; }
 .nav-date { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+/* 发布状态：已发 / 待发+日期 / 未排期。**扫目录时最先要知道的一件事** */
+.nav-st { display:flex; align-items:center; gap:5px; font-size:10.5px;
+  color:var(--dim); font-variant-numeric:tabular-nums; }
+.nav-st b { padding:0 5px; border-radius:3px; font-weight:700; }
+.st-done { background:rgba(127,127,127,.22); color:var(--dim); }
+.st-todo { background:rgba(31,58,95,.14); color:var(--accent); }
+.st-none { background:transparent; color:var(--hot); border:1px solid currentColor; padding:0 4px !important; }
+@media (prefers-color-scheme: dark) { .st-todo { background:rgba(127,168,216,.2); color:#bcd4f0; } }
+/* 发过的整条压暗一档：那些是不回改的，视线该落在还没发的那些上 */
+.nav-item.is-done .nav-title, .nav-item.is-done .nav-thumb { opacity:.62; }
 .nav-meta { font-size:11px; color:var(--dim); }
 .nav-cast { font-size:11px; color:var(--accent); overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; }
@@ -1004,6 +1250,43 @@ ${
     if (el) io.observe(el);
   });
   if (items.length) items[0].classList.add('active');
+})();
+// 点目录里的折叠块（出片计划／符号库）要自己展开 ——
+// 浏览器跳到一个收起来的 <details> 上是**什么都不显示**的，用户只会觉得链接坏了
+(function () {
+  var open = function () {
+    // ⚠ try/catch 不是摆设：querySelector 碰上不合法的 hash 会抛，
+    // 而这几段脚本在同一个 <script> 里 —— 抛出去的话**底下的筛选条一起不工作**，
+    // 表现是「按钮点了没反应」，跟 hash 一点关系都看不出来。
+    try {
+      var el = location.hash.length > 1 && document.querySelector(location.hash);
+      if (el && el.tagName === 'DETAILS') el.open = true;
+    } catch (err) {}
+  };
+  addEventListener('hashchange', open);
+  open();
+})();
+// 体裁筛选（老马那页）：纯显隐，不出第二张页
+(function () {
+  var bar = document.querySelector('.fmt-filter');
+  if (!bar) return;
+  var btns = [].slice.call(bar.querySelectorAll('button'));
+  // **只筛带 data-fmt 的**：出片计划那一项和符号库没有体裁，任何时候都留着
+  var targets = [].slice.call(document.querySelectorAll('[data-fmt]')).filter(function (el) {
+    return el.tagName !== 'BUTTON';
+  });
+  bar.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    var want = b.dataset.fmt;
+    btns.forEach(function (x) { x.classList.toggle('on', x === b); });
+    targets.forEach(function (el) {
+      el.classList.toggle('is-off', want !== 'all' && el.dataset.fmt !== want);
+    });
+    // 抬头那个数跟着变 —— 筛到只剩 2 条、抬头还写着 19，看着就像坏了
+    var count = document.querySelector('.side-count');
+    if (count) count.textContent = String(document.querySelectorAll('.nav-item[data-fmt]:not(.is-off)').length);
+  });
 })();
 </script>`
     : ''

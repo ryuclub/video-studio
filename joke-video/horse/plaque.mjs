@@ -185,7 +185,10 @@ export const SLOTS = {
     { type: "wall",     x: 0.26,  y: 0.100, rot: -2.2, style: "pin" },
   ],
   "home-living": [
-    { type: "sticky",   x: 0.218, y: 0.135, w: 0.196, h: 0.100, rot: -3 },
+    // ⚠ 2026-08-25 跟着挂历一起改：挂历左移 42px 并从 330 压到 140 高
+    //（`scenes.mjs`，为了让开日子牌那行字）。便签得跟着走、跟着矮，
+    // 不然字飘到挂历外面去。现在的框：挂历 x 78–308 / y 89–229，便签落在它中间。
+    { type: "sticky",   x: 0.179, y: 0.083, w: 0.190, h: 0.055, rot: -3 },
     { type: "wall",     x: 0.68,  y: 0.105, rot: 2.2, style: "wood" },
   ],
   "kitchen-table": [

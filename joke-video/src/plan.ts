@@ -93,7 +93,11 @@ function shotTable(cfg: JokeCfg, tl: Timeline): string {
 
     // note 是人写的镜头意图，跟着这一句走
     const picture = line.note ? `${shot}<br>*${line.note}*` : shot;
-    const say = `**${line.who}**：${subtitleText(line)}`;
+    // 无声字幕（`line.silent`）在分镜表上要一眼看得出来 —— 它没有配音，
+    // 表里跟别的句子长得一样的话，核片子的人会以为这句是念出来的
+    const say = line.silent
+      ? `**无声字幕** ${line.silent}s　${subtitleText(line)}　*只上字，不出声*`
+      : `**${line.who}**：${subtitleText(line)}`;
 
     rows.push(`| ${fmt(seg.start)}–${fmt(seg.start + (line.dur ?? 0))} | ${cell(picture)} | ${cell(say)} | ${cell(sfxAt(cfg, tl, seg.start))} |`);
     // 张嘴无声 / 闭目：**这两样是分镜表上必须看得见的**。

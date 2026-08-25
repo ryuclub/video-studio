@@ -10,7 +10,13 @@ README 讲的是「这套东西怎么用」，这份讲的是「今天这条片�
 > 另外五条线各有各的手册，管线完全不同，别串着看：
 > · **说书线**（`shuoshu/` + `joke-video/src/shuoshu-*.ts`）→ [`shuoshu/出片手册.md`](shuoshu/出片手册.md)
 > · **段子线**（`joke-video/`）→ [`joke-video/README.md`](joke-video/README.md)
->   老马（独白 deadpan）走 [`joke-video/老马出片方案.md`](joke-video/老马出片方案.md)；
+>   老马（独白 deadpan）**2026-08-25 起拆成三条体裁，共用层在 BASE**：
+>   [`horse/BASE.md`](joke-video/horse/BASE.md) ＋
+>   [`单点式`](joke-video/horse/单点式_出片方案.md)（带日子牌）／
+>   [`累积式`](joke-video/horse/累积式_出片方案.md)（排比自嘲，35 条稿件库在
+>   [出片计划](joke-video/horse/累积式_出片计划.md)）／
+>   [`长片`](joke-video/horse/长片_出片方案.md)（5 分钟横屏，双音色，**现在只做到音频**）。
+>   **三份分叉文档互不参照** —— 换了体裁该反过来的规则才写进分叉。
 >   写稿规范 [`horse/SCRIPT_GUIDE.md`](joke-video/horse/SCRIPT_GUIDE.md)、
 >   排期 [`horse/SCHEDULE.md`](joke-video/horse/SCHEDULE.md)
 > · **儿童故事线**（`joke-video/`，旁白叙述型）→ [`joke-video/儿童故事出片方案.md`](joke-video/儿童故事出片方案.md)

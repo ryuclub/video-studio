@@ -758,7 +758,15 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
    */
   const sceneName = sceneAt(tl, Math.min(t, tl.freezeStart - 0.001));
   const isHorse = !!tl.cfg.characters?.some((c) => c.rig === 'horse');
-  const dressSeed = dayNo(tl.cfg) ?? 0;
+  /**
+   * 摆件和牌匾载体的轮换种子。**天数号优先**（单点式每条都有一个）。
+   *
+   * ⚠ **累积式没有天数号**（它不占老马那条时间轴），退到 0 的话
+   * **同一个场景的每一条累积式都摆一模一样的东西、挂一模一样的牌子** ——
+   * 而防同质化正是这两样东西存在的理由。所以退到稿件号。
+   * 单点式一条都不受影响：它们的 `dayNo()` 从来不是 null。
+   */
+  const dressSeed = dayNo(tl.cfg) ?? Number(tl.cfg.id.match(/(\d+)\s*$/)?.[1] ?? 0);
   /**
    * 标题牌匾：**把标题做成场景里的物件，不是浮在画面上的 UI**（`horse/plaque.mjs`）。
    *
@@ -977,7 +985,14 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
     if (pauseSeg?.kind === 'line' && pauseSeg.line?.emote) {
       const pad = pauseSeg.line.padAfter ?? 0.2;
       const speakEnd = pauseSeg.end - pad;
-      const from = speakEnd + 0.15;
+      /**
+       * ⚠ **无声字幕那一档，符号跟字一起上**（2026-08-25 用户定）。
+       *
+       * 上面那套「说完之后 +0.15 秒才浮现」是给念出来的句子排的 ——
+       * 先听完，再给他一个反应。**但无声字幕没有「说完」这个时刻**：
+       * 它是一张卡，字和图是同一件事，分先后就成了两次动作。
+       */
+      const from = pauseSeg.line.silent ? pauseSeg.start : speakEnd + 0.15;
       const to = pauseSeg.end - 0.1;
       if (t >= from && t < to) {
         const pe = pauseSeg.line.emote;

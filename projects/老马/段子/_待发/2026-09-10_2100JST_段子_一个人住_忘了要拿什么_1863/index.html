@@ -40,6 +40,51 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item:hover { background:rgba(127,127,127,.1); }
 /* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
 .nav-col { color:var(--accent); font-weight:700; }
+/* 体裁牌：两种体裁的判据好几处是反过来的，得一眼分得出 */
+.tag-one, .tag-cum { display:inline-block; padding:0 5px; border-radius:3px;
+  font-size:10px; font-weight:700; vertical-align:1px; color:#fff; }
+.tag-one { background:var(--accent); }
+.tag-cum { background:var(--gold); color:#3a2c07; }
+/* 页顶那两个块。⚠ **.card 原来是个没有任何规则的类名**（符号库一直是裸着排在页面上的）——
+   折叠之后它得看着像个可点的条，所以补上跟稿件块同一套框 */
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:18px 26px; margin-bottom:18px; }
+details.card[open] { padding-bottom:22px; }
+/* 可折叠的大块（出片计划、符号库）。摘要行本身就是标题，收起来也看得见那几个数 */
+details.fold > summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; }
+details.fold > summary::-webkit-details-marker { display:none; }
+details.fold > summary::before { content:'▸'; color:var(--dim); font-size:13px; flex:none;
+  transition:transform .15s; }
+details.fold[open] > summary::before { transform:rotate(90deg); }
+details.fold > summary h2 { margin:0; }
+details.fold > summary:hover h2 { color:var(--accent); }
+/* 体裁筛选条：两种体裁的判据好几处是反过来的，常常只想看一种 */
+.fmt-filter { display:flex; gap:4px; margin:8px 0 2px; }
+.fmt-filter button { flex:1; padding:5px 2px; border-radius:7px; cursor:pointer;
+  border:1px solid var(--line); background:transparent; color:var(--dim);
+  font-size:11px; font-family:inherit; }
+.fmt-filter button b { font-variant-numeric:tabular-nums; }
+.fmt-filter button:hover { border-color:var(--accent); color:var(--ink); }
+.fmt-filter button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+.is-off { display:none !important; }
+/* 累积式出片计划那张表 */
+.plan-wrap { overflow-x:auto; }
+table.plan { border-collapse:collapse; width:100%; font-size:12.5px; }
+table.plan th, table.plan td { border-bottom:1px solid var(--line); padding:5px 8px;
+  text-align:left; vertical-align:top; }
+table.plan th { font-size:11px; color:var(--dim); font-weight:700; white-space:nowrap; }
+table.plan td.no { font-variant-numeric:tabular-nums; color:var(--dim); width:1%; }
+table.plan td.ttl { font-weight:700; white-space:nowrap; }
+table.plan td.mono { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; color:var(--dim); }
+table.plan td.tip { color:var(--dim); font-size:11.5px; line-height:1.5; }
+table.plan tr.done { background:rgba(127,127,127,.07); }
+table.plan tr.done td.ttl { color:var(--dim); }
+table.plan tr.ox td.ttl .badge { margin-left:6px; }
+/* 重量档：重的那几条要一眼看得见，因为「重的别连着放」 */
+td.w-重 { color:var(--hot); font-weight:700; }
+td.w-中 { color:var(--ink); }
+td.w-轻, td.w-na { color:var(--dim); }
+td.w-老牛 { color:var(--gold); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -56,6 +101,16 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
   border-radius:3px; background:var(--accent); color:#fff;
   font-size:10px; font-weight:700; text-align:center; vertical-align:1px; }
 .nav-date { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+/* 发布状态：已发 / 待发+日期 / 未排期。**扫目录时最先要知道的一件事** */
+.nav-st { display:flex; align-items:center; gap:5px; font-size:10.5px;
+  color:var(--dim); font-variant-numeric:tabular-nums; }
+.nav-st b { padding:0 5px; border-radius:3px; font-weight:700; }
+.st-done { background:rgba(127,127,127,.22); color:var(--dim); }
+.st-todo { background:rgba(31,58,95,.14); color:var(--accent); }
+.st-none { background:transparent; color:var(--hot); border:1px solid currentColor; padding:0 4px !important; }
+@media (prefers-color-scheme: dark) { .st-todo { background:rgba(127,168,216,.2); color:#bcd4f0; } }
+/* 发过的整条压暗一档：那些是不回改的，视线该落在还没发的那些上 */
+.nav-item.is-done .nav-title, .nav-item.is-done .nav-thumb { opacity:.62; }
 .nav-meta { font-size:11px; color:var(--dim); }
 .nav-cast { font-size:11px; color:var(--accent); overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; }
@@ -182,11 +237,11 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <body id="top">
 <div class="wrap"><h1>laoma-012</h1>
 <p class="sub">成片 · 场景图 · 对话内容 · 音色设置 · 分析思路</p>
-<section class="joke" id="laoma-012">
+<section class="joke" id="laoma-012" data-fmt="one">
   <header>
     <h2>laoma-012</h2>
     <div class="facts">
-      <span>A 类 · rental-living</span>
+      <span><b class="tag-one">单点</b>式 · rental-living</span>
       <span>片长 16.4s</span>
       <span>笑点 12.0s</span>
       <span>定格 14.4s</span>

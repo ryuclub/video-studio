@@ -59,6 +59,8 @@ const SLOWER: Array<{ text: string; rate: string; why: string }> = [
 interface Row {
   who: 'ma' | 'niu';
   layer: string;
+  /** 这一句在第几章（`## 一、早上` 那一层）。**环境音按章铺**，所以得记下来 */
+  section: string;
   text: string;
   padAfter: number;
   /** 稿子里那句静场说明，原样存进 note，出片时看得见为什么停这么久 */
@@ -77,9 +79,17 @@ const readPause = (s: string): { sec: number; note: string } | null => {
   return { sec: Number(m[1]), note: m[2].replace(/[*—\-\s]+/g, ' ').trim() };
 };
 
+/** 当前章（`## 一、早上`）。**环境音按章铺**，所以每一句都记着自己在哪一章 */
+let section = '';
+
 for (const raw of md.split('\n')) {
   const t = raw.trim();
   if (!t) continue;
+  const h = t.match(/^##\s+([一二三四五六七八九十]+)、(.+)$/);
+  if (h) {
+    section = `${h[1]}、${h[2].trim()}`;
+    continue;
+  }
   // 引用块：只有带 ⏸ 的才是静场，别的是写给人看的说明（「以下为回忆段…」）
   if (t.startsWith('>')) {
     const p = readPause(t);
@@ -90,7 +100,9 @@ for (const raw of md.split('\n')) {
     continue;
   }
   // `【马】` / `【马·台词】` / `【牛·回忆】` —— 前半是谁，后半是哪一层
-  const m = t.match(/^【(马|牛)(?:·(台词|回忆|旁白))?】\s*(.+)$/);
+  // ⚠ `台` 和 `台词` 两种写法都认：v2 写的是「【马·台词】」，v3 缩成了「【马·台】」。
+  // **稿子的写法会变，脚本认宽一点** —— 认不出来的后果是那一句被当成旁白，静默地少一层。
+  const m = t.match(/^【(马|牛)(?:·(台词|台|回忆|旁白))?】\s*(.+)$/);
   if (!m) continue; // 标题、分隔线、改动记录那几节，一概不念
   if (solo && rows.length) {
     rows[rows.length - 1].padAfter = solo;
@@ -99,10 +111,10 @@ for (const raw of md.split('\n')) {
     soloNote = '';
   }
   const who = m[1] === '马' ? 'ma' : 'niu';
-  const layer = m[2] ?? '旁白';
+  const layer = m[2] === '台' ? '台词' : m[2] ?? '旁白';
   const p = readPause(m[3]);
   const text = m[3].replace(/⏸.*$/, '').trim();
-  rows.push({ who, layer, text, padAfter: p ? p.sec : DEFAULT_PAD });
+  rows.push({ who, layer, section, text, padAfter: p ? p.sec : DEFAULT_PAD });
 }
 // 稿子末尾那条 `⏸**3.0 — 黑场**` 在最后一句之后，循环里没人接
 if (solo && rows.length) {
@@ -158,12 +170,37 @@ const cfg = {
     ...(LAYER[r.layer] ? { tone: LAYER[r.layer] } : {}),
     ...(SLOWER.find((s) => s.text === r.text) ? { delivery: { rate: SLOWER.find((s) => s.text === r.text)!.rate } } : {}),
     ...(r.note ? { note: r.note } : {}),
+    /**
+     * 这一句是哪一层（旁白／台词／回忆）。**出帧那头要按它排版**：
+     * 旁白走底部字幕条，台词走头顶那一层。
+     *
+     * ⚠ **别让下游按句长猜。** 头一版没存这个字段，出帧脚本只好
+     * 「≤12 字算台词」—— 「老牛在这儿待了六年」11 字，当场被摆到头顶上，
+     * 而它是旁白。**稿子里标死的东西，一路传下去，别在中途丢掉。**
+     */
+    _layer: r.layer,
     say: [{ text: r.text }],
   })),
   cues: { introHiss: false, replyWood: false, punchSlide: false, freezeThud: false, subtitlePop: false },
   camera: 'static',
   subtitleStyle: 'side',
   endHold: 0,
+  /**
+   * 每一章覆盖哪几句（**0 起算，含首尾**）。给环境音那一层用 ——
+   * `tools/long-ambience.mts` 拿它 ＋ 时间轴算出每一章的起止时刻，再往上铺床音。
+   *
+   * ⚠ 存的是**句号不是时刻**：时刻要等 `align` 回填真实时长才算得准，
+   * 而句号在改稿之前不会变。
+   */
+  _sections: (() => {
+    const out: Array<{ name: string; from: number; to: number }> = [];
+    rows.forEach((r, i) => {
+      const last = out[out.length - 1];
+      if (last && last.name === r.section) last.to = i;
+      else out.push({ name: r.section, from: i, to: i });
+    });
+    return out;
+  })(),
 };
 
 writeFileSync(dst, JSON.stringify(cfg, null, 2) + '\n', 'utf8');

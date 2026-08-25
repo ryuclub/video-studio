@@ -51,8 +51,18 @@ import { dayNo, type JokeCfg } from './types.js';
 const ROOT = `${OUT_LAOMA}/段子`;
 /** 指针（`script`）按**仓库根**相对路径写 —— 这个脚本的 cwd 是 joke-video/ */
 const REPO = '..';
+/**
+ * 目录名最后那一截 —— **身份**。两种：
+ *
+ * - `1874`　　　单点式的天数号（老马的工龄，一条一格）
+ * - `闲聊-017`　累积式（《累积式_出片方案》§五：**不占那条时间轴**，所以没有天数号）
+ *
+ * ⚠ **累积式不进期号那套检查**（递增、跳号 2–4、重号、跟账本撞号）——
+ * 它压根没有期号。混进去的话，一条累积式会把整条时间轴的步长判断全带偏。
+ */
+const ID_SEG = String.raw`\d+|闲聊-\d+`;
 /** 还没定发布日的期次：出了片但没排期，目录名用这个前缀占位 */
-const UNSLOTTED = /^未排期_段子_(?:.+)_(\d+)$/;
+const UNSLOTTED = new RegExp(String.raw`^未排期_段子_(?:.+)_(${ID_SEG})$`);
 /** 栏目：目录名中间那一截的头一段。不在这张表里就是写错了 */
 const COLUMNS = ['工位', '一个人住', '众目睽睽', '回家'];
 
@@ -102,7 +112,7 @@ const LAG_MAX = 7;
 
 // `<日期>_<时刻>JST_段子_<栏目>_<稿件内容>_<天数号>`
 // 中间两截合起来当一组抓（`.+` 惰性到最后一个下划线），**身份是最后那个数**。
-const NAME_RE = /^(\d{4}-\d{2}-\d{2})_(\d{4})(JST)_(段子)_(.+)_(\d+)$/;
+const NAME_RE = new RegExp(String.raw`^(\d{4}-\d{2}-\d{2})_(\d{4})(JST)_(段子)_(.+)_(${ID_SEG})$`);
 
 const fails: string[] = [];
 const warns: string[] = [];
@@ -143,7 +153,11 @@ interface Item {
   name: string;
   date: string;
   time: string;
-  id: number;
+  /**
+   * 期号（天数号）。**累积式是 `null`** —— 它不占老马那条时间轴，没有期号。
+   * 递增、跳号、重号、跟账本撞号那四条检查一律跳过 `null`。
+   */
+  id: number | null;
   path: string;
   dt: Date;
 }
@@ -192,37 +206,48 @@ function collect(series: Series): Item[] {
         continue;
       }
       const spec = SERIES[series];
-      if (spec.idPad && idStr.length !== spec.idPad) fail(`[${series}] 期号要补零到 ${spec.idPad} 位：${name}`);
+      const chat = idStr.startsWith('闲聊');
+      if (!chat && spec.idPad && idStr.length !== spec.idPad) fail(`[${series}] 期号要补零到 ${spec.idPad} 位：${name}`);
       out.push({
         series,
         bucket,
         name,
         date,
         time,
-        id: Number(idStr),
+        id: chat ? null : Number(idStr),
         path: join(dir, name),
         dt: new Date(`${date}T${time.slice(0, 2)}:${time.slice(2)}:00+09:00`),
       });
     }
   }
-  return out.sort((a, b) => a.dt.getTime() - b.dt.getTime() || a.id - b.id);
+  return out.sort((a, b) => a.dt.getTime() - b.dt.getTime() || (a.id ?? 0) - (b.id ?? 0));
 }
+
+/**
+ * 有期号的那些（＝单点式）。**累积式一律先滤掉** ——
+ * 它不占老马那条时间轴，拿它去参与递增、跳号、重号的判断，
+ * 只会把整条时间轴的步长带偏。
+ */
+const numbered = (items: Item[]): Item[] => items.filter((i) => i.id !== null);
 
 function checkDuplicates(items: Item[], series: Series): void {
   const seen = new Map<number, Item>();
-  for (const it of items) {
-    const dup = seen.get(it.id);
+  // 累积式没有期号，重号无从谈起 —— 跳过它，别拿 null 当一个号去比
+  for (const it of numbered(items)) {
+    const dup = seen.get(it.id!);
     if (dup) fail(`[${series}] 期号重复 ${it.id}：${dup.name} ／ ${it.name}`);
-    else seen.set(it.id, it);
+    else seen.set(it.id!, it);
   }
 }
 
-function checkNumbering(items: Item[], series: Series): void {
+function checkNumbering(all: Item[], series: Series): void {
   const spec = SERIES[series];
+  // 只在**有期号的条目之间**看递增和步长 —— 累积式插在中间不算一格
+  const items = numbered(all);
   for (let i = 1; i < items.length; i++) {
     const prev = items[i - 1];
     const cur = items[i];
-    const d = cur.id - prev.id;
+    const d = cur.id! - prev.id!;
 
     // 天数号是**工龄不是集数**，跳号暗示我们只看到他被抽出来的几天
     if (d <= 0) {
@@ -319,10 +344,26 @@ function checkPointers(it: Item): void {
 
   // 期号 = 天数号。**走 `dayNo()`，不在这儿抄正则** —— 家庭类的条目不出收尾卡，
   // 只读 `hook` 的话它永远是 NaN，下面那条「稿件天数号 vs 目录期号」整条不跑。
-  const no = dayNo(cfg);
-  if (no === null)
-    warn(`[${it.series}] 稿件 ${pub.script} 读不出天数号（\`day\` 和收尾卡都没有）：${it.name}`);
-  else if (no !== it.id) fail(`[${it.series}] 稿件的天数号是 ${no}，目录期号是 ${it.id}，两个对不上：${it.name}`);
+  //
+  // ⚠ **累积式没有天数号**，目录名最后那截是 `闲聊-<稿件号>`。两边要对得上：
+  // 目录说自己是闲聊，稿件就得是 `format: "cumulative"`，反过来也一样 ——
+  // 对不上的话，一条占了时间轴的片子会挂着「不占时间轴」的名字，
+  // **而那正是没人再查得出来的那种错**。
+  const chat = it.id === null;
+  const isCum = cfg.format === 'cumulative';
+  if (chat !== isCum)
+    fail(
+      chat
+        ? `[${it.series}] 目录名是「闲聊-」，但稿件 ${pub.script} 不是 \`format: "cumulative"\`：${it.name}`
+        : `[${it.series}] 稿件 ${pub.script} 是累积式，目录却占着天数号 ${it.id}：${it.name}　` +
+            `（累积式不占那条时间轴，目录名最后一截写 \`闲聊-<稿件号>\`）`
+    );
+  if (!chat) {
+    const no = dayNo(cfg);
+    if (no === null)
+      warn(`[${it.series}] 稿件 ${pub.script} 读不出天数号（\`day\` 和收尾卡都没有）：${it.name}`);
+    else if (no !== it.id) fail(`[${it.series}] 稿件的天数号是 ${no}，目录期号是 ${it.id}，两个对不上：${it.name}`);
+  }
 
   // ── 成片就在这个目录里 ──
   const film = join(it.path, 'out.mp4');
@@ -361,8 +402,8 @@ function checkLedger(items: Item[]): void {
     return;
   }
   const pool = new Set(ledger.flatMap((e) => e.nums));
-  for (const it of items.filter((i) => i.series === '段子'))
-    if (pool.has(it.id)) warn(`[段子] 天数号 ${it.id} 跟台词数字账本撞号：${it.name}`);
+  for (const it of numbered(items).filter((i) => i.series === '段子'))
+    if (pool.has(it.id!)) warn(`[段子] 天数号 ${it.id} 跟台词数字账本撞号：${it.name}`);
 }
 
 export function runSchedule(today = new Date()): { fails: string[]; warns: string[] } {
@@ -384,11 +425,24 @@ export function runSchedule(today = new Date()): { fails: string[]; warns: strin
     stats[series] = checkBuckets(items, series, today);
   }
   checkLedger(all);
-  if (unslottedDone.length)
-    warn(
-      `[段子] _已发 里有 ${unslottedDone.length} 条没记发布日（第 ${unslottedDone.join('、')} 天）——` +
-        `2026-08-23 之前发的，日期补不上了。知道哪条是哪天就 \`mv\` 上前缀`
-    );
+  // ⚠ **两种情况分开报。** 都是「_已发 里没记发布日」，但成因完全不同：
+  // 天数号那几条是 2026-08-23 之前发的历史条目（日期永远补不上了），
+  // `闲聊-` 那几条是**刚归档的累积式**（它压根没有天数号，日期是能补的）。
+  // 混成一行会印出「第 闲聊-017 天」，而且会拿历史条目的那句解释去盖住新条目。
+  {
+    const old = unslottedDone.filter((k) => !k.startsWith('闲聊'));
+    const chat = unslottedDone.filter((k) => k.startsWith('闲聊'));
+    if (old.length)
+      warn(
+        `[段子] _已发 里有 ${old.length} 条没记发布日（第 ${old.join('、')} 天）——` +
+          `2026-08-23 之前发的，日期补不上了。知道哪条是哪天就 \`mv\` 上前缀`
+      );
+    if (chat.length)
+      warn(
+        `[段子] _已发 里有 ${chat.length} 条累积式没记发布日（${chat.join('、')}）——` +
+          `累积式没有天数号，但**发布日是有的**：想留个准数就 \`mv\` 成 <日期>_2100JST_… 再补 publish.json`
+      );
+  }
 
   const line = '─'.repeat(58);
   console.log(line);

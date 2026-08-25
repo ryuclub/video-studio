@@ -40,6 +40,51 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item:hover { background:rgba(127,127,127,.1); }
 /* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
 .nav-col { color:var(--accent); font-weight:700; }
+/* 体裁牌：两种体裁的判据好几处是反过来的，得一眼分得出 */
+.tag-one, .tag-cum { display:inline-block; padding:0 5px; border-radius:3px;
+  font-size:10px; font-weight:700; vertical-align:1px; color:#fff; }
+.tag-one { background:var(--accent); }
+.tag-cum { background:var(--gold); color:#3a2c07; }
+/* 页顶那两个块。⚠ **.card 原来是个没有任何规则的类名**（符号库一直是裸着排在页面上的）——
+   折叠之后它得看着像个可点的条，所以补上跟稿件块同一套框 */
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:18px 26px; margin-bottom:18px; }
+details.card[open] { padding-bottom:22px; }
+/* 可折叠的大块（出片计划、符号库）。摘要行本身就是标题，收起来也看得见那几个数 */
+details.fold > summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; }
+details.fold > summary::-webkit-details-marker { display:none; }
+details.fold > summary::before { content:'▸'; color:var(--dim); font-size:13px; flex:none;
+  transition:transform .15s; }
+details.fold[open] > summary::before { transform:rotate(90deg); }
+details.fold > summary h2 { margin:0; }
+details.fold > summary:hover h2 { color:var(--accent); }
+/* 体裁筛选条：两种体裁的判据好几处是反过来的，常常只想看一种 */
+.fmt-filter { display:flex; gap:4px; margin:8px 0 2px; }
+.fmt-filter button { flex:1; padding:5px 2px; border-radius:7px; cursor:pointer;
+  border:1px solid var(--line); background:transparent; color:var(--dim);
+  font-size:11px; font-family:inherit; }
+.fmt-filter button b { font-variant-numeric:tabular-nums; }
+.fmt-filter button:hover { border-color:var(--accent); color:var(--ink); }
+.fmt-filter button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+.is-off { display:none !important; }
+/* 累积式出片计划那张表 */
+.plan-wrap { overflow-x:auto; }
+table.plan { border-collapse:collapse; width:100%; font-size:12.5px; }
+table.plan th, table.plan td { border-bottom:1px solid var(--line); padding:5px 8px;
+  text-align:left; vertical-align:top; }
+table.plan th { font-size:11px; color:var(--dim); font-weight:700; white-space:nowrap; }
+table.plan td.no { font-variant-numeric:tabular-nums; color:var(--dim); width:1%; }
+table.plan td.ttl { font-weight:700; white-space:nowrap; }
+table.plan td.mono { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; color:var(--dim); }
+table.plan td.tip { color:var(--dim); font-size:11.5px; line-height:1.5; }
+table.plan tr.done { background:rgba(127,127,127,.07); }
+table.plan tr.done td.ttl { color:var(--dim); }
+table.plan tr.ox td.ttl .badge { margin-left:6px; }
+/* 重量档：重的那几条要一眼看得见，因为「重的别连着放」 */
+td.w-重 { color:var(--hot); font-weight:700; }
+td.w-中 { color:var(--ink); }
+td.w-轻, td.w-na { color:var(--dim); }
+td.w-老牛 { color:var(--gold); font-weight:700; }
 .nav-item.active { background:rgba(31,58,95,.12); border-color:var(--accent); }
 /* 深色下那层藏青压在深底上几乎看不见，换成亮色描边填充 */
 @media (prefers-color-scheme: dark) {
@@ -56,6 +101,16 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
   border-radius:3px; background:var(--accent); color:#fff;
   font-size:10px; font-weight:700; text-align:center; vertical-align:1px; }
 .nav-date { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+/* 发布状态：已发 / 待发+日期 / 未排期。**扫目录时最先要知道的一件事** */
+.nav-st { display:flex; align-items:center; gap:5px; font-size:10.5px;
+  color:var(--dim); font-variant-numeric:tabular-nums; }
+.nav-st b { padding:0 5px; border-radius:3px; font-weight:700; }
+.st-done { background:rgba(127,127,127,.22); color:var(--dim); }
+.st-todo { background:rgba(31,58,95,.14); color:var(--accent); }
+.st-none { background:transparent; color:var(--hot); border:1px solid currentColor; padding:0 4px !important; }
+@media (prefers-color-scheme: dark) { .st-todo { background:rgba(127,168,216,.2); color:#bcd4f0; } }
+/* 发过的整条压暗一档：那些是不回改的，视线该落在还没发的那些上 */
+.nav-item.is-done .nav-title, .nav-item.is-done .nav-thumb { opacity:.62; }
 .nav-meta { font-size:11px; color:var(--dim); }
 .nav-cast { font-size:11px; color:var(--accent); overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; }
@@ -182,19 +237,19 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <body id="top">
 <div class="wrap"><h1>laoma-016</h1>
 <p class="sub">成片 · 场景图 · 对话内容 · 音色设置 · 分析思路</p>
-<section class="joke" id="laoma-016">
+<section class="joke" id="laoma-016" data-fmt="one">
   <header>
     <h2>laoma-016</h2>
     <div class="facts">
-      <span>A 类 · home-living</span>
-      <span>片长 18.4s</span>
-      <span>笑点 13.2s</span>
-      <span>定格 16.4s</span>
+      <span><b class="tag-one">单点</b>式 · home-living</span>
+      <span>片长 19.7s</span>
+      <span>笑点 15.9s</span>
+      <span>定格 17.7s</span>
       <span>ma=老马</span>
     </div>
   </header>
   
-  <div class="film"><div class="film-main"><div class="film-none">还没出片　<code>npm run build</code></div></div></div>
+  <div class="film"><div class="film-main"><video src="out.mp4" controls preload="metadata" playsinline></video><div class="film-note">成片　<code>out.mp4</code></div></div></div>
   <div class="rows"><div class="row">
   <div class="shot"><img src="stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
   <div class="talk">
@@ -228,49 +283,78 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   <div class="talk">
     <div class="beat">铺垫</div>
     <div class="who">ma</div>
-    <p class="text">我端起杯子喝了一口，杯子是空的</p>
+    <p class="text">我端起杯子喝了一口</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">平</span>
       <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 2.51s</div>
+    <div class="meta">实测配音 1.22s</div>
   </div>
 </div>
 <div class="row">
-  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">9.2s</span></div>
+  <div class="shot"><img src="stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">6.0s</span></div>
   <div class="talk">
-    <div class="beat">回应</div>
+    <div class="beat">铺垫</div>
     <div class="who">ma</div>
-    <p class="text">三舅说，还行就是不多</p>
+    <p class="text">杯子是空的</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">平</span>
       <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 2.13s</div>
+    <div class="meta">实测配音 1.00s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">8.0s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">三舅点点头说，还行就是不多</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.75s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">11.9s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">一桌子人都在夹菜，没人接话</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.38s</div>
   </div>
 </div>
 <div class="row punch">
-  <div class="shot"><img src="stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">13.2s</span></div>
+  <div class="shot"><img src="stills/07-台词.png" alt="第 7 句场景" loading="lazy"><span class="ts">15.9s</span></div>
   <div class="talk">
     <div class="beat">反转 · 笑点</div>
     <div class="who">ma</div>
-    <p class="text">那天我喝了四次空杯子</p>
+    <p class="text">我又端起杯子喝了一口</p>
     <div class="voice">
       <span class="pill">老马</span>
       <span class="pill alt">叙平</span>
       <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
     </div>
-    <div class="meta">实测配音 3.24s</div>
+    <div class="meta">实测配音 1.75s</div>
   </div>
 </div></div>
-  <h3>开场 / 定格 / 钩子</h3><div class="extras"><figure><img src="stills/00-开场.png" alt="开场物件" loading="lazy">
+  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="thumb.png" alt="封面" loading="lazy">
+  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="stills/00-开场.png" alt="开场物件" loading="lazy">
   <figcaption>开场物件　<span class="ts-inline">1.0s</span></figcaption></figure>
 <figure><img src="stills/90-定格.png" alt="定格去色" loading="lazy">
-  <figcaption>定格去色　<span class="ts-inline">16.9s</span></figcaption></figure>
+  <figcaption>定格去色　<span class="ts-inline">18.2s</span></figcaption></figure>
 <figure><img src="stills/91-钩子.png" alt="结尾钩子" loading="lazy">
-  <figcaption>结尾钩子　<span class="ts-inline">17.8s</span></figcaption></figure></div>
+  <figcaption>结尾钩子　<span class="ts-inline">19.1s</span></figcaption></figure></div>
   <div class="hook">结尾钩子：<strong>老马的第 1874 天</strong></div>
   <details class="analysis" open>
     <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="方案.md" target="_blank">方案.md ↗</a></summary>
@@ -280,31 +364,42 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <h3>一、稿件定位</h3>
 <ul>
 <li><strong>类型</strong>　A 类（对话反转，一句 punch 驱动全片）</li>
-<li><strong>一句话讲什么</strong>　（？）</li>
-<li><strong>为什么这么分镜</strong>　（？把稿件拆成这几镜的依据是什么）</li>
-<li><strong>不能动的地方</strong>　（？哪些参数是刻意调的，动了会破坏什么）</li>
+<li><strong>一句话讲什么</strong>　三舅一句「还行就是不多」把他那句躲闪翻译了一遍，桌上没人接话，他只能再端一次空杯子——<strong>杯子是他唯一的挡箭牌，而它是空的</strong>。</li>
+<li><strong>为什么这么分镜</strong>　一个人一镜到底，节拍全在停顿上。三处长停顿各有各的活：空杯子那一下 1.7 秒（钩子要沉下去）／没人接话 1.3 秒（冷场，闭目就塞在这儿）／落点前 0.45 秒。</li>
+<li><strong>不能动的地方</strong></li>
 </ul>
+<p>  - <strong>第 3 句的两小句必须一句一屏</strong>：「杯子是空的」要单独占一屏，跟前半句挤在一起就没有那个空。</p>
+<p>  - <strong>闭目 0.9 秒</strong>（第 5 句）：全片唯一一次，靠那 1.3 秒的停顿才塞得下；padAfter 调小就会咬进下一句。</p>
+<p>  - <strong>扭头 −13°</strong>（第 4 句）：话锋转了的那一句，也是全片唯一一次。</p>
+<p>  - <strong>第 6 句是同一个动作再做一遍</strong>——观众这时已经知道杯子是空的，删了它落点那个「四回」就没地方数。</p>
+<p>  - 落点报数不报感受，<code>emotionLine</code> 空着是有意的。</p>
 <h3>二、分镜表</h3>
-<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>home-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.0</td><td>场景 <code>home-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：三舅问我一个月拿多少</td><td>—</td></tr><tr><td>0:02.6–0:03.5</td><td>同上</td><td><strong>ma</strong>：我说还行</td><td>—</td></tr><tr><td>0:04.4–0:06.9</td><td>同上</td><td><strong>ma</strong>：我端起杯子喝了一口，杯子是空的</td><td>—</td></tr><tr><td>0:09.2–0:11.3</td><td>同上</td><td><strong>ma</strong>：三舅说，还行就是不多</td><td>—</td></tr><tr><td>0:13.2–0:16.4</td><td>同上</td><td><strong>ma</strong>：那天我喝了四次空杯子</td><td>—</td></tr><tr><td>0:16.4–0:18.4</td><td>定格去色 + 钩子字幕「老马的第 1874 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>home-living</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.0</td><td>场景 <code>home-living</code>　在场 ma　单人镜</td><td><strong>ma</strong>：三舅问我一个月拿多少</td><td>—</td></tr><tr><td>0:02.6–0:03.4</td><td>同上<br><em class="note">答得越短越好——「还行」是这条片子全部的躲闪。</em></td><td><strong>ma</strong>：我说还行</td><td>—</td></tr><tr><td>0:04.4–0:05.6</td><td>同上<br><em class="note"><strong>钩子埋在这儿</strong>：杯子第一次出现，落点要拿它结账。</em></td><td><strong>ma</strong>：我端起杯子喝了一口</td><td>—</td></tr><tr><td>0:06.0–0:07.0</td><td>同上<br><em class="note"><strong>无声字幕</strong>：这一句他不说，只上字，1.0 秒。<strong>字和省略号一起浮出来</strong>——字卡是事实，省略号是他对这个事实的反应，同一张卡上的两件东西。全片唯一一次无声字幕。</em></td><td><strong>无声字幕</strong> 1s　杯子是空的　<em class="note">只上字，不出声</em></td><td>—</td></tr><tr><td>0:08.0–0:10.8</td><td>同上<br><em class="note">转折：三舅替他把「还行」翻译了一遍。「点点头」是新加的——他不是在质问，是在确认，这比质问难受。</em></td><td><strong>ma</strong>：三舅点点头说，还行就是不多</td><td>—</td></tr><tr><td>0:11.9–0:14.3</td><td>同上<br><em class="note">新加的一拍：冷场。<strong>这一停要有图</strong>——闭目 0.9 ＋ 一滴冷汗，尴尬那一下画面上得看得见，光靠一张不动的脸撑不住。</em></td><td><strong>ma</strong>：一桌子人都在夹菜，没人接话</td><td>—</td></tr><tr><td>0:14.3–0:15.2</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:15.9–0:17.7</td><td>同上<br><em class="note">落点：同一个动作再做一遍。<strong>观众这时已经知道杯子是空的</strong>，所以这一口是他自己找的台阶——数字留给尾卡去报。</em></td><td><strong>ma</strong>：我又端起杯子喝了一口</td><td>—</td></tr><tr><td>0:17.7–0:19.7</td><td>定格去色 + 钩子字幕「老马的第 1874 天」</td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
 <h3>三、场景 / 角色 / 节奏</h3>
 <p><strong>场景</strong>　<code>home-living</code></p>
 <p><strong>节奏</strong>　<code>banter</code></p>
 <p>句内 0.18/0.12s　句间 0.35s　换镜 0.50s</p>
 <div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
-<p><strong>片长</strong> 18.44s　<strong>5</strong> 句　<strong>1</strong> 个分镜</p>
+<p><strong>片长</strong> 19.68s　<strong>7</strong> 句　<strong>1</strong> 个分镜</p>
 <h3>四、发布文案</h3>
 <blockquote>发平台时直接抄这一段。</blockquote>
 <ul>
 <li><strong>标题候选</strong></li>
 </ul>
-<p>  1. （？）</p>
-<p>  2. （？）</p>
-<p>  3. （？）</p>
+<p>  1. <code>三舅问我一个月拿多少，我说还行</code>　←主选</p>
+<p>  2. <code>那天我喝了四回空杯子</code></p>
+<p>  3. <code>还行就是不多</code></p>
 <ul>
-<li><strong>内容关键词</strong>　（？稿件本身讲的是什么，3–6 个）</li>
-<li><strong>热度关键词</strong>　（？观众会搜什么，跟内容沾边的高频词）</li>
-<li><strong>话题标签</strong>　（？#xxx）</li>
-<li><strong>简介</strong>　（？两三句，第一句要能单独立住，列表页只显示第一行）</li>
+<li><strong>内容关键词</strong>　过年 / 亲戚 / 收入 / 饭桌 / 空杯子</li>
+<li><strong>热度关键词</strong>　过年回家 / 亲戚问工资 / 家庭聚餐 / 打工人</li>
+<li><strong>话题标签</strong>　#过年回家 #亲戚 #饭桌</li>
+<li><strong>简介</strong></li>
+</ul>
+<p>  &gt; 三舅问我一个月拿多少。我说还行。</p>
+<p>  &gt;</p>
+<p>  &gt; 我端起杯子喝了一口，杯子是空的。</p>
+<p>  &gt; 三舅点点头说，还行就是不多。</p>
+<ul>
 <li><strong>封面大字</strong>　``</li>
 </ul>
 <h3>五、人工核对</h3>

@@ -39,7 +39,8 @@ import { MARKS } from '../horse/marks.mjs';
 import { lineText, dayNo, type JokeCfg, type LineCfg } from './types.js';
 // ⚠ **有效 intro，不是 `cfg.intro`。** 「先出声后出人」那一档空镜恒等于零，
 // 而稿子里那个 `intro: 1.2` 通常还留着 —— 直接读它，体检报的片长会比成片多出 1.2 秒。
-import { introOf, openingStyleOf } from './beats/typeA.js';
+import { introOf, openingStyleOf, partSpans, estimateDur, BEAT_PAUSE } from './beats/typeA.js';
+import { getPace } from './pace.js';
 // 出场档 ③ 的首帧要画物件。**库里有没有那个画法，体检就该知道** ——
 // 不然人要等到渲染起来才被 `drawObject()` 抛一次。
 import { OBJECTS, hasObject } from '../horse/objects.mjs';
@@ -51,6 +52,25 @@ export interface Issue {
 
 /** §一之九：落点最好不超过十五字。长句铺垫、短句落点，节奏落差本身就是笑点 */
 const PUNCH_MAX = 15;
+
+/**
+ * 累积式的落点上限（不计标点）。《累积式_出片方案》§六。
+ *
+ * ⚠ **别把这个数搬回单点式。** 两条线的落点是两种东西：
+ * 那边是事实句（说「发生了什么」），这边是感想句（「不过这样也挺好，……」）。
+ */
+const CUM_PUNCH_MAX = 20;
+
+/** 累积式一屏的最短驻留（秒）。低于这个数读不完，就是闪一下 */
+const CUM_SCREEN_MIN = 0.6;
+
+/**
+ * 累积式的**签名句**。全部条目逐字相同，字幕上反复出现同一行字会长成频道的记忆点。
+ *
+ * ⚠ **它的价值全在「逐字」两个字上。** 改一个字、少一个「也」，
+ * 它就从签名退回成一句普通的收尾 —— 那就不如没有。
+ */
+const SIGNATURE = '不过这样也挺好';
 
 /** §一之二：用三个例子，不是两个也不是四个 */
 const SETUP_WANT = 3;
@@ -272,6 +292,26 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   const err = (msg: string) => out.push({ level: 'error', msg });
   const warn = (msg: string) => out.push({ level: 'warn', msg });
 
+  /**
+   * **体裁分流。** `format: "cumulative"` 才走累积式那一套判据，
+   * **不写就是单点式，已出片的 16 条一条都没动。**
+   *
+   * 分流的地方每一处都写了「单点式怎么样／累积式怎么样」——
+   * 因为它们不是「松一点严一点」，是**正面冲突**：单点式的落点必须是事实句，
+   * 累积式的落点就是那句感想；单点式的字幕在防剧透，累积式的字幕在造节拍。
+   */
+  const cum = cfg.format === 'cumulative';
+
+  /**
+   * 一句前后的停顿。**跟 `beats/typeA.ts` 走同一套缺省，也走同一个 `BEAT_PAUSE`** ——
+   * 缺省值在两处各写一遍的话，体检报的片长跟成片对不上，
+   * 而**那个数是人拿去判断稿子长短的**（估错了就照着错的数改稿）。
+   */
+  const pace = getPace(cfg.pace, 'banter');
+  const padBeforeOf = (l: LineCfg) => l.padBefore ?? (l.beat === 'punch' ? 0.4 : pace.padBefore);
+  const padAfterOf = (l: LineCfg) =>
+    (l.padAfter ?? (l.beat === 'punch' ? 0.35 : pace.padAfter)) + (l.beatPause ? BEAT_PAUSE : 0);
+
   const roles = cfg.lines.map((_, i) => role(cfg.lines, i));
   const punchIdx = roles.lastIndexOf('punch');
   /** 配额句的下标（0 起算）。稿件里的 `emotionLine` 是 1 起算的，这儿换算过 */
@@ -283,7 +323,15 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   // 而金句是解释里最响的一种 —— 它把观众刚刚自己想到的东西又替他们说了一遍。
   // 观众完成的那个「哦」，必须留给观众自己完成。
   const tail = cfg.tailCard?.trim();
-  if (tail) {
+  // 累积式**不出尾卡、也不出收尾卡**（《累积式_出片方案》§五，沿用 002 的黑场）：
+  // 那五条检查（人称／解释词／超长／allowBoth／使用率）整组停用 ——
+  // **写成关闭，不是漏填**。挂了就在这儿拦下来，别让它悄悄走单点式那条路。
+  if (cum && tail)
+    err(
+      `累积式挂了尾卡「${tail}」。**累积式不出尾卡、不出收尾卡，落点说完直接黑场** ——` +
+        `它的余味在「不过这样也挺好」那一句里，再补一行字是替观众把话说完`
+    );
+  if (tail && !cum) {
     const tLen = [...tail.replace(/[，。！？、,.!?：:；;「」“”‘’]/g, '')].length;
     if (tLen > 16) err(`尾卡「${tail}」${tLen} 字，上限 16 —— 一行，不折行`);
 
@@ -297,10 +345,15 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     if (bad) err(`尾卡命中解释词「${bad}」。尾卡不解释刚才发生了什么，**只告诉你后来怎么样了**`);
 
     // 跟配额句二选一：同一条里两个都上，等于连着捅两下，第二下必然弱
+    //
+    // ⚠ **2026-08-25 从硬伤降成提醒。** 尾卡那天变成了单点式的必备项
+    //（跟日子牌一样），而配额句是 v3 给的「一集一句」—— 两条都是规范，
+    // 硬拦的话等于「用了配额句就出不了片」，那不是二选一，是把 v3 那条废掉。
+    // **这一处的取舍留给人**：真觉得连着捅两下，就把尾卡写得更淡，或者放弃配额。
     if (quotaIdx >= 0 && !cfg.allowBoth)
-      err(
-        `尾卡和配额句（第 ${quotaIdx + 1} 句）同时用了。**建议二选一** ——` +
-          `落点已经用了配额就把尾卡留空；真要都留，写 "allowBoth": true`
+      warn(
+        `尾卡和配额句（第 ${quotaIdx + 1} 句）同时用了 —— **连着捅两下，第二下必然弱**。` +
+          `想清楚哪一下才是这条片子的收尾；确认要都留，写 "allowBoth": true 把这条提醒关掉`
       );
 
     // 不许重复落点里的物件动作：落点写了「一口没喝」，尾卡就不能再写喝不喝
@@ -314,14 +367,15 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
           `§3④：不许重复落点里的物件动作，**要往后推到另一天、另一个人**`
       );
 
-    // 使用率 ≤ 1/5：稀缺才有力量。每条都挂，两个月后它就成了片尾模板
-    const recent = loadLedger()
-      .filter((e) => e.day !== cfg.day)
-      .sort((a, b) => b.day - a.day)
-      .slice(0, 4)
-      .filter((e) => e.tail).length;
-    if (recent >= 1)
-      warn(`最近 4 条里已经有 ${recent} 条挂了尾卡，加上这条就超过 1/5。**稀缺才有力量**`);
+    // ⚠ **「每五条最多一条」那条使用率 2026-08-25 作废了。**
+    //
+    // 原来的理由是「稀缺才有力量：每条都挂，两个月后它就成了片尾模板」。
+    // 用户当天定的是另一条：**单点式片子要有收尾卡和尾卡事实句这两样，不能变** ——
+    // 尾卡从「配额」变成了「格式的一部分」，跟日子牌一个地位。
+    //
+    // 两条规矩不能同时留着：留着使用率，每条稿子都会挨一次警告，
+    // 而**天天报的警告等于没有警告**（这条线为这件事栽过一次：
+    // 「四行永远消不掉的提醒 = 这条检查以后会被当背景噪音」）。
   }
 
   // ── 落点符号：老马只用「没有情绪」的那一类 ────────────────────
@@ -361,9 +415,15 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   //
   // 三十秒一张不动的脸，中途全靠眼动撑着 —— 太冷场。这一层给中途的停顿一点东西看。
   // 但它离「画面替观众表态」只有一步，所以位置、长度、个数三样都卡死。
+  //
+  // ⚠ **累积式两个数都得放宽**（《累积式_出片方案》§六）：句间压到 0.35–0.45 之后
+  // **全片一个 0.8 秒的窗口都没有**，照单点式的阈值判，累积式一个符号都挂不上 ——
+  // 于是 1863 那条「太冷场」的毛病会原样复发，而 40 秒的片子比 25 秒更扛不住。
+  const PAUSE_MIN = cum ? 0.5 : 0.8;
+  const PAUSE_MAX = cum ? 3 : 2;
   const pauses = cfg.lines.filter((l) => l.emote);
-  if (pauses.length > 2)
-    err(`挂了 ${pauses.length} 个停顿符号，**全片最多 2 个**（加上落点符号最多 3 个）—— 满屏乱弹就成了表情包合集`);
+  if (pauses.length > PAUSE_MAX)
+    err(`挂了 ${pauses.length} 个停顿符号，**全片最多 ${PAUSE_MAX} 个**（加上落点符号再多一个）—— 满屏乱弹就成了表情包合集`);
   cfg.lines.forEach((l, i) => {
     if (!l.emote) return;
     if (!EMOTE_SYMBOLS[l.emote.kind] && !MARKS[l.emote.kind])
@@ -374,16 +434,27 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
 ` +
           `  情绪符号　：${Object.keys(MARKS).join(' / ')}`
       );
-    const pad = l.padAfter ?? (l.beat === 'punch' ? 0.35 : 0.2);
-    if (pad < 0.8)
+    const pad = padAfterOf(l);
+    if (pad < PAUSE_MIN)
       err(
         `第 ${i + 1} 句的停顿只有 ${pad.toFixed(2)}s，挂不了符号 —— **浮现就要半秒多**，` +
-          `0.3 秒的停顿里塞进去只会闪一下。要么把停顿放到 0.8 秒以上，要么这句别挂`
+          `0.3 秒的停顿里塞进去只会闪一下。要么把停顿放到 ${PAUSE_MIN} 秒以上` +
+          (cum ? '（累积式给这一句写 `beatPause`，正好 +0.8）' : '') +
+          `，要么这句别挂`
       );
-    if (i >= punchIdx - 1)
-      err(
-        `第 ${i + 1} 句挂了停顿符号，而落点是第 ${punchIdx + 1} 句 —— ` +
-          `**落点句和它前一句的停顿里不许挂**，那是「这里好笑」的提示`
+    // ⚠ **2026-08-25 拆成两档：落点句仍旧硬拦，落点前一句降成提醒。**
+    //
+    // 原来两句一起拦，理由是「那是『这里好笑』的提示」。但**判据其实是符号在说什么**，
+    // 不是它排在第几句：016 的落点前一句是「一桌子人都在夹菜，没人接话」，
+    // 那一停要的就是尴尬本身 —— 符号在这儿是**内容**，不是笑点提示。
+    // 用户当天的口径：冲突时按要求改。所以这一档留给人判断，机器只提醒。
+    if (i === punchIdx)
+      err(`落点句挂了停顿符号。**落点那一下要什么都不发生** —— 符号是自己给包袱加注解`);
+    else if (i === punchIdx - 1)
+      warn(
+        `第 ${i + 1} 句（落点前一句）挂了停顿符号「${l.emote.kind}」。` +
+          `**看一眼它在说什么**：说的是这一句的情绪（冷场、无语）就留着；` +
+          `要是读起来像「下一句好笑了」的提示，挪走`
       );
     // ⚠ **不再拦「这个停顿里已经有闭目」**（2026-08-24 用户定）。
     // 原来的理由是「一个停顿里两件事等于抢戏」，但**闭目和眨眼本来就是日常动作**，
@@ -414,7 +485,24 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   // 一总结就长。而长落点等于把包袱摊开讲，节奏落差没了。
   const pt = lineText(punch);
   const pn = cn(pt);
-  if (pn > PUNCH_MAX * 2)
+  // ── 累积式的落点是**感想句**，字数另有一档 ────────────────────────
+  //
+  // 单点式的落点是事实句、≤15 字，长了就是把包袱摊开讲。
+  // 累积式的落点是「不过这样也挺好，……」—— 它要接住前面整段累积，
+  // 15 字接不住，所以放宽到 20（不计标点），**代价是前面必须有 ≥3 句事实型累积兜底**：
+  // 没有那三句，这一句感想就成了无源之水，那才是真的抒情。
+  if (cum) {
+    const bare = cn(pt.replace(/[，。、！？：；]/g, ''));
+    if (bare > CUM_PUNCH_MAX) err(`落点句 ${bare} 字（不计标点），累积式上限 ${CUM_PUNCH_MAX}。沉底句要短，长了就成了总结陈词`);
+    const middle = cfg.lines.length - 2; // 立、沉底之外的那些
+    if (middle < 3)
+      err(
+        `立人设和沉底之间只有 ${middle} 句。累积式靠**一件比一件离谱**攒出笑点，` +
+          `少于三句攒不起来 —— 那是单点式的结构，写 \`"format": "single"\` 走那一套`
+      );
+    else if (middle > 6)
+      err(`立人设和沉底之间有 ${middle} 句。**错位层最多五句（加上「自己拆掉」那句是六句），超了就腻**`);
+  } else if (pn > PUNCH_MAX * 2)
     err(`落点句 ${pn} 字，上限 ${PUNCH_MAX}（超了 ${(pn / PUNCH_MAX).toFixed(1)} 倍）。§一之九：长句铺垫、短句落点，节奏落差本身就是笑点`);
   else if (pn > PUNCH_MAX) warn(`落点句 ${pn} 字，超过 ${PUNCH_MAX}。能砍就砍`);
 
@@ -436,7 +524,11 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   const setupClauses = cfg.lines
     .filter((_, i) => roles[i] === 'setup')
     .reduce((n, l) => n + (l.say?.length ?? 1), 0);
-  if (setups < 2 || setups > 4)
+  // 累积式不数「铺垫几句」—— 它没有铺垫段，它整条都在累积，
+  // 层数由上面那条「立与沉底之间 3–6 句」管。两套结构互相数对方的东西只会互相判废。
+  if (cum) {
+    // 什么都不报：这一条在累积式里没有意义
+  } else if (setups < 2 || setups > 4)
     err(
       `铺垫 ${setups} 句。§一之二：两个不足以让人认出规律，四个开始不耐烦 —— ` +
         `**观众要先认出规律，转折才有东西可打破**`
@@ -528,8 +620,11 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   //
   // 松的只有这半格：**没点名成配额句的落点，照旧不许是反应句。**
   // 反应句把这件事替观众归好了档（「这是个可笑的反应」），他只剩点头的份。
+  // ⚠ **累积式显式停用这一条**（《累积式_出片方案》§六）：
+  // 它的落点**就是**感想句 —— 「不过这样也挺好，至少死的是绿萝，不是我」。
+  // 单点式那条「落点必须是事实句」照搬过来，等于把每一条累积式都判废。
   {
-    const m = pt.match(REACTION);
+    const m = cum ? null : pt.match(REACTION);
     if (m && quotaIdx !== punchIdx)
       err(
         `落点是反应句：命中「${m[0]}」。§一之十三：落点说「发生了什么」，不说「我怎么了」——` +
@@ -539,7 +634,8 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   }
 
   // §一之十三：落点里必须有一个具体名词或一个数字。名词查不了，数字查得了
-  if (extractNumbers(pt).length === 0)
+  // ⚠ 累积式不报这条：感想句里本来就不该有数字，数字都在前面的累积层。
+  if (!cum && extractNumbers(pt).length === 0)
     warn(
       `落点里没有数字。§一之十三 要「一个具体名词或一个数字」，纯抽象的收尾一律作废 ——` +
         `没数字的话，确认末尾那个词是个**看得见的东西**（小门、第一条、椅子），不是一个概念`
@@ -561,7 +657,11 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     if (n > MAX_CHARS_PER_LINE)
       err(`第 ${i + 1} 句 ${n} 字，超过 ${MAX_CHARS_PER_LINE}。§一之十五：三个分句以上的长句纯音频会糊，拆成两句`);
     const clauses = t.split(/[，、]/).filter(Boolean).length;
-    if (clauses >= 3 && n >= 20) warn(`第 ${i + 1} 句 ${clauses} 个分句 ${n} 字，信息拥堵，纯音频会糊`);
+    // ⚠ **累积式的排比句天生就是三个分句**，而且它们**已经一句一屏**分开了 ——
+    // 照单点式报「信息拥堵」的话，每一条累积式都会挨这一条，
+    // **而提醒挨久了就成了背景噪音**。只在分句没拆屏的时候才报。
+    const crowded = !(cum && (l.say?.length ?? 1) >= clauses);
+    if (clauses >= 3 && n >= 20 && crowded) warn(`第 ${i + 1} 句 ${clauses} 个分句 ${n} 字，信息拥堵，纯音频会糊`);
   });
 
   // ── §一之十四：钩子埋了必须回收，而且要字面复现 ──
@@ -575,11 +675,17 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   //
   // 现在按 `hookLine` / `payoffLine` 点名的两句做字面重叠比对，
   // 滤掉 STOP 里的高频字 —— 「小门」和「小时」共用一个「小」不算呼应。
+  //
+  // ⚠ **累积式换成「首尾扣合，宽松比对」**（《累积式_出片方案》§〇 那张对照表）。
+  // 单点式的钩子是**一个包袱的引信**，不回收就是哑弹，所以要求字面复现、缺了判硬伤。
+  // 累积式没有单一包袱 —— 它的首尾扣合是「开头立的那个人设，结尾自己认了」，
+  // 点名了就比，没点名也不拦。
   if (cfg.hookLine === undefined || cfg.payoffLine === undefined) {
-    err(
-      '没写 `hookLine` / `payoffLine`（1 起算）。§一之十四：钩子埋在第几句、第几句回收，要点名 ——' +
-        '不点名这条就查不了，而「埋了不收」是观众读作「东一句西一句」的头号原因'
-    );
+    if (!cum)
+      err(
+        '没写 `hookLine` / `payoffLine`（1 起算）。§一之十四：钩子埋在第几句、第几句回收，要点名 ——' +
+          '不点名这条就查不了，而「埋了不收」是观众读作「东一句西一句」的头号原因'
+      );
   } else {
     const hi = cfg.hookLine - 1;
     const pi = cfg.payoffLine - 1;
@@ -594,9 +700,10 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
         .filter((c) => hooked.has(c))
         .concat([...bigrams(ptt)].filter((g) => hb.has(g)));
       if (hit.length === 0)
-        err(
+        (cum ? warn : err)(
           `钩子未回收：第 ${cfg.hookLine} 句「${ht}」埋的东西，第 ${cfg.payoffLine} 句「${ptt}」没接住。` +
-            `**要么字面复现那个词，要么删掉钩子句** —— 听觉媒介，同义词不算回收`
+            `**要么字面复现那个词，要么删掉钩子句** —— 听觉媒介，同义词不算回收` +
+            (cum ? '（累积式这条是提醒：它的首尾扣合可以只是「立的人设自己认了」，不一定复现某个词）' : '')
         );
       else warn(`§一之十四 回收命中「${[...new Set(hit)].join('')}」（第 ${cfg.hookLine} 句 → 第 ${cfg.payoffLine} 句）`);
     }
@@ -611,11 +718,16 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   //
   // 机器查得了两件事：不是纯外观描述、出现在 ≥2 句里。
   // 查不了「删掉它有没有句子说不通」—— 那一条只能人看。
+  //
+  // ⚠ **累积式里 `object` 是可选的**（《累积式_出片方案》§〇）：单点式的落点要落在
+  // 一件看得见的东西上，所以物件是硬要求；累积式的落点是一句感想，
+  // 撑住它的是**累积本身**，不是某一件东西。写了就照样查（外观词、≥2 句），不写不拦。
   if (!cfg.object) {
-    err(
-      '没有 `object`（承担叙事功能的物件）。§一之十二：**判据是「删掉它，至少有一句话说不通」**，' +
-        '而且必须出现在 ≥2 个不同的句子里。原样抄台词里的字'
-    );
+    if (!cum)
+      err(
+        '没有 `object`（承担叙事功能的物件）。§一之十二：**判据是「删掉它，至少有一句话说不通」**，' +
+          '而且必须出现在 ≥2 个不同的句子里。原样抄台词里的字'
+      );
   } else if (APPEARANCE.test(cfg.object)) {
     err(`物件「${cfg.object}」是纯外观描述，不能当物件。颜色/材质/新旧/大小都不承担叙事功能 —— 见「粉色挂号单综合症」`);
   } else {
@@ -683,8 +795,12 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
 
   // ── 首尾扣合：不是硬性，但是好稿的共性 ──
   {
-    const head = new Set(keep(lineText(cfg.lines[0])));
-    if (!keep(pt).some((c) => head.has(c))) warn('落点和开场没有任何字面呼应，首尾没扣上');
+    // 累积式的「开场」是**立人设 ＋ 自己拆掉**那两三句，不是单独第 1 句 ——
+    // 沉底句认的是那个被拆掉的人设，扣的不一定是开口第一句里的字。
+    const headLines = cum ? cfg.lines.slice(0, Math.min(3, cfg.lines.length - 1)) : [cfg.lines[0]];
+    const head = new Set(headLines.flatMap((l) => keep(lineText(l))));
+    if (!keep(pt).some((c) => head.has(c)))
+      warn(`落点和${cum ? '立人设那几句' : '开场'}没有任何字面呼应，首尾没扣上`);
   }
 
   // ── 颜色词提醒：粉色挂号单综合症 ──
@@ -703,13 +819,8 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     // ⚠ 缺省不是 0 —— `beats/typeA.ts` 给的是 padBefore 0.15 / padAfter 0.2，
     // **落点句前后是 0.4 / 0.35**。按 0 算的话，一条不写停顿的稿子每句少算最多 0.35 秒，
     // 六句就是两秒 —— 真有 38 秒的片子能从这道 35 秒的硬闸底下溜过去。
-    const pad = cfg.lines.reduce(
-      (s, l) =>
-        s +
-        (l.padBefore ?? (l.beat === 'punch' ? 0.4 : 0.15)) +
-        (l.padAfter ?? (l.beat === 'punch' ? 0.35 : 0.2)),
-      0
-    );
+    // ⚠ 走 `padBeforeOf`/`padAfterOf`：节奏预设的缺省 ＋ 累积式的「留一拍」都算进来。
+    const pad = cfg.lines.reduce((s, l) => s + padBeforeOf(l) + padAfterOf(l), 0);
     /**
      * 片尾 2026-08-24 改成**落点之后一共 2 秒**（`endHold`），
      * 老马线上 `freeze` / `hold` 已经不生效了 —— 这儿也得跟着算，
@@ -728,12 +839,17 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     //
     // **片子首先要自然流畅，不是凑够一个数。** 所以下限只留一个「是不是漏了一拍」的
     // 提醒，**永远不提「加长停顿」** —— 那是这条提醒唯一会被误用的方向。
-    if (total > 35)
-      err(`全片 ${total.toFixed(1)}s，超过 35。§四：超了砍字，**不要加速** —— 加速会毁掉所有停顿设计`);
-    else if (total < 18)
+    // 累积式是 35–45 秒（排比要攒够层数），单点式 18–35。
+    // ⚠ **两头都只按体裁挪，判据一个字没改**：超了砍字不加速，短了回去看稿子不加停顿。
+    const capMax = cum ? 45 : 35;
+    const capMin = cum ? 30 : 18;
+    if (total > capMax)
+      err(`全片 ${total.toFixed(1)}s，超过 ${capMax}。§四：超了砍字，**不要加速** —— 加速会毁掉所有停顿设计`);
+    else if (total < capMin)
       warn(
-        `全片 ${total.toFixed(1)}s，短于 18 —— **回头看是不是漏了一拍**（少了一句铺垫、或者落点前没留白）。` +
-          `**别靠拉长定格和收尾卡凑**：硬停出来的长度看着就是硬停的`
+        `全片 ${total.toFixed(1)}s，短于 ${capMin} —— **回头看是不是漏了一拍**` +
+          (cum ? '（累积层少了一句，或者沉底前没留一拍）' : '（少了一句铺垫、或者落点前没留白）') +
+          `。**别靠拉长定格和收尾卡凑**：硬停出来的长度看着就是硬停的`
       );
     else warn(`全片 ${total.toFixed(1)}s`);
   }
@@ -769,7 +885,7 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     let last = cur;
     let worst = 0;
     cfg.lines.forEach((l, i) => {
-      const a = cur + (l.padBefore ?? 0.1);
+      const a = cur + padBeforeOf(l);
       const b = a + durOf(l);
       // 停顿够长（≥0.35）能塞眨眼；say 的换气也算
       if (a - last > 0) {
@@ -777,10 +893,10 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
         else worst = Math.max(worst, a - last);
       }
       if ((l.say?.length ?? 0) > 1) last = a + durOf(l) * 0.5;
-      const gap = (l.padAfter ?? 0.2) + (cfg.lines[i + 1]?.padBefore ?? 0.1);
+      const gap = padAfterOf(l) + (cfg.lines[i + 1] ? padBeforeOf(cfg.lines[i + 1]) : 0);
       if (gap >= 0.35) last = b;
       else worst = Math.max(worst, b - last);
-      cur = b + (l.padAfter ?? 0.2);
+      cur = b + padAfterOf(l);
     });
     if (worst > 6)
       warn(`有一段 ${worst.toFixed(1)} 秒排不进眨眼（上限 6 秒）—— 停顿太密或太短，观众会读出「静图配音」`);
@@ -799,16 +915,46 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
     // 这种本来有 1.0s 余量的稿子会被算成 0.7s，**报成硬伤直接拦下**。
     // 张嘴无声那一段（见下）一直是按下一句真实的 padBefore 算的，这儿是漏了。
     const next = cfg.lines[cfg.lines.indexOf(l) + 1];
-    const room = (l.padAfter ?? 0.2) + (next?.padBefore ?? (next?.beat === 'punch' ? 0.4 : 0.15));
+    const room = padAfterOf(l) + (next ? padBeforeOf(next) : 0);
     if (room < d + 0.15)
       err(`闭目 ${d}s，但这一句说完只有 ${room.toFixed(2)}s 的停顿 —— 会咬进下一句的开头。加 padAfter`);
+  }
+
+  // ── 无声字幕（`line.silent`）：第五件抵消单调的工具 ────────────────
+  //
+  // 念出来是一句陈述，不念就是一张插入字卡 —— 观众自己读，冷一档。
+  // 但它把片子从「老马在跟你讲」切换成「画面在给你看字」，
+  // **一条里出现两次就成了花招**，所以跟闭目、张嘴无声同一个待遇：全片最多一次。
+  {
+    const silents = cfg.lines.map((l, i) => ({ l, i })).filter((x) => x.l.silent);
+    if (silents.length > 1)
+      err(
+        `无声字幕用了 ${silents.length} 次（第 ${silents.map((x) => x.i + 1).join('、')} 句）。**全片最多一次** —— ` +
+          `它是一记冷刀，出现两次就成了花招`
+      );
+    for (const { l, i } of silents) {
+      const d = l.silent!;
+      if (d < 1.0 || d > 2.5)
+        err(`第 ${i + 1} 句的无声字幕挂 ${d}s，超出 1.0–2.5 —— **短了读不完，长了就是卡住**`);
+      if (l.beat === 'punch')
+        err('落点句是无声字幕。落点要的是他自己说出来那一下 —— 字卡把最重的一句变成了旁白');
+      // ⚠ **不许拿它绕过「不解释」。** 字面是事实才成立（「杯子是空的」是他动作的结果）；
+      // 一旦写成「其实他心里……」，静音字卡就成了说破的后门 —— 而且比说出来更像画外音。
+      const t = lineText(l);
+      const m = t.match(EXPLAIN) ?? t.match(V3_EXPLAIN) ?? t.match(REACTION);
+      if (m)
+        err(
+          `第 ${i + 1} 句是无声字幕，却命中「${m[0]}」。**字卡只能放事实** —— ` +
+            `它没有人称、没有语气，写成心理活动就是画外音替观众下判断，比说出来更重`
+        );
+    }
   }
 
   // 张嘴无声：跟闭目一样，停顿撑不住就会咬进下一句
   cfg.lines.forEach((l, i) => {
     if (!l.openMouth) return;
     if (l.beat === 'punch') err('落点句后面张嘴无声。落点说完就该完 —— 再补一个动作等于自己给包袱加注解');
-    const room = (l.padAfter ?? 0.2) + (cfg.lines[i + 1]?.padBefore ?? 0.1);
+    const room = padAfterOf(l) + (cfg.lines[i + 1] ? padBeforeOf(cfg.lines[i + 1]) : 0);
     if (room < l.openMouth + 0.15)
       err(`张嘴无声 ${l.openMouth}s，但这一句说完只有 ${room.toFixed(2)}s 的停顿 —— 会咬进下一句。加 padAfter`);
     if (l.openMouth < 1)
@@ -839,6 +985,11 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
   cfg.lines.forEach((l, i) => {
     const r = roles[i];
     if (r !== 'punch' && r !== 'turn') return;
+    // ⚠ **累积式显式停用「转折句一屏 ≤12 字」和「落点整句一次性打出」这两条**
+    //（《累积式_字幕.md》）：那两条是防剧透的，而累积式的字幕在造节拍 ——
+    // 一屏装的是一个**语义单元**（状语＋结果），按字数硬拆正好把笑点切成两半。
+    // 换上的是下面那一组（驻留、排比不合屏、状语结果不分家、签名屏）。
+    if (cum) return;
     for (const n of screens(l))
       if (n > 12)
         err(
@@ -846,6 +997,76 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
             `观众读完还得等他念完，**笑点在被听到之前就消费掉了**。拆 say`
         );
   });
+
+  // ── 累积式的字幕：造节拍，不是防剧透（《累积式_字幕.md》）──────────
+  //
+  // **单点式怕的是观众读完落点才听到落点**，所以拆屏、少给、晚给。
+  // **累积式怕的是排比塌成一段话**，所以切齐、对齐、看得见重复。
+  // 两套规则在好几处正面冲突，所以这一组只在 `format: "cumulative"` 下跑。
+  if (cum) {
+    /** 序数标记。同一屏里出现两个，就是把排比合并成了一段话 */
+    const ORDINAL = /第[一二三四五六七八九十]|[一二两三四五六七八九十](?:趟|次|回|遍)/g;
+
+    cfg.lines.forEach((l, i) => {
+      const dur = l.dur ?? estimateDur(lineText(l));
+      const spans = partSpans(l, 0, dur, { pace });
+      const padAfter = padAfterOf(l);
+
+      spans.forEach((s, j) => {
+        const bare = s.text.replace(/[\s\p{P}]/gu, '');
+        // ① 一屏驻留 <0.6 秒 —— 句间压到 0.35–0.45 之后，短屏会变成一闪而过。
+        //   **最后一屏算上这一句的停顿**：字幕盖到 padAfter 结束才换，那段也是驻留。
+        const dwell = s.b - s.a + (j === spans.length - 1 ? padAfter : 0);
+        if (dwell < CUM_SCREEN_MIN)
+          err(
+            `第 ${i + 1} 句第 ${j + 1} 屏「${s.text}」只驻留 ${dwell.toFixed(2)}s，` +
+              `低于 ${CUM_SCREEN_MIN}s —— **读不完，只是闪了一下**。` +
+              `并进相邻那一屏（同一个语义单元），或者把这一句写长一点` +
+              (l.dur ? '' : '（现在是按字数估的，`align` 之后再看一遍）')
+          );
+
+        // ② 排比合并成屏：同一屏里两个序数标记 —— 重复要看得见，才有累积感
+        const ord = bare.match(ORDINAL) ?? [];
+        if (ord.length >= 2)
+          err(
+            `第 ${i + 1} 句第 ${j + 1} 屏「${s.text}」里有 ${ord.length} 个序数（${ord.join('、')}）—— ` +
+              `**排比句一句一屏，绝不合并**。合并之后排比就成了一段话，累积感全丢`
+          );
+
+        // ③ 状语与结果被拆开：一屏以「地」「得」收尾，说明修饰和结果分了家。
+        //   那个错位就是笑点，拆开等于切成两半，前半屏还剧透了后半屏。
+        if (/[地得]$/.test(bare) && j < spans.length - 1)
+          warn(
+            `第 ${i + 1} 句第 ${j + 1} 屏「${s.text}」以「${bare.slice(-1)}」收尾 —— ` +
+              `**状语和结果必须同屏**。一屏放不下就改写句子，不靠拆屏解决`
+          );
+      });
+    });
+
+    // ── 签名屏 ──────────────────────────────────────────────────
+    //
+    // 「不过这样也挺好」在全部条目里逐字相同，反复出现会长成频道的记忆点。
+    // **成立的前提是完全一致**：位置、字号、入场方式、驻留四项锁死，飘一条就只显得偷懒。
+    // 前三项由渲染层保证（侧栏定位、按屏文字自适应字号、无位移入场），
+    // 第四项这儿量出来给人看 —— **量得出来才叫锁死，"建议 0.9 秒"锁不住任何东西**。
+    const psay = punch.say ?? [];
+    if (psay.length < 2)
+      err(
+        '累积式的落点必须拆两屏：「不过这样也挺好」停一拍，再出后半句。' +
+          '**拆的目的是给那一拍腾出位置**，不是怕提前读到 —— 写进 `say`'
+      );
+    else {
+      const sig = psay[0].text.replace(/[\s\p{P}]/gu, '');
+      const spans = partSpans(punch, 0, punch.dur ?? estimateDur(lineText(punch)), { pace });
+      const d = (spans[0].b - spans[0].a).toFixed(2);
+      if (sig !== SIGNATURE)
+        warn(
+          `落点第 1 屏是「${sig}」，不是签名句「${SIGNATURE}」。` +
+            `签名屏靠**逐字相同**长成记忆点 —— 这一条要么用那句原话，要么就当它没有签名屏`
+        );
+      else warn(`签名屏「${SIGNATURE}」驻留 ${d}s（四项锁死的第四项，${punch.dur ? '实测' : '估算'}）`);
+    }
+  }
 
   const turns = cfg.lines.filter((l) => roles[cfg.lines.indexOf(l)] === 'turn').length;
   if (turns === 0)
@@ -957,7 +1178,43 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
       );
   }
 
-  if (cfg.hook !== undefined && !/^老马的第 \d+ 天$/.test(cfg.hook))
+  // ⚠ **累积式不带日子牌**（《累积式_出片方案》§五）：单点式是老马的日记，有连续性；
+  // 累积式是他随口说的，**不占时间轴** —— 什么时候发都不突兀。
+  // 挂了日子牌，它就要在那条日记的时间轴上占一格，而它并不该占。
+  if (cum && cfg.hook !== undefined)
+    err(
+      `累积式挂了日子牌「${cfg.hook}」。**累积式不带日子牌、不出收尾卡** ——` +
+        `它不占老马那条时间轴，所以发片节奏可以自由掌控。删掉 \`hook\``
+    );
+  // ── 单点式：收尾卡和尾卡事实句**两样都是必备的**（2026-08-25 用户定）──
+  //
+  // 「单点式片子要有这两样，不能变。」原话。
+  //
+  // ⚠ **这一条推翻了两处旧规矩**，别再照旧的写：
+  // ① CHANNEL_LAOMA §五之二 的「家庭类不出收尾卡」（laoma-002 那条）——**作废**，
+  //    家庭类照出。日子照样占一格那半句仍然成立。
+  // ② 尾卡「每五条最多一条」的使用率 —— **作废**（见上面那段）。
+  //
+  // ⚠ **拦在这儿而不是写进文档**：这两样都只在最后两秒露出来，
+  // 逐镜看静帧看不见 —— 漏了得等成片渲完、或者根本等到发出去才发现。
+  if (!cum && cfg.legacy) {
+    warn(
+      '这条标了 `legacy`：**收尾卡／尾卡那一组必备项不查它** —— 成片出在规范之前，不回改。' +
+        '新稿子不许写这个字段'
+    );
+  } else if (!cum) {
+    if (cfg.hook === undefined)
+      err(
+        '单点式没有收尾卡（`hook`）。**这一档是格式的一部分，不是可选项** —— ' +
+          '写成 `"hook": "老马的第 1874 天"`（数字照 CHANNEL_LAOMA §五之二 的分配表）'
+      );
+    if (!tail)
+      err(
+        '单点式没有尾卡事实句（`tailCard`）。**跟收尾卡是一组**：一个报「第几天」，' +
+          '一个报「后来怎么样了」，两条都是事实，观众一眼读完两行'
+      );
+  }
+  if (!cum && cfg.hook !== undefined && !/^老马的第 \d+ 天$/.test(cfg.hook))
     err(
       `收尾卡「${cfg.hook}」不是日子牌的字样。写成 \`老马的第 1847 天\`：` +
         `数字前后各一个空格、结尾不加标点。数字照 horse/CHANNEL_LAOMA.md §五之二 的分配表`

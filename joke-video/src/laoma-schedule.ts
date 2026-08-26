@@ -165,6 +165,16 @@ interface Item {
 /** `_已发` 里没记发布日的天数号。汇总报一行，见 collect() */
 const unslottedDone: string[] = [];
 
+/**
+ * `_待发` 里已出片、还没定发布日的。
+ *
+ * ⚠ **它不算库存** —— `checkBuckets` 数的是「有日期且在未来」的那些。
+ * 所以会出现「库存只剩 3 期」和「_待发/ 里躺着 7 个目录」并存，看着像矛盾，
+ * 其实是「出片了但没排」。**页面要把这两个数并排摆出来** ——
+ * 只看那句警告会以为真没片子了，跑去写新稿，可手上明明有现成的。
+ */
+const unslottedPending: { name: string; id: string; column: string }[] = [];
+
 function collect(series: Series): Item[] {
   const out: Item[] = [];
   for (const bucket of ['_待发', '_已发'] as const) {
@@ -179,11 +189,14 @@ function collect(series: Series): Item[] {
       const u = UNSLOTTED.exec(name);
       if (u) {
         if (bucket === '_已发') unslottedDone.push(u[1]);
-        else
+        else {
+          // 目录名是 `未排期_段子_<栏目>_<稿件内容>_<天数号>`，栏目在第三段
+          unslottedPending.push({ name, id: u[1], column: name.split('_')[2] ?? '?' });
           warn(
             `[${series}/_待发] 还没定发布日：${name}　` +
               `（定了就 \`mv\` 成 <日期>_2100JST_段子_<栏目>_<稿件内容>_${u[1]}，并把日期写进 publish.json）`
           );
+        }
         continue;
       }
       const m = NAME_RE.exec(name);
@@ -406,10 +419,61 @@ function checkLedger(items: Item[]): void {
     if (pool.has(it.id!)) warn(`[段子] 天数号 ${it.id} 跟台词数字账本撞号：${it.name}`);
 }
 
+/** 段子线的排期现状。**给页面用的，不打印** */
+export interface ScheduleStatus {
+  /** 待发库存：有日期、且日期还没到的那些 */
+  stock: number;
+  /** 低于它就该补产（`MIN_STOCK`）*/
+  min: number;
+  /** 下一条要发的目录名 */
+  next: string | null;
+  /** 已出片、还没定发布日的 —— **它们不算库存，但它们是最便宜的补货** */
+  unslotted: { name: string; id: string; column: string }[];
+  /** 往后数的空档（日期 + 周几），已排掉的日子不算 */
+  openSlots: { date: string; wd: string }[];
+}
+
+const WD = ['日', '一', '二', '三', '四', '五', '六'];
+
+/**
+ * 排期现状，**不打印、不改退出码**。`runSchedule()` 那套是给命令行的，
+ * 页面拿它会把一屏 WARN 打进构建日志。
+ *
+ * ⚠ **空档只在这儿算一处。** 判据是 `SERIES.段子.weekdays` ——
+ * 排期档 2026-08-23 改过一次（周三/周六/周日 → 周二/周四/周日），
+ * 再改的话动那张表，这儿跟着变；**别在页面那边照着周几硬写一遍**。
+ */
+export function scheduleStatus(today = new Date(), ahead = 8): ScheduleStatus {
+  warns.length = 0;
+  fails.length = 0;
+  unslottedDone.length = 0;
+  unslottedPending.length = 0;
+  const items = collect('段子');
+  const pending = items.filter((i) => i.bucket === '_待发' && i.dt >= today);
+  const taken = new Set(items.map((i) => i.date));
+  const spec = SERIES['段子'];
+  const openSlots: { date: string; wd: string }[] = [];
+  // 从今天的下一天开始找 —— 今天这一档要么已经发了、要么来不及了
+  const d = new Date(today.getTime());
+  for (let n = 0; n < 120 && openSlots.length < ahead; n++) {
+    d.setDate(d.getDate() + 1);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (spec.weekdays.includes(d.getDay()) && !taken.has(iso)) openSlots.push({ date: iso, wd: WD[d.getDay()] });
+  }
+  return {
+    stock: pending.length,
+    min: MIN_STOCK,
+    next: pending.sort((a, b) => a.dt.getTime() - b.dt.getTime())[0]?.name ?? null,
+    unslotted: [...unslottedPending],
+    openSlots,
+  };
+}
+
 export function runSchedule(today = new Date()): { fails: string[]; warns: string[] } {
   fails.length = 0;
   warns.length = 0;
   unslottedDone.length = 0;
+  unslottedPending.length = 0;
   const stats: Record<string, { pending: number; published: number }> = {};
   const all: Item[] = [];
 

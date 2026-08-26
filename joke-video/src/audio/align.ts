@@ -8,10 +8,32 @@ export interface Trim {
   end: number; // 样本
 }
 
-/** 找出语音的有效区间（去掉首尾静音） */
-export function trimSilence(x: Float32Array, sr: number, thresholdDb = -42, padMs = 50): Trim {
+/**
+ * 找出语音的有效区间（去掉首尾静音）。
+ *
+ * ⚠⚠ **阈值是相对这一条自己的峰值的，不是绝对的。** 2026-08-26 改。
+ *
+ * ── 为什么改 ──
+ *
+ * 原来写死 −42 dBFS **绝对**阈值。治愈线新加的男主讲挂了 `aecho`，
+ * 而 ffmpeg 的 aecho 里 out_gain 缩放的是整条输出 —— 整个人声被压到均值 −42.3 dB，
+ * **正好压在阈值上**。于是这一步把每句的收尾当成静音吃掉，每句 0.1–0.3 秒。
+ *
+ * 表现是**「上句没读完就接了下句」**，可波形上一个字都没少、
+ * 文件时长对、manifest 对、拼接也对 —— **典型的报成功的失败**。
+ * 一期 89 段，合计吃掉 32 秒。
+ *
+ * 改成「峰值往下 45 dB」之后，音色整体电平不管高低都按同一个**相对**关系裁，
+ * 不会因为某条音色安静就裁进肉里。绝对下限 −70 dBFS 兜住纯静音那种情况。
+ *
+ * **通则：凡是拿绝对电平当判据的地方，都要问一句「换个音色还成立吗」。**
+ */
+export function trimSilence(x: Float32Array, sr: number, relDb = -45, padMs = 50): Trim {
   const win = Math.floor(0.02 * sr);
-  const thr = Math.pow(10, thresholdDb / 20);
+  let peak = 0;
+  for (let i = 0; i < x.length; i++) { const v = Math.abs(x[i]); if (v > peak) peak = v; }
+  // 相对这一条自己的峰值；再兜一个绝对下限，免得整条几乎无声时阈值也跟着塌到 0
+  const thr = Math.max(peak * Math.pow(10, relDb / 20), Math.pow(10, -70 / 20));
   const rmsAt = (i: number) => {
     let acc = 0;
     const n = Math.min(win, x.length - i);

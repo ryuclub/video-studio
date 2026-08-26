@@ -20,7 +20,7 @@ import { resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveEp } from './shuoshu-ep.js';
 import { shiftSrt } from './shuoshu-srt.js';
-import { SW, SH } from './shuoshu-scene.js';
+import { SW, SH, resolveScenes } from './shuoshu-scene.js';
 import { buildWave, WAVE_POS } from './wave.js';
 
 interface Cue {
@@ -29,12 +29,6 @@ interface Cue {
   act: string;
   start: number;
   end: number;
-}
-interface SceneSpec {
-  no: number;
-  comp: string;
-  title: string;
-  act?: string;
 }
 
 /**
@@ -103,7 +97,9 @@ function main() {
   const manifestPath = `${audioDir}/${tag}.manifest.json`;
   if (!existsSync(manifestPath)) throw new Error(`没有 ${manifestPath}，先跑 shuoshu-build.ts --ep ${EP}`);
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { duration: number; cues: Cue[] };
-  const spec = JSON.parse(readFileSync(`${dir}/scenes.json`, 'utf8')) as { scenes: SceneSpec[] };
+  // **走 resolveScenes，不自己解析。** 带 anchor 的场景表在这里才拿到真段号 ——
+  // 三处（场景图 / 体检 / 这儿）各写一套解析，迟早出现「图渲对了、切点切错了」。
+  const spec = resolveScenes(dir);
 
   // 文件名**从 scenes.json 推**，不用 readdir 扫目录。
   // 扫目录的话，上一版残留的 png 会被一起收进来，排序之后还插在中间——

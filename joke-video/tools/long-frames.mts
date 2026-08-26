@@ -18,6 +18,7 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { buildTimeline } from '../src/beats/typeA.js';
 import type { JokeCfg } from '../src/types.js';
+import { quotes, stripTail, cutSentence, wrapOne } from '../src/long-caption.js';
 
 const require = createRequire(import.meta.url);
 const { frame } = require('../horse/长片/longform.cjs') as { frame: (o: Record<string, unknown>) => string };
@@ -53,26 +54,9 @@ const SCENE: Record<string, { scene: string; two: boolean; label: string }> = {
 const fishAt = (t: number) =>
   Math.max(0.06, Math.min(0.94, 0.5 + 0.3 * Math.sin(t * 0.55) + 0.12 * Math.sin(t * 1.31 + 1.2)));
 
-/**
- * 旁白**只去句末标点，句中的照留**（2026-08-25 用户定，改过一次）。
- *
- * 头一版把逗号也换成了全角空格 —— 那是短片那条线的规矩（`tidyCaption`：
- * 结尾不留标点 ＋ 句中句号换逗号）。**长片不照搬**：长句里逗号是断句的手，
- * 去掉之后一整行读起来是平的。引号也去掉 —— 屏幕上那对符号比它标出来的东西还显眼。
- */
-const stripTail = (s: string) => s.replace(/["‘’“”]/g, '').replace(/[。！？，、；：]+$/, '').trim();
-
-
-/** 一句话拆成几小句（按句末标点）。**旁白太长就逐句上**，不再一次铺三行 */
-const cut = (s: string): string[] => (s.match(/[^。！？]*[。！？]|[^。！？]+$/g) ?? [s]).map((x) => x.trim()).filter(Boolean);
-
-/** 一小句里再断行：≤18 字一行，最多两行（三行会顶到画面中间） */
-function wrapOne(text: string, max = 18): string[] {
-  const chars = [...text];
-  if (chars.length <= max) return [text];
-  const half = Math.ceil(chars.length / 2);
-  return [chars.slice(0, half).join(''), chars.slice(half).join('')];
-}
+// ⚠ **字幕那几条规则搬到 `src/long-caption.ts` 了**（2026-08-26）——
+// `npm run audio` 要出 .srt，两处各算一套的话屏上的字和 .srt 会慢慢对不上。
+// 引号扶正／去句末标点／按标点断行／旁白摊小句，全在那边。
 
 const cfg = JSON.parse(readFileSync(cfgPath, 'utf8')) as JokeCfg & {
   _sections?: Array<{ name: string; from: number; to: number }>;
@@ -128,7 +112,8 @@ for (let f = 0; f < N; f++) {
   };
 
   if (line) {
-    const body = txt(line);
+    // 引号在**分层之前**扶正：旁白和台词都要，分开做就会有一层漏掉
+    const body = quotes(txt(line));
     const dur = line.silent ?? line.dur ?? 0;
     const speaking = t < seg!.start + dur;
     const k = Math.floor(t / 0.17);
@@ -147,7 +132,7 @@ for (let f = 0; f < N; f++) {
       //
       // 一整段铺三行，观众读完还得等他念完；拆成小句、跟着念到哪一句就上哪一句，
       // 每一句自己浮上来。小句的时长按字数摊（跟 `partSpans` 一个算法）。
-      const parts = cut(body);
+      const parts = cutSentence(body);
       const chars = parts.map((p) => Math.max(1, [...p].length));
       const total = chars.reduce((a, b) => a + b, 0);
       let acc = seg!.start;

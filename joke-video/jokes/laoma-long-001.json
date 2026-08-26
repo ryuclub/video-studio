@@ -1,6 +1,7 @@
 {
-  "_": "老马 · **长片 001**《老牛走的那天》**配音版 v2**。稿源：E:/ryu/laoma/长片001_定稿v3.md（**稿子是源，这份 json 是产物** —— 改稿改 md，重跑 tools/long-parse.mts）。\n\n谁说哪句、每处停几秒，**全部由稿子里的 【马】/【牛】 和 ⏸ 标死**，脚本不发明规则。\n\n⚠ **老马仍旧是云希（仓库定稿的那条音色），不是稿子抬头写的晓晓** —— 用户 2026-08-25 定：老马坚持他原本的声色。前面 18 条短片里的老马都是这条，换了就是两个人。\n\n⚠ **老马全片单一参数**：现场档、说破那三句的慢半档全部撤掉。区分靠句长和语气词（v2 §九：台词 ≤8 字、可以带「啊」，旁白一个语气词都不许有）。\n\n⚠ **三层音质只上了回忆那一层**（lowpass 6500 ＋ 轻回声，两个音色都加，见 `line.tone`）。现场台词的混响**没上** —— 稿子 §〇 自己说的：先只做停顿和句长听一遍，**别一次上三层**。\n\n⚠ **原来那个 8 秒静场作废**（v2 §〇之二：没有画面变化的地方，静场不超过 1.5 秒）。现在最长的一处是 2.0 秒，稿子要求那儿同时换一次声音层（室内空调→窗外车流）—— **那一层没做**，环境音要等场景落地。\n\n⚠ **现在只做音频。** 画面一件没做。",
+  "_": "老马 · **长片 001**《老牛走的那天》**配音版 v2**。稿源：horse/长片/稿件/laoma-long-001.md（**稿子是源，这份 json 是产物** —— 改稿改 md，重跑 tools/long-parse.mts）。\n\n谁说哪句、每处停几秒，**全部由稿子里的 【马】/【牛】 和 ⏸ 标死**，脚本不发明规则。\n\n⚠ **老马仍旧是云希（仓库定稿的那条音色），不是稿子抬头写的晓晓** —— 用户 2026-08-25 定：老马坚持他原本的声色。前面 18 条短片里的老马都是这条，换了就是两个人。\n\n⚠ **老马全片单一参数**：现场档、说破那三句的慢半档全部撤掉。区分靠句长和语气词（v2 §九：台词 ≤8 字、可以带「啊」，旁白一个语气词都不许有）。\n\n⚠ **三层音质只上了回忆那一层**（lowpass 6500 ＋ 轻回声，两个音色都加，见 `line.tone`）。现场台词的混响**没上** —— 稿子 §〇 自己说的：先只做停顿和句长听一遍，**别一次上三层**。\n\n⚠ **原来那个 8 秒静场作废**（v2 §〇之二：没有画面变化的地方，静场不超过 1.5 秒）。现在最长的一处是 2.0 秒，稿子要求那儿同时换一次声音层（室内空调→窗外车流）—— **那一层没做**，环境音要等场景落地。\n\n⚠ **画面不走短片那套 `render.ts`**：长片是横屏 1280×720，自己一个渲染器（`horse/长片/longform.cjs`），出帧走 `tools/long-frames.mts` —— 两套不共用一行代码。还欠的：16 镜的镜头切换、老牛抱鱼缸的手、片尾单音。\n\n⚠ **封面已经有了**：16:9 一档（`src/laoma-long-cover.ts`，规范 封面设计规范-COVER.md §九），数据就在下面那个 `cover` 块 —— **跟这份 json 的其余部分一样是产物，别手改**。",
   "id": "laoma-long-001",
+  "title": "老牛走的那天",
   "format": "long",
   "type": "A",
   "scene": "office-desk",
@@ -14,6 +15,17 @@
   "_ambience": "⚠ 稿子要求「8 秒静场不是绝对无声，铺环境音底噪」。**管线的 ambience 只有 grass/cicada 两条写死的**（开场草声、片尾蝉鸣），给不了一层通片的房间底噪 —— 现在是在 mixdown 之后用 ffmpeg 单独垫的一层恒定底噪，不分场景。分场景的床音（工位空调／楼道回声／楼下风）要等场景先落地。",
   "bgm": {
     "enabled": false
+  },
+  "cover": {
+    "title": "老牛走的那天",
+    "sub": "他写了十一页",
+    "long": {
+      "layout": "一行·脚边签",
+      "sqText": "竖排",
+      "scene": "office_night",
+      "side": "right",
+      "fish": 0.72
+    }
   },
   "characters": [
     {
@@ -32,7 +44,7 @@
       "cast": "老牛"
     }
   ],
-  "_characters": "老牛 `rig: \"none\"` —— 只有声音，不出画面。长片的画面还没开工。",
+  "_characters": "老牛 `rig: \"none\"` —— **这一栏只管短片那套竖屏渲染器**，长片不走它。长片里老牛是出画面的（`horse/bull-side/bull_stand.svg`，由 `longform.cjs` 自己摆），`rig: \"none\"` 在这儿的意思仅仅是「别让短片那套去画他」。",
   "lines": [
     {
       "who": "ma",
@@ -96,7 +108,7 @@
       "padBefore": 0.2,
       "padAfter": 0.8,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "不知道。看着像有用。"
@@ -329,7 +341,7 @@
       "padBefore": 0.2,
       "padAfter": 1,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "也不一定。去了再看。"
@@ -428,7 +440,7 @@
       "padBefore": 0.2,
       "padAfter": 0.3,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "谢谢。"
@@ -443,7 +455,7 @@
       "padBefore": 0.2,
       "padAfter": 0.3,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "好。"
@@ -461,7 +473,7 @@
       "delivery": {
         "rate": "-5%"
       },
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "没有没有。"
@@ -560,7 +572,7 @@
       "padBefore": 0.2,
       "padAfter": 0.5,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "走了也得有个人接。"
@@ -589,7 +601,7 @@
       "padBefore": 0.2,
       "padAfter": 1,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "那是他的事。"
@@ -703,7 +715,7 @@
       "padBefore": 0.2,
       "padAfter": 0.5,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "没什么。每天换点水，别喂多。"
@@ -732,7 +744,7 @@
       "padBefore": 0.2,
       "padAfter": 0.8,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "天天。"
@@ -761,7 +773,7 @@
       "padBefore": 0.2,
       "padAfter": 0.5,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "你怎么一直不换个地方。"
@@ -790,7 +802,7 @@
       "padBefore": 0.2,
       "padAfter": 0.6,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "你天天都说没意思。"
@@ -846,6 +858,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 0.8,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -860,6 +873,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 1,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -874,6 +888,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 0.6,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -888,6 +903,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 0.8,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -902,6 +918,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 0.5,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -916,6 +933,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 0.6,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -930,6 +948,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 0.5,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -944,6 +963,7 @@
       "beat": "setup",
       "padBefore": 0.2,
       "padAfter": 1.5,
+      "shuopo": true,
       "_layer": "台词",
       "say": [
         {
@@ -987,7 +1007,7 @@
       "padBefore": 0.2,
       "padAfter": 2,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "那你现在知道了。"
@@ -1030,7 +1050,7 @@
       "padBefore": 0.2,
       "padAfter": 0.5,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "这个你拿着吧。我路上不好带。"
@@ -1059,7 +1079,7 @@
       "padBefore": 0.2,
       "padAfter": 1,
       "gain": 0.89,
-      "_layer": "旁白",
+      "_layer": "台词",
       "say": [
         {
           "text": "能。就是每天换点水。"

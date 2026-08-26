@@ -1161,7 +1161,8 @@ export function renderFrame(ctx: RenderCtx, frame: number, ov: FrameOverride = {
     const part = seg2
       ? partAt(sub.line, seg2.start, dur2, t, { env: ctx.voices.get(sub.index)?.env, fps: FPS, pace: getPace(tl.cfg.pace, 'banter') })
       : { a: 0, b: 0, text: lineText(sub.line) };
-    const shown = subtitleText({ ...sub.line, text: part.text, say: undefined });
+    // `keepBreak` —— 手动断点留到 `sideText` 里才用掉（见 subtitle.ts 的 BREAK_MARK）
+    const shown = subtitleText({ ...sub.line, text: part.text, say: undefined }, { keepBreak: true });
     subtitle = sideText(shown, {
       colX,
       colW: Math.max(240, colW),

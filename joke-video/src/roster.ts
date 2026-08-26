@@ -5,9 +5,14 @@
 //
 // 加新角色：往 assets/characters/ 放 svg，在这里登记一条，重跑
 // `npm run shotdoc` 和 `npm run preview`。
+//
+// **不是角色的素材别往这儿塞。** 景／前景层（会摆的柳条那种）在
+// `assets/scenery/`，闸是 `npm run scenery:check` —— 它们没有音色、没有骨架，
+// 登记进花名册只会把「角色」这个单位搅浑。
 
 import { existsSync, readFileSync } from 'node:fs';
 import { n } from './style/papercut.js';
+import { inkPaths } from './svg-ink.js';
 import { W, GROUND } from './config.js';
 import { serpentine } from './rigs/serpentine.js';
 import { human } from './rigs/human.js';
@@ -51,19 +56,20 @@ export function drawStaticSvg(file: string, ink: (c: string) => string, targetW 
   if (!existsSync(file)) return '';
   const raw = readFileSync(file, 'utf8');
   const vb = raw.match(/viewBox="([\d.\s-]+)"/);
-  const [, , vw, vh] = vb ? vb[1].trim().split(/\s+/).map(Number) : [0, 0, 1024, 1024];
+  // **viewBox 的前两个数不是 0 就得减掉。** 2026-08-26 之前所有原稿都是
+  // `viewBox="0 0 …"`，这个坑一直没露头；`figure-*.svg` 是第一批带偏移的
+  // （`viewBox="126 22 156 257"`），不减就整个画到画布外面，**渲出来一片空白、
+  // 不报错**。
+  const [vx, vy, vw, vh] = vb ? vb[1].trim().split(/\s+/).map(Number) : [0, 0, 1024, 1024];
   const inner = raw.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>[\s\S]*$/, '');
-  // 颜色过 ink()，定格去色才生效；没写 fill 的路径（纯黑线稿）补一个默认深墨
-  const inked = inner
-    .replace(/fill="(#[0-9a-fA-F]{3,8})"/g, (_m, c) => `fill="${ink(c)}"`)
-    .replace(/<path (?![^>]*fill=)/g, `<path fill="${ink('#22283A')}" `);
+  const inked = inkPaths(inner, ink);
   const scale = targetW / vw;
   // 先摆到角色站位（画面中央、地平线上），再做局部缩放——
   // 少了外层这一下，图会画到画布左上角外面去，渲出来是一片空白
   return (
     `<g transform="translate(${n(W / 2)},${n(GROUND)}) translate(${n(-targetW / 2)},${n(-vh * scale)}) scale(${n(
       scale
-    )})">` +
+    )}) translate(${n(-vx)},${n(-vy)})">` +
     inked +
     `</g>`
   );
@@ -218,5 +224,26 @@ export const ROSTER: RosterEntry[] = [
     voice: '老爷爷',
     rigged: true,
     draw: (ink) => human(baseState({ proportion: 'elder', color: '#8B7E6E', hair: 'white' }), ink, 17),
+  },
+  {
+    key: 'figure-blue',
+    // **一条登记，八个姿势。** 花名册的单位是「角色」（有音色、有骨架），
+    // 不是「姿势」—— 八条几乎一样的登记会把素材库刷满。所以这里挂的是
+    // 那张**动作设定表**，一眼看全八个；真要用的时候按下面的名字单独引。
+    label: '人物 · 蓝衫小人（八个姿势）',
+    usage: '"rig": "still", "art": "figure-walking"　等八选一（length 过 figures.ts 的 figureLength()）',
+    note:
+      '2026-08-26 入库。走路 / 思考 / 打电话 / 敲键盘 / 坐 / 举手 / 跳 / 鞠躬，' +
+      '文件名 `figure-{walking,thinking,phone-call,typing,sitting,hand-raised,jumping,bowing}`。' +
+      '⚠ **鞠躬那张单看容易读成「头掉了」**（躯干是一条横着的胶囊，头在末端），' +
+      '要用先单独渲一张确认。' +
+      '**自带一套色**（描边 #2E2C29、上衣 #6E9EC4、裤 #4E5A69），跟剪纸风和治愈色板都不是一套 —— ' +
+      '过 `still` 的 `ink()` 会按当条线换算，别直接拿原色上画面。' +
+      '⚠ **八张的 viewBox 宽窄不一（145–218）**，直接传同一个 `length` 会渲出一大一小两个人 —— ' +
+      '过 `figures.ts` 的 `figureLength()` 折算。' +
+      '没有嘴、不能眨眼，对话类（A 类）别用，见 rigs/still.ts',
+    svg: 'assets/characters/figure-sheet.svg',
+    rigged: false,
+    draw: (ink) => drawStaticSvg('assets/characters/figure-sheet.svg', ink, 900),
   },
 ];

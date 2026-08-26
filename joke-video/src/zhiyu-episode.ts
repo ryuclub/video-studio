@@ -30,8 +30,26 @@ import {
 } from './zhiyu-audio.js';
 
 const { id: EP, dir: PROJ, book: BOOK } = resolveEp(process.argv.slice(2));
-/** 主讲音色。**唯一出处是 zhiyu-lines.ts**，别在这儿写死 */
-const CAST = DEF.cast;
+/**
+ * 主讲音色。**线级缺省在 zhiyu-lines.ts，别在这儿写死。**
+ *
+ * 2026-08-26 加了期级覆盖：`发布.json` 里写 `"cast": "夜读男"` 就换这一期的主讲。
+ *
+ * ⚠ **为什么要期级、不能直接改线级**：治愈 / 心理 / 禅佛典**三条线共用「夜读」**
+ * （禅佛典那条的注释写着「听众认的是这个声音」）。
+ * 改线级等于一次动三条线上所有已出片的期 —— 那是连带影响，不是这次要做的事。
+ *
+ * ⚠ **换主讲不是换参数，是换人。** 同一条线上两期主讲不同，听众会当成两个节目。
+ * 所以这个字段**每用一次都要想清楚**，别顺手抄给下一期
+ * （跟 `免问号` 那个字段一个道理，见 发布.json 里那句）。
+ */
+const CAST: string = (() => {
+  const f = `${PROJ}/发布.json`;
+  if (!existsSync(f)) return DEF.cast;
+  const over = (JSON.parse(readFileSync(f, 'utf8')) as { cast?: string }).cast;
+  if (over && over !== DEF.cast) console.log(`  主讲：${over}（这一期覆盖了线级的「${DEF.cast}」）`);
+  return over ?? DEF.cast;
+})();
 
 const argv = process.argv.slice(2);
 const only = argv.indexOf('--part') >= 0 ? argv[argv.indexOf('--part') + 1] : null;
@@ -87,6 +105,13 @@ function bedOf(doc: PubDoc): string | null {
   const v = doc.bed;
   if (v === undefined || v === null) return DEF.defaultBed;
   if (v === '空' || v === '') return null;
+  // **带斜杠或带扩展名就当成路径**（相对仓库根），否则还是老规矩 musics/<名>.wav。
+  // 2026-08-26 放开的：床音本来写死在 musics/ 且只认 .wav，
+  // 可素材不一定放在那儿、也不一定是 wav（这一次给的是 voice/治愈系02.mp3）。
+  // ffmpeg 那头本来就不挑格式，挑的是这一行。**老期一个字不用改**：
+  // 不带斜杠不带扩展名的值走的还是原来那条路。
+  const looksLikePath = v.includes('/') || v.includes('\\') || /\.[a-z0-9]{2,4}$/i.test(v);
+  if (looksLikePath) return `../${v.replace(/^\.?[/\\]/, '')}`;
   return `../zhiyu/musics/${v}.wav`;
 }
 

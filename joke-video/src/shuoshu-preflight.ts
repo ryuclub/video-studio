@@ -21,43 +21,21 @@
 // 所以体检**不看代码能不能跑，只看结果对不对**。ship 起手先跑这个。
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { COMPOSITION_NAMES } from './shuoshu-scene.js';
+import { COMPOSITION_NAMES, resolveScenes } from './shuoshu-scene.js';
+import { CPM, TARGET_MIN, LEGACY_MIN, TARGET_MAX, han, actFloor } from './shuoshu-limits.js';
 import { YT_MOTIFS, PALETTES as YT_PALETTES } from './yt-cover.js';
-import { BEAT_NAMES } from './shuoshu-beat.js';
+import { BEAT_NAMES, BEAT_ACTIVE, BEAT_RETIRED, BEAT_REVEAL_MAX, BEAT_RUN_MAX } from './shuoshu-beat.js';
 import { CAST_NAMES } from './cast.js';
 import { resolveEp } from './shuoshu-ep.js';
 
-/**
- * 片长目标。**2026-08-20 从 15–17 分钟调到 20 分钟上下** ——
- * 反馈是「太短了确实没营养」。
- *
- * `CPM` 是实测：E01 228 / E02 237 / E03 230 汉字每分钟（含停顿）。
- * 按 228 折算，20 分钟约 4560 汉字。
- */
-const CPM = 228;
-/** 新标准的下限。低于这个是**错**，出片会被拦住 */
-const TARGET_MIN = 18;
-/**
- * 老标准（15–17 分钟）的下限。**在这之间只警告不拦。**
- *
- * E01（16.8 分）和 E02（15.9 分）是按老标准做的，不该被新标准倒查成错 ——
- * 已经出过的片子不回改，这是这个仓库的一贯做法。
- * 但也不能一声不吭：哪天要重出，得知道它们按今天的标准是偏短的。
- */
-const LEGACY_MIN = 15;
-const TARGET_MAX = 24;
-
-/**
- * 分幕汉字下限。卡片里每一幕后面括号那个数就是这个，**是下限不是配额**。
- * 这里给的是通用兜底值，各篇卡片上的数更准 —— 但卡片在文档里，机器读不到，
- * 所以先用一套保守的通用值拦住「明显塌了」的那种。
- */
-const ACT_FLOOR: Record<string, number> = {
-  冷开场: 150,
-  引入: 300,
-  '幕X · ': 400,
-  收束: 300,
-};
+// ── 阈值搬到 shuoshu-limits.ts 了 ─────────────────────────────────────
+//
+// 2026-08-26：稿件闸（`shuoshu-lint.ts`）跑在解析之前、直接读 markdown，
+// 它跟这里必须用**同一套数**。抄一份过去就是「两处各算一套」——
+// 迟早出现「稿件闸说够了、体检说短了」，而那种不一致没人核得出是哪边错的。
+//
+// CPM / TARGET_MIN / LEGACY_MIN / TARGET_MAX / ACT_FLOOR / han / actFloor
+// 全在那边，连同它们各自的来历。
 
 export interface Issue {
   level: 'error' | 'warn';
@@ -100,7 +78,6 @@ export function preflightShuoshu(dir: string): Issue[] {
   // 卡片里的分幕字数是**下限不是配额**（`liaozhai-17-cards.md` 第一原则：
   // 「宁长勿断，为了凑时长把过程砍掉是错的」）。可下限只在文档里，
   // 写稿的人（包括模型）很容易把它读成「差不多就行」。所以搬进来。
-  const han = (t: string) => (t.match(/[一-龥]/g) ?? []).length;
   const total = lines.reduce((a, l) => a + han(l.text), 0);
   const mins = total / CPM;
   if (mins < LEGACY_MIN)
@@ -126,8 +103,7 @@ export function preflightShuoshu(dir: string): Issue[] {
   // 分幕下限也查一遍：总数够了也可能是某一幕撑着、另一幕塌了
   const byAct = new Map<string, number>();
   for (const l of lines) byAct.set(l.act, (byAct.get(l.act) ?? 0) + han(l.text));
-  const floorOf = (act: string) => (/^幕/.test(act) ? ACT_FLOOR['幕X · '] : ACT_FLOOR[act]) ?? 0;
-  const thin = [...byAct].filter(([a, c]) => c < floorOf(a));
+  const thin = [...byAct].filter(([a, c]) => c < actFloor(a));
   for (const [a, c] of thin)
     warn(`「${a}」只有 ${c} 汉字，比同类段落的下限低。过程戏是说书的本体，先看是不是被压掉了`);
 
@@ -136,6 +112,27 @@ export function preflightShuoshu(dir: string): Issue[] {
 
   const badCast = lines.filter((l) => l.who && !CAST_NAMES.includes(l.who));
   for (const l of badCast) err(`第 ${l.no} 段的音色「${l.who}」不在选角表里`);
+
+  // ── §五 beat 三条（标注之后才查得了）──────────────────────────────
+  //
+  // E01–E05 用的是老的十二种，**它们不该被新规范倒查成错** —— 所以退役标签
+  // 只警告不拦，跟「已出片的不回改」是同一条规矩。
+  const retired = lines.filter((l) => l.beat && BEAT_RETIRED[l.beat]);
+  if (retired.length) {
+    const kinds = [...new Set(retired.map((l) => l.beat!))];
+    warn(`${retired.length} 段用了退役节拍（${kinds.map((k) => `${k}→${BEAT_RETIRED[k]}`).join(' / ')}）。规范 §五 只用六种：${BEAT_ACTIVE.join(' / ')}`);
+  }
+  const reveal = lines.filter((l) => l.beat === '揭底').length / lines.length;
+  if (reveal > BEAT_REVEAL_MAX)
+    warn(`「揭底」占 ${(reveal * 100).toFixed(1)}%，上限 ${BEAT_REVEAL_MAX * 100}% —— 用多了就不是揭底，是唠叨`);
+  {
+    let run = 1;
+    for (let i = 1; i < lines.length; i++) {
+      run = lines[i].beat === lines[i - 1].beat ? run + 1 : 1;
+      if (run === BEAT_RUN_MAX + 1)
+        warn(`第 ${lines[i].no} 段起「${lines[i].beat}」连续 ${BEAT_RUN_MAX + 1} 句以上，超过上限 ${BEAT_RUN_MAX} —— 这一段没有起伏`);
+    }
+  }
 
   // ① 头号静默失败：没标注也能出片，出来全程一个调
   const annotated = lines.filter((l) => l.beat && l.beat !== '常规').length / lines.length;
@@ -155,9 +152,22 @@ export function preflightShuoshu(dir: string): Issue[] {
     /** 旧版式留档，ship 已经不读了 */
     cover?: Record<string, string>;
     yt?: { kicker?: string; big?: string; hook?: string[]; motif?: string; palette?: string };
-    scenes?: { no: number; comp: string; title: string }[];
   };
-  const scenes = doc.scenes ?? [];
+
+  // ── 锚点解析：**要拦在音频之前** ────────────────────────────────────
+  //
+  // 锚点写错（撞上两段、或者稿子改了对不上）在渲图那一步才炸的话，
+  // 音频已经白跑十几分钟了 —— 跟 yt 块那一条是同一个理由。
+  let scenes: { no: number; comp: string; title: string; movedFrom?: number }[];
+  try {
+    const r = resolveScenes(dir);
+    scenes = r.scenes;
+    // 锚点重定位不是错，但**必须说出来**：多半是补过稿，人要确认这就是他想要的
+    for (const m of r.moved) warn(`「${m.title}」按锚点落在第 ${m.no} 段，scenes.json 里写的是第 ${m.movedFrom} 段（补过稿？段号会按锚点走）`);
+  } catch (e) {
+    err((e as Error).message);
+    return out;
+  }
   if (!scenes.length) err('scenes.json 里一张图都没有');
 
   const maxNo = Math.max(...lines.map((l) => l.no));

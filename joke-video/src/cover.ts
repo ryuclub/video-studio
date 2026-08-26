@@ -116,7 +116,13 @@ function bigTitle(title: string, top = 320): string {
 //   行高    字号 × 1.12      字间距  字号 × 0.03
 //   边距    画布宽 × 0.062   首行基线  画布高 × 0.115
 //
-const T = {
+// ⚠ **`T` / `units` / `splitTitle` / `inkedLine` 是导出的，长片封面在用**
+// （`laoma-long-cover.ts`，16:9 那一档）。**导出的是笔法，不是版面** ——
+// 颜色、描边比例、行高、字间距、折行规则两档共用，**竖向那几个数（baselineK /
+// lowBaselineK / subMaxWK）只对 1080×1920 成立**，16:9 那边自己算，别照抄。
+// 改这几项之前先想一下另一档：一处改动现在会同时落到两条产品线上。
+//
+export const T = {
   fill: '#FFD400',
   line: '#1A1A1A',
   subFill: '#1A1A1A',
@@ -182,14 +188,14 @@ const T = {
 };
 
 /** 宽度单位：中文字记 1.0，半角字符记 0.55（跟 textWidth 同一把尺） */
-const units = (s: string) => [...s].reduce((w, ch) => w + (isWide(ch) ? 1 : 0.55), 0);
+export const units = (s: string) => [...s].reduce((w, ch) => w + (isWide(ch) ? 1 : 0.55), 0);
 
 /**
  * 折行。**4–7 字**是规范给的区间：
  *   ≤4 字 不折；5–7 字 折两行，前行取 ceil(n/2)（前行不短于后行）。
  * 超 7 字不在这儿救 —— 字号会被压到贴纸感消失，该改标题。`checkTitle` 会报。
  */
-function splitTitle(title: string): string[] {
+export function splitTitle(title: string): string[] {
   const ch = [...title];
   if (ch.length <= 4) return [title];
   const head = Math.ceil(ch.length / 2);
@@ -207,7 +213,7 @@ function splitTitle(title: string): string[] {
  *             逐行「描边＋填充」交替的话，下一行的描边会啃掉上一行的填充
  *             （行高 1.12，描边半宽够得着）。
  */
-function inkedLine(
+export function inkedLine(
   text: string,
   x: number,
   y: number,

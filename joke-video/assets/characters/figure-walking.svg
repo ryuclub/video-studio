@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="156" height="257" viewBox="126 22 156 257" role="img">
+<title>走路</title>
+<g fill="none" stroke="#2E2C29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="200" cy="78" r="32" fill="#FFFFFF"/>
+<path d="M194,49 C196,36 210,38 210,50"/>
+<circle cx="189" cy="74" r="3.5" fill="#2E2C29" stroke="none"/>
+<circle cx="211" cy="74" r="3.5" fill="#2E2C29" stroke="none"/>
+<path d="M192,88 C197,95 203,95 208,88"/>
+<path d="M192,108 L192,116"/>
+<path d="M208,108 L208,116"/>
+<path d="M186,116 C174,117 166,124 160,134 C156,141 154,147 154,151 L170,148 C173,155 173,168 170,182 L230,182 C227,168 227,155 230,148 L246,151 C246,147 244,141 240,134 C234,124 226,117 214,116 Z" fill="#6E9EC4"/>
+<path d="M188,117 C194,124 206,124 212,117"/>
+<path d="M170,182 L230,182 C232,196 232,206 228,216 L206,216 L200,196 L194,216 L172,216 C168,206 168,196 170,182 Z" fill="#4E5A69"/>
+<path d="M162,150 C159,168 161,182 162,190"/>
+<circle cx="163" cy="196" r="6.5"/>
+<path d="M238,150 C243,166 245,180 245,190"/>
+<circle cx="246" cy="196" r="6.5"/>
+<path d="M186,216 C182,232 180,244 180,252"/>
+<ellipse cx="176" cy="257" rx="12" ry="6.5" fill="#4E5A69"/>
+<path d="M214,216 C226,226 236,236 238,244"/>
+<ellipse cx="244" cy="248" rx="12" ry="6.5" fill="#4E5A69"/>
+<path d="M140,264 L268,264" stroke-width="1.8"/>
+</g>
+</svg>

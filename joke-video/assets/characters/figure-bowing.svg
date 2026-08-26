@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="218" height="195" viewBox="116 400 218 195" role="img">
+<title>鞠躬</title>
+<g fill="none" stroke="#2E2C29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M195,442 C213,450 228,466 236,483 C236,495 228,508 208,515 C194,502 176,494 161,482 Z" fill="#6E9EC4"/>
+<path d="M195,442 C190,426 174,418 161,425 C147,433 144,462 161,482 Z" fill="#4E5A69"/>
+<path d="M166,478 C170,512 170,546 170,562"/>
+<ellipse cx="176" cy="570" rx="13" ry="6.5" fill="#4E5A69"/>
+<path d="M182,470 C188,508 186,546 186,562"/>
+<ellipse cx="193" cy="570" rx="13" ry="6.5" fill="#4E5A69"/>
+<path d="M220,506 C228,526 230,540 228,550"/>
+<circle cx="227" cy="557" r="5.5"/>
+<path d="M232,492 C240,516 242,536 240,548"/>
+<circle cx="239" cy="555" r="6"/>
+<circle cx="254" cy="526" r="28" fill="#FFFFFF"/>
+<path d="M232,510 C226,499 238,493 245,502"/>
+<circle cx="270" cy="536" r="3.5" fill="#2E2C29" stroke="none"/>
+<path d="M262,546 C267,550 272,547 274,542"/>
+<path d="M130,580 L320,580" stroke-width="1.8"/>
+</g>
+</svg>

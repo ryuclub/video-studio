@@ -65,9 +65,21 @@ interface Row {
   padAfter: number;
   /** 稿子里那句静场说明，原样存进 note，出片时看得见为什么停这么久 */
   note?: string;
+  /** 说破段（`【马·破】`）。分层上是台词，但要单独标出来给体检查 */
+  shuopo?: boolean;
 }
 
 const md = readFileSync(src, 'utf8');
+
+/**
+ * 篇名：从稿子头一行的书名号里抠（`# 长片 001《老牛走的那天》· 定稿 v3`）。
+ *
+ * **也是从稿子来的**，跟谁说哪句、停几秒一个规矩 —— 不在 json 里手写一份，
+ * 手写的那份改稿之后不会跟着变，然后预览页上顶着的就是上一版的名字。
+ * 抠不到就不写这个字段，预览页自己退回 id。
+ */
+const title = /^#\s.*《([^》]+)》/m.exec(md)?.[1];
+
 const rows: Row[] = [];
 let solo = 0; // 单独成行的静场，落到上一句的 padAfter 上
 let soloNote = '';
@@ -102,7 +114,7 @@ for (const raw of md.split('\n')) {
   // `【马】` / `【马·台词】` / `【牛·回忆】` —— 前半是谁，后半是哪一层
   // ⚠ `台` 和 `台词` 两种写法都认：v2 写的是「【马·台词】」，v3 缩成了「【马·台】」。
   // **稿子的写法会变，脚本认宽一点** —— 认不出来的后果是那一句被当成旁白，静默地少一层。
-  const m = t.match(/^【(马|牛)(?:·(台词|台|回忆|旁白))?】\s*(.+)$/);
+  const m = t.match(/^【(马|牛)(?:·(台词|台|回忆|旁白|破))?】\s*(.+)$/);
   if (!m) continue; // 标题、分隔线、改动记录那几节，一概不念
   if (solo && rows.length) {
     rows[rows.length - 1].padAfter = solo;
@@ -111,10 +123,18 @@ for (const raw of md.split('\n')) {
     soloNote = '';
   }
   const who = m[1] === '马' ? 'ma' : 'niu';
-  const layer = m[2] === '台' ? '台词' : m[2] ?? '旁白';
+  // ⚠ **缺省层按人分，不是一律旁白。** 老马不标后缀是旁白（他大部分时间在讲），
+  // 但**老牛从不旁白** —— 他的每一句都是当面对老马说的。头一版两个人共用「旁白」缺省，
+  // 老牛 14 句全被标成旁白。画面上看不出来（出帧先按 `who` 分流），
+  // 但 `LAYER.台词` 一旦接上现场房间感（`LIVE_ROOM`），**漏掉的正好是他那 14 句**。
+  // `破` ＝ 说破段。它在分层上就是台词（当面说出口的），但要额外标一个 `shuopo` ——
+  // **说破是这条线的支点**（稿件规范 §一），不标就查不了「只说破一次」「说破后往回收」
+  // 「句间不许压」这三条，而这三条正是这条线跟短片的分界。
+  const isShuopo = m[2] === '破';
+  const layer = m[2] === '台' || isShuopo ? '台词' : (m[2] ?? (who === 'niu' ? '台词' : '旁白'));
   const p = readPause(m[3]);
   const text = m[3].replace(/⏸.*$/, '').trim();
-  rows.push({ who, layer, section, text, padAfter: p ? p.sec : DEFAULT_PAD });
+  rows.push({ who, layer, section, text, padAfter: p ? p.sec : DEFAULT_PAD, ...(isShuopo ? { shuopo: true } : {}) });
 }
 // 稿子末尾那条 `⏸**3.0 — 黑场**` 在最后一句之后，循环里没人接
 if (solo && rows.length) {
@@ -141,8 +161,13 @@ const cfg = {
     `⚠ **原来那个 8 秒静场作废**（v2 §〇之二：没有画面变化的地方，静场不超过 1.5 秒）。` +
     `现在最长的一处是 2.0 秒，稿子要求那儿同时换一次声音层（室内空调→窗外车流）—— ` +
     `**那一层没做**，环境音要等场景落地。\n\n` +
-    `⚠ **现在只做音频。** 画面一件没做。`,
+    `⚠ **画面不走短片那套 \`render.ts\`**：长片是横屏 1280×720，自己一个渲染器` +
+    `（\`horse/长片/longform.cjs\`），出帧走 \`tools/long-frames.mts\` —— 两套不共用一行代码。` +
+    `还欠的：16 镜的镜头切换、老牛抱鱼缸的手、片尾单音。\n\n` +
+    `⚠ **封面已经有了**：16:9 一档（\`src/laoma-long-cover.ts\`，规范 封面设计规范-COVER.md §九），` +
+    `数据就在下面那个 \`cover\` 块 —— **跟这份 json 的其余部分一样是产物，别手改**。`,
   id: 'laoma-long-001',
+  ...(title ? { title } : {}),
   format: 'long',
   type: 'A',
   scene: 'office-desk',
@@ -154,11 +179,54 @@ const cfg = {
   _ambience:
     '⚠ 稿子要求「8 秒静场不是绝对无声，铺环境音底噪」。**管线的 ambience 只有 grass/cicada 两条写死的**（开场草声、片尾蝉鸣），给不了一层通片的房间底噪 —— 现在是在 mixdown 之后用 ffmpeg 单独垫的一层恒定底噪，不分场景。分场景的床音（工位空调／楼道回声／楼下风）要等场景先落地。',
   bgm: { enabled: false },
+  /**
+   * 封面（16:9 那一档，`src/laoma-long-cover.ts`；规范见 封面设计规范-COVER.md §九）。
+   *
+   * ⚠ **写在这儿，不写进 json 手改。** 这份 json 是覆盖写的产物 ——
+   * 手改的封面文案下一次 `long-parse` 就没了，而「下次重跑」总会发生
+   * （dur/audio 那两个字段已经教过一遍了）。
+   *
+   * ⚠ **大字不许出现说破段的字眼**（出片方案 §七 硬规矩一）：「看得开」「没敢试」
+   * 那几个词一进封面，观众带着答案来看，4:00 起那七句就白排了。
+   * 出封面的时候会拿 `发布文案.md` 的「中心思想」那一栏对一遍。
+   *
+   * ⚠ **大字是发布文案里的备选标题「老牛走的那天」，跟正标题「走那天留下一条鱼」
+   * 有词重叠 —— 用户 2026-08-26 定：铁律 2（封面大字和标题不重复）这一条就蹭了，
+   * 能夺眼球优先。** 别当成疏漏改回去。
+   *
+   * 换掉「他走以后」的理由是**指代**：封面上只站着一个角色，而两个「他」都是老牛，
+   * 观众会把「他」认成画面里这匹马。具名一次，副标那个「他」就有主了。
+   *
+   * 折行：「老牛走的／那天」。⚠ 竖版那支 `splitTitle` 会断成「老牛走／的那天」，
+   * 第二行顶个「的」—— 长片这一档自己加了一条「第二行开头不许是附着字」
+   * （`laoma-long-cover.ts` 的 `splitTitleLong`），**竖版没动**。
+   */
+  cover: {
+    title: '老牛走的那天',
+    sub: '他写了十一页',
+    long: {
+      // **封面版式库**里的一档（`src/laoma-long-cover.ts` 的 `LAYOUTS`）。
+      // 「一行·脚边签」＝ 主标题一行贴左边距、署名摆在老马脚边的地面上。
+      // 用户 2026-08-26 选（候选「庚」）；不写也是它，写出来是为了**这一期的账在这一期**。
+      layout: '一行·脚边签',
+      // 方版（1:1）的字**竖排**：一列贴左边安全线，从上贯到下（用户 2026-08-26 定）。
+      // 不写也是它，写出来是为了这一期的账在这一期。
+      sqText: '竖排',
+      // 夜。全片最后一个视觉事实：老牛已经走了，屋里只剩老马和窗台上的鱼缸
+      scene: 'office_night',
+      side: 'right',
+      // 鱼偏右，靠着老马那一侧 —— 红点是全片唯一的高饱和色，它在哪儿视线就在哪儿
+      fish: 0.72,
+    },
+  },
   characters: [
     { id: 'ma', rig: 'horse', side: 'left', x: 290, scale: 1, cast: '老马', keepX: true },
     { id: 'niu', rig: 'none', side: 'right', cast: '老牛' },
   ],
-  _characters: '老牛 `rig: "none"` —— 只有声音，不出画面。长片的画面还没开工。',
+  _characters:
+    '老牛 `rig: "none"` —— **这一栏只管短片那套竖屏渲染器**，长片不走它。' +
+    '长片里老牛是出画面的（`horse/bull-side/bull_stand.svg`，由 `longform.cjs` 自己摆），' +
+    '`rig: "none"` 在这儿的意思仅仅是「别让短片那套去画他」。',
   lines: rows.map((r, i) => ({
     who: r.who,
     /** 最后一句标 punch：长片没有落点句，但定格点是从它推出来的（preflight 也拦） */
@@ -170,6 +238,7 @@ const cfg = {
     ...(LAYER[r.layer] ? { tone: LAYER[r.layer] } : {}),
     ...(SLOWER.find((s) => s.text === r.text) ? { delivery: { rate: SLOWER.find((s) => s.text === r.text)!.rate } } : {}),
     ...(r.note ? { note: r.note } : {}),
+    ...(r.shuopo ? { shuopo: true } : {}),
     /**
      * 这一句是哪一层（旁白／台词／回忆）。**出帧那头要按它排版**：
      * 旁白走底部字幕条，台词走头顶那一层。
@@ -203,6 +272,25 @@ const cfg = {
   })(),
 };
 
+/**
+ * ⚠ **这一步是覆盖写，`align` 回填的东西会被冲掉。**
+ *
+ * `dur`（每句去静音之后的真实秒数）和 `audio`（wav 路径）不是从稿子来的，
+ * 是配音出完之后 `npm run align` 写回去的 —— 重跑 parse 就没了。
+ * 没有 `dur`，出帧脚本的时间轴全塌（`estimateDur` 顶上，跟音轨对不齐），
+ * **而且它不报错**：帧照出，只是嘴和声音差着。
+ *
+ * 所以改完稿子永远是两步：`long-parse` → `align`。下面那行提示就是为这个。
+ */
+const hadAlign = (() => {
+  try {
+    const old = JSON.parse(readFileSync(dst, 'utf8')) as { lines?: Array<{ dur?: number }> };
+    return (old.lines ?? []).some((l) => l.dur !== undefined);
+  } catch {
+    return false;
+  }
+})();
+
 writeFileSync(dst, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
 
 const chars = rows.reduce((n, r) => n + r.text.length, 0);
@@ -210,6 +298,10 @@ const pause = rows.reduce((n, r) => n + r.padAfter + PAD_BEFORE, 0);
 const ox = rows.filter((r) => r.who === 'niu');
 const marked = rows.filter((r) => r.padAfter !== DEFAULT_PAD).length;
 console.log(dst);
+if (hadAlign) {
+  console.log('  ⚠ 上一版里 align 回填的 dur / audio 被这次覆盖掉了。');
+  console.log(`     配音没重出的话，直接补回来：npm run align -- ${dst}`);
+}
 console.log(`  ${rows.length} 句 · ${chars} 字 · 停顿共 ${pause.toFixed(1)}s（其中 ${marked} 处是稿子标死的）`);
 const byLayer = (k: string) => rows.filter((r) => r.layer === k).length;
 console.log(`  老马 ${rows.length - ox.length} 句 · 老牛 ${ox.length} 句`);

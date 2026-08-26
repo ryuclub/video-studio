@@ -9,8 +9,8 @@
 //   · 按 ## 切幕
 //   · 按空行切段
 //   · 「某某说：」直接点名的对白 → 认出说话人
-//   · 文言直引（「」包起来的）→ 标 引文 节拍
-//   · 一幕最后一段 → 标 收
+//   · 文言直引（「」包起来的）→ 标 贴近 节拍
+//   · 一幕最后一段 → 标 落定
 //
 // 必须人判断（输出里标成 ? 或 TODO）：
 //   · 「他说」「她说」「它说」—— 机器分不清是谁，得看上下文
@@ -56,7 +56,7 @@ export interface ShuoshuLine {
  * 一个角色有几个称呼就写几条（姑娘/女子 都指同一个人）。
  * 音色名必须是选角表里有的，写错在这里就炸，不会等到合成。
  */
-function parseCastMap(header: string): Record<string, string> {
+export function parseCastMap(header: string): Record<string, string> {
   const line = /^[-*]\s*选角[：:]\s*(.+)$/m.exec(header)?.[1];
   if (!line) {
     throw new Error(
@@ -117,8 +117,10 @@ export function parse(md: string): { title: string; lines: ShuoshuLine[] } {
       line.reviewNote = '有对白特征但没解析出说话人';
     }
 
-    // ④ 文言直引
-    if (/^「.+」$/.test(b)) line.beat = '引文';
+    // ④ 文言直引。**2026-08-26 起打「贴近」不打「引文」** ——
+    //    规范 §五 只留六种节拍，`引文` 退役了（归到 `贴近`）。
+    //    引文那条「语速降到 150 字/分」是 §七 另管的事，不是一个 beat。
+    if (/^「.+」$/.test(b)) line.beat = '贴近';
 
     lines.push(line);
   }
@@ -126,7 +128,9 @@ export function parse(md: string): { title: string; lines: ShuoshuLine[] } {
   // ⑤ 每一幕的最后一段标「收」
   for (let i = 0; i < lines.length; i++) {
     if (i === lines.length - 1 || lines[i + 1].act !== lines[i].act) {
-      if (lines[i].beat === '常规' && lines[i].who === '说书人') lines[i].beat = '收';
+      // **2026-08-26 起打「落定」不打「收」** —— `收` 退役了（归到 `落定`，
+      // 两个的语义本来就是「一段收尾」）。规范 §五。
+      if (lines[i].beat === '常规' && lines[i].who === '说书人') lines[i].beat = '落定';
     }
   }
 
@@ -158,7 +162,19 @@ function main() {
     if (!existsSync(dst)) return false;
     try {
       const prev = JSON.parse(readFileSync(dst, 'utf8'));
-      return Boolean(prev.annotated) || (prev.lines ?? []).some((l: { parts?: unknown }) => l.parts);
+      const prevLines = (prev.lines ?? []) as { parts?: unknown; beat?: string }[];
+      // 三个判据，满足一个就算标注过：
+      //   · annotated 字段（显式声明）
+      //   · 任何一段带 parts（分声部只可能是手工标的）
+      //   · **非「常规」的节拍占比超过解析器自己能打的那点**
+      //
+      // 第三条 2026-08-26 补的，**它才是最常见的那一种**：绝大多数期只标节拍，
+      // 既没有 annotated 也没有 parts，于是前两条一条都不成立，重跑解析直接覆盖。
+      // 解析器自己只会打「收」（每幕末）和「引文」（「」整段），加起来撑死一两成；
+      // 标注过的期非常规占比在 70% 上下（体检的下限是 35%）。取 30% 当界。
+      const nonDefault = prevLines.filter((l) => l.beat && l.beat !== '常规').length;
+      const annotatedByBeat = prevLines.length > 0 && nonDefault / prevLines.length > 0.3;
+      return Boolean(prev.annotated) || prevLines.some((l) => l.parts) || annotatedByBeat;
     } catch {
       return false; // 读不动就当没标过
     }
@@ -193,4 +209,8 @@ function main() {
   console.log('\n下一步：确认上面这些段的说话人，再逐段标节拍（默认「常规」不用改）');
 }
 
-main();
+// ⚠ **必须守卫。** 没有这一行的话，任何人 `import { parse }` 都会顺带跑一遍 main()，
+// 而 main() 是会写 script.json 的 —— 表现是**标注静默消失**，不报错。
+// 2026-08-26 被 `shuoshu-lint.ts` 触发过一次（它要 parse() 和 parseCastMap()），
+// 267 段节拍当场归零。这仓库其他每个模块都守卫了，只有这个漏了。
+if (process.argv[1]?.includes('shuoshu-parse')) main();

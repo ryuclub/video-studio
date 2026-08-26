@@ -12,10 +12,11 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { n } from '../style/papercut.js';
+import { inkPaths } from '../svg-ink.js';
 import type { CharState } from './state.js';
 
 /** 原稿解析结果缓存：同一张图在 400 多帧里会被读很多次 */
-const cache = new Map<string, { vw: number; vh: number; inner: string } | null>();
+const cache = new Map<string, { vx: number; vy: number; vw: number; vh: number; inner: string } | null>();
 
 function load(art: string) {
   if (cache.has(art)) return cache.get(art)!;
@@ -26,9 +27,10 @@ function load(art: string) {
   }
   const raw = readFileSync(file, 'utf8');
   const vb = raw.match(/viewBox="([\d.\s-]+)"/);
-  const [, , vw, vh] = vb ? vb[1].trim().split(/\s+/).map(Number) : [0, 0, 1024, 1024];
+  // **viewBox 前两个数不是 0 就得减掉**，见 roster.ts 里同一处的注释。
+  const [vx, vy, vw, vh] = vb ? vb[1].trim().split(/\s+/).map(Number) : [0, 0, 1024, 1024];
   const inner = raw.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>[\s\S]*$/, '');
-  const v = { vw, vh, inner };
+  const v = { vx, vy, vw, vh, inner };
   cache.set(art, v);
   return v;
 }
@@ -37,12 +39,11 @@ export function still(s: CharState, ink: (c: string) => string, seed: number): s
   const art = load(s.art ?? '');
   if (!art) return '';
 
-  // 颜色过 ink()，定格去色才生效；没写 fill 的（纯黑线稿）补深墨。
+  // 上色规则跟素材库共用一份（svg-ink.ts）—— 两边各写一份，已经漂过一次：
+  // 预览只换 fill、正片 fill 和 stroke 都换。同一张原稿在两处长得不一样，
+  // 素材库就不再是预览了。
   // gradient / mask 的 id 要带 seed，同一帧里两个同款角色才不会互相覆盖定义。
-  const inked = art.inner
-    .replace(/fill="(#[0-9a-fA-F]{3,8})"/g, (_m, c) => `fill="${ink(c)}"`)
-    .replace(/stroke="(#[0-9a-fA-F]{3,8})"/g, (_m, c) => `stroke="${ink(c)}"`)
-    .replace(/<path (?![^>]*fill=)/g, `<path fill="${ink('#22283A')}" `)
+  const inked = inkPaths(art.inner, ink)
     .replace(/id="([^"]+)"/g, (_m, id) => `id="${id}_${seed}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id) => `url(#${id}_${seed})`);
 
@@ -57,7 +58,7 @@ export function still(s: CharState, ink: (c: string) => string, seed: number): s
   return (
     `<g opacity="${s.opacity}" transform="translate(${n(s.x + s.shakeX)},${n(s.y + s.shakeY + s.bob * 0.6)}) ` +
     `scale(${n(scale * mirror)},${n(scale * s.breath)}) rotate(${n(-s.lean * 0.4 + nod)}) ` +
-    `translate(${n(-art.vw / 2)},${n(-art.vh)})">` +
+    `translate(${n(-art.vw / 2)},${n(-art.vh)}) translate(${n(-art.vx)},${n(-art.vy)})">` +
     inked +
     `</g>`
   );

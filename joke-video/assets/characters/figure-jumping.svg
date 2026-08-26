@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="158" height="268" viewBox="411 342 158 268" role="img">
+<title>跳</title>
+<g fill="none" stroke="#2E2C29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="490" cy="398" r="32" fill="#FFFFFF"/>
+<path d="M484,369 C486,356 500,358 500,370"/>
+<circle cx="479" cy="392" r="3.5" fill="#2E2C29" stroke="none"/>
+<circle cx="501" cy="392" r="3.5" fill="#2E2C29" stroke="none"/>
+<path d="M481,406 C486,418 496,418 501,406 Z" fill="#2E2C29"/>
+<path d="M482,428 L482,436"/>
+<path d="M498,428 L498,436"/>
+<path d="M476,436 C466,432 452,426 440,414 L457,408 C462,420 464,428 466,440 C464,470 462,486 460,502 L520,502 C518,486 516,470 514,440 C516,428 518,420 523,408 L540,414 C528,426 514,432 504,436 Z" fill="#6E9EC4"/>
+<path d="M478,437 C484,444 496,444 502,437"/>
+<path d="M460,502 L520,502 C522,514 522,522 518,530 L500,530 L490,514 L480,530 L462,530 C458,522 458,514 460,502 Z" fill="#4E5A69"/>
+<path d="M448,410 C443,394 436,378 433,369"/>
+<circle cx="431" cy="363" r="6"/>
+<path d="M532,410 C537,394 544,378 547,369"/>
+<circle cx="549" cy="363" r="6"/>
+<path d="M472,530 C458,542 452,552 458,560"/>
+<path d="M508,530 C522,542 528,552 522,560"/>
+<ellipse cx="452" cy="564" rx="11" ry="6" fill="#4E5A69"/>
+<ellipse cx="528" cy="564" rx="11" ry="6" fill="#4E5A69"/>
+<ellipse cx="490" cy="588" rx="40" ry="7" stroke-width="1.5"/>
+<path d="M444,470 L434,480" stroke-width="1.8"/>
+<path d="M536,470 L546,480" stroke-width="1.8"/>
+</g>
+</svg>

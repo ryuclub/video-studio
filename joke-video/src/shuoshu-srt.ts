@@ -149,7 +149,7 @@ export function cueToSrt(
   return out;
 }
 
-const stamp = (sec: number) => {
+export const stamp = (sec: number) => {
   const ms = Math.max(0, Math.round(sec * 1000));
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);

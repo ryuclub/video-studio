@@ -44,6 +44,10 @@ import { getPace } from './pace.js';
 // 出场档 ③ 的首帧要画物件。**库里有没有那个画法，体检就该知道** ——
 // 不然人要等到渲染起来才被 `drawObject()` 抛一次。
 import { OBJECTS, hasObject } from '../horse/objects.mjs';
+// ⚠ **用语规范是单独一支，不抄进来。** 正文 `horse/用语规范.md`，
+// 实现 `laoma-diction.ts` —— 长片那道闸 import 的是同一支。
+// 抄一份就是第二个真相：改了这边忘了那边，长片和段子线的判据就悄悄分叉了。
+import { checkDiction, 量落点前 } from './laoma-diction.js';
 
 export interface Issue {
   level: 'error' | 'warn';
@@ -1233,19 +1237,88 @@ export function checkLaoma(cfg: JokeCfg): Issue[] {
         '**缺了不会报错，只会静默回退到系统黑体** —— 字幕就不是这条线的样子了。见 `fonts/README.md`'
     );
 
+  // ── 用语规范（`horse/用语规范.md` §十一，落地判据见 §12.2）─────────────
+  //
+  // ⚠ 放在最后跑，是因为它报的东西跟上面那些**不是一个量级**：
+  // 上面查的是结构和画面（缺了就出不了片），这儿查的是句子写法（多半是提醒）。
+  // 混在中间会把真硬伤淹掉。
+  const pi = cfg.lines.findIndex((l) => l.beat === 'punch');
+  out.push(
+    ...checkDiction(
+      cfg.lines.map((l, i) => ({
+        text: lineText(l),
+        at: `第${i + 1}`,
+        punch: l.beat === 'punch',
+      })),
+      { format: cfg.format, beat: 量落点前(cfg.lines, pi) },
+    ),
+  );
+
   return out;
 }
+
+/**
+ * 必答清单：**机器一条都查不了的那些。**
+ *
+ * ⚠ **无条件打印，不管过没过。** 原来这段只在 `errors.length` 那个分支里印 ——
+ * 也就是**过了反而什么都不说**，而「过了」正是要去出片的那一刻。
+ * 说书那道闸（`shuoshu-lint.ts`）是在错误分支**之前**无条件印的，照它来。
+ *
+ * ⚠ 原来那句写的是「查不了的那三条」，可 `SCRIPT_GUIDE.md` §六 自己点名的是
+ * **五条**（1、4、5、12、21），外加 18 只能半查。而且那句里的「误导公不公平」
+ * 压根不在 §六 那张表上 —— 是更早一版留下来的说法。
+ *
+ * ⚠ **这儿只列机器查不了的。** 查得了的上面已经逐条报过了，
+ * 再抄一遍就是让人在两份清单之间比对，比对着比对着就都不看了。
+ */
+const 必答清单 = `
+────────────────────────────────────────────────────────
+机器查不了的，逐条问自己（体检全绿只等于没有形式硬伤）
+
+好不好笑　SCRIPT_GUIDE §六：这五条它点名说了机器查不了
+  1. 落点句的最后一个词，是不是笑点本身？
+  4. 全片只有一个笑点吗？
+  5. 回头看，转折的线索在前面出现过吗？
+ 12. 删掉那个物件，真的有句子说不通吗？
+     （体检只数得出它出现在几句里，数不出「说不通」）
+ 21. 落点有没有让前面几句重新被理解一遍？
+     （只是「什么都没发生」的复述不算落点）
+ 18. 配额句是哪一句 —— 体检只查得了「你点的那句在不在落点位」，
+     查不了「哪句带情绪」。点错了它一样报绿
+
+用语　用语规范 §十一：人只需要看三样
+  · 事情够不够怪（§八：朴素的是词，不朴素的是事。
+    观众留下来是因为怪，不是因为白）
+  · 少不少一拍（落点前那一下，闸只量得出停顿长短，量不出「够不够」）
+  · 口音的违和感能不能接受（晓晓是播音底子，读方言口语字会有轻微违和）
+
+生成后抽听　用语规范 §2.2
+  · 「都」在句中 dōu/dū、「了」le/liǎo —— **闸门只报「得」**
+    （三个都报的话 18 条已出稿 18/18 全中，等于没有闸）。
+    这两个是特意退回这张表的，别指望上面那行提醒
+
+平读测试　用语规范 §四
+  · 每句用完全平的语调念一遍，意思还在 → 过；散了 → 改
+  · 对比要写进结构（不是不想干 → 不是不想干。是干不动），不许靠重音
+  · 一句一个重点，重点放句尾
+  ⚠ Edge TTS 拒绝一切 SSML，写坏了没有后期能救，只能回来改字
+────────────────────────────────────────────────────────`;
 
 export function gate(cfg: JokeCfg): boolean {
   const issues = checkLaoma(cfg);
   const errors = issues.filter((i) => i.level === 'error');
   for (const i of issues) console.log(`  ${i.level === 'error' ? '✗' : '!'} ${i.msg}`);
+  console.log(
+    `  ${errors.length ? '✗' : '✓'} 形式项${errors.length ? `有 ${errors.length} 条硬伤` : '全过'}` +
+      `${issues.length - errors.length ? `，${issues.length - errors.length} 个提醒` : ''}`
+  );
+  // ⚠ **清单在错误分支之前印。** 有硬伤当然要先改稿，但这张表照样要看 ——
+  // 「改完硬伤就发」正是它想拦住的那个动作。
+  console.log(必答清单);
   if (errors.length) {
-    console.error(`\n${errors.length} 条硬伤。**体检全绿不等于好笑，但有硬伤一定不好笑。**`);
-    console.error('查不了的那三条（一条一个笑点 / 误导公不公平 / 线索前面出现过吗）只有人能判，见 SCRIPT_GUIDE §六。');
+    console.error(`${errors.length} 条硬伤，先改稿。**体检全绿不等于好笑，但有硬伤一定不好笑。**`);
     return false;
   }
-  console.log(`  ✓ 形式项全过${issues.length ? `，${issues.length} 个提醒` : ''}`);
   return true;
 }
 

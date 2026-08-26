@@ -15,6 +15,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolveEp, DEF } from './zhiyu-ep.js';
 import { stripMarks, suspectMarks } from './zhiyu-audio.js';
+import { checkDiction, 读用语豁免, 必答清单 } from './zhiyu-diction.js';
 
 const { dir: PROJ, book: BOOK } = resolveEp(process.argv.slice(2));
 const argv = process.argv.slice(2);
@@ -97,6 +98,14 @@ function checkOne(file: string, name: string) {
         ? `${q.length} 处问号 —— 本期已豁免（${Q_EXEMPT}）：${q[0].text.slice(0, 20)}`
         : `${q.length} 处问号（问句改陈述）：${q[0].text.slice(0, 20)}`
     );
+  // ── 用语规范（全系通用）──
+  //
+  // 规范正文：`zhiyu/治愈频道_用语规范.md`，机器部分在 `zhiyu-diction.ts`。
+  // ⚠ **三条线共用那一份**，不各写各的 —— 各写各的迟早分叉，
+  // 而分叉之后「哪份是真的」只能靠读代码。
+  for (const d of checkDiction(says.map((b) => ({ text: b.text, section: name })), 读用语豁免(PROJ)))
+    (d.level === 'error' ? err : warn).push(`[${d.rule}] ${d.msg}`);
+
   const marks = suspectMarks(says.map((b) => b.text));
   if (marks.length) err.push(`${marks.length} 处可疑编辑记号（会被念出来）：${marks[0].slice(0, 20)}`);
 
@@ -218,6 +227,7 @@ export function gate(): void {
     `\n${e ? `✗ ${e} 处违反文本闸，必须改` : '✓ 文本闸全过'}` +
       `${w ? `　⚠ ${w} 处数值出区间，自己判断是不是有意的` : ''}`
   );
+  console.log(必答清单);
   console.log(`\n**机器只查得了一半。** 调子飘没飘、腻不腻、共鸣接不接得上，只能人听 ——`);
   console.log(`所以「样章 → 试听 → 确认调性」那一步不能因为体检过了就省。`);
   if (e) {

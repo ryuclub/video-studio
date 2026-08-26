@@ -35,7 +35,13 @@
     "frame": "tsx src/cli.ts frame",
     "schedule": "tsx src/schedule.ts",
     "deliver": "tsx src/deliver.ts",
-    "xingmu:index": "tsx src/xingmu-index.ts"
+    "xingmu:index": "tsx src/xingmu-index.ts",
+    "laoma:long-cover": "tsx src/laoma-long-cover.ts",
+    "shuoshu:lint": "tsx src/shuoshu-lint.ts",
+    "scene:check": "tsx src/scene-check.ts",
+    "laoma:long-check": "tsx src/laoma-long-check.ts",
+    "laoma:long-unparse": "tsx tools/long-unparse.mts",
+    "scenery:check": "tsx src/scenery-check.ts"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="157" height="257" viewBox="416 22 157 257" role="img">
+<title>举手</title>
+<g fill="none" stroke="#2E2C29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="490" cy="78" r="32" fill="#FFFFFF"/>
+<path d="M484,49 C486,36 500,38 500,50"/>
+<circle cx="479" cy="74" r="3.5" fill="#2E2C29" stroke="none"/>
+<circle cx="501" cy="74" r="3.5" fill="#2E2C29" stroke="none"/>
+<path d="M482,88 C487,96 495,96 500,88"/>
+<path d="M482,108 L482,116"/>
+<path d="M498,108 L498,116"/>
+<path d="M476,116 C464,117 456,124 450,134 C446,141 444,147 444,151 L460,148 C463,155 463,168 460,182 L520,182 C518,164 516,150 516,142 C524,140 540,138 546,136 L534,124 C526,120 516,116 504,116 Z" fill="#6E9EC4"/>
+<path d="M478,117 C484,124 496,124 502,117"/>
+<path d="M460,182 L520,182 C522,196 522,206 518,216 L496,216 L490,196 L484,216 L462,216 C458,206 458,196 460,182 Z" fill="#4E5A69"/>
+<path d="M452,150 C449,168 451,182 452,190"/>
+<circle cx="452" cy="197" r="6.5"/>
+<path d="M540,130 C548,116 552,102 552,92"/>
+<circle cx="552" cy="84" r="6.5"/>
+<path d="M472,216 C470,232 469,244 469,252"/>
+<path d="M508,216 C510,232 511,244 511,252"/>
+<ellipse cx="466" cy="257" rx="11" ry="6.5" fill="#4E5A69"/>
+<ellipse cx="514" cy="257" rx="11" ry="6.5" fill="#4E5A69"/>
+<path d="M430,264 L550,264" stroke-width="1.8"/>
+</g>
+</svg>

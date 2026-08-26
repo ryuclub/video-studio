@@ -33,6 +33,7 @@ import { buildVoiceDoc } from './voicedoc.js';
 import { unfilled, ensurePlan } from './plan.js';
 import { report } from './preflight.js';
 import { gate as laomaGate } from './laoma-check.js';
+import { gateLong } from './laoma-long-check.js';
 import { buildShotDoc } from './shotdoc.js';
 import { SCENE_NAMES, getScene } from './scenes/index.js';
 import { report as layoutReport, solve as layoutSolve } from './layout.js';
@@ -76,12 +77,16 @@ function laomaOk(cfg: JokeCfg, argv: string[], act: string): boolean {
   // 而**天天报错的闸门，人只会学会加 `--anyway`**（那才是真正的损失：
   // 累积式和单点式那两道有用的闸也跟着不被当回事了）。
   //
-  // 长片自己的规范还没写（素材包里那份方案只到「先录音」那一步），
-  // 有了再往这儿接一道 —— **在那之前，它是没有闸的，写稿的人心里得有数。**
+  // ⚠ **长片有自己的闸了**（2026-08-26）：`laoma-long-check.ts`，判据来自
+  // `horse/长片_稿件规范.md`。这儿原来写的是「长片自己的规范还没写 —— 这条线现在没有闸」，
+  // 直接放行 —— 那是规范落地之前的状态，留着的话**必答清单只在手动跑命令时才出现**。
   if (cfg.format === 'long') {
-    console.log('\n长片：不走短片那道体检（落点／铺垫／物件／日子牌／片长全是短片的判据）。');
-    console.log('长片自己的规范还没写 —— **这条线现在没有闸**，稿子对不对只能靠人看。\n');
-    return true;
+    console.log('\n稿件体检（老马长片）');
+    if (gateLong(cfg)) return true;
+    console.log('');
+    console.log(`改完再${act}。要强行${act}加 --anyway。`);
+    console.log('');
+    return argv.includes('--anyway');
   }
   console.log('\n稿件体检（老马线）');
   if (laomaGate(cfg)) return true;
@@ -549,11 +554,29 @@ ${n} 条稿件，汇总页：projects/段子与儿童故事/index.html`);
     // 加了反而让开头多一段莫名其妙的空白
     const p = `${dir}/${cfg.id}-试听.wav`;
     writeWav(p, mixdown(tl, raw), SR);
+    /**
+     * ⚠ **长片顺手出一份 `.srt`**（2026-08-26 用户定）。
+     *
+     * 为什么挂在 `audio` 而不是 `build`：字幕的时刻**全部来自配音的真实时长**
+     * （`align` 回填的 `dur`），跟画面一点关系都没有 —— 出完音就已经算得出来了。
+     * 挂在出片那头的话，**只想听一遍**的时候拿不到字幕，而审稿常常只到试听为止。
+     *
+     * ⚠ **文本跟屏上的字是同一个来源**（`long-caption.ts`）。各算一套的话
+     * 屏上的字和 `.srt` 会慢慢对不上，**而且不报错**。
+     */
+    let srtPath = '';
+    if (cfg.format === 'long') {
+      const { longCues, longSrt } = await import('./long-caption.js');
+      const cues = longCues(cfg, tl);
+      srtPath = `${dir}/${cfg.id}-试听.srt`;
+      writeFileSync(srtPath, longSrt(cues), 'utf8');
+    }
     const mm = Math.floor(tl.duration / 60);
     const ss = (tl.duration % 60).toFixed(1).padStart(4, '0');
     const bgm = cfg.bgm?.enabled === false ? '关' : cfg.bgm?.key ?? 'happy';
     console.log('');
     console.log(`  ${p}`);
+    if (srtPath) console.log(`  ${srtPath}`);
     console.log(`  片长 ${mm}:${ss}　配音 ${cfg.lines.length} 句　BGM ${bgm}`);
     console.log('');
     console.log('听三件事：句与句之间够不够喘气、换镜那一拍是不是明显长一档、落点句有没有慢下来。');

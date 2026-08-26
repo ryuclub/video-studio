@@ -23,6 +23,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolveEp } from './zhiyu-ep.js';
 import { parseSections, mmss, type Issue } from './xinli-check.js';
+import { checkDiction, 读用语豁免, 必答清单 } from './zhiyu-diction.js';
 
 /**
  * **实测值。** E01《第七个饼》1960 字 / 473.6 秒（含全部停顿）＝ 248.3。
@@ -123,6 +124,14 @@ export function checkChan(dir: string, act = '正文'): Issue[] {
     return out;
   }
   const { sections, beats, total, meta } = parseSections(file);
+
+  // ── 用语规范（全系通用）──────────────────────────────────────────
+  //
+  // 规范正文：`zhiyu/治愈频道_用语规范.md`，机器部分在 `zhiyu-diction.ts`。
+  // ⚠ **三条线共用那一份**，不各写各的 —— 各写各的迟早分叉，
+  // 而分叉之后「哪份是真的」只能靠读代码。
+  for (const d of checkDiction(sections.flatMap((s) => s.paras.map((text) => ({ text, section: s.name }))), 读用语豁免(dir)))
+    out.push({ level: d.level, msg: `[${d.rule}] ${d.msg}` });
 
   // ── 结构：七段齐不齐、各段字数在不在区间 ──
   const got = new Set(sections.map((s) => s.name));
@@ -276,6 +285,8 @@ export function gate(dir: string, act = '正文'): void {
     process.exit(1);
   }
   console.log(`  ✓ 体检通过${issues.length ? `，${issues.length} 个提醒` : ''}`);
+  // 机器判不了的那几样，每期印一遍。**清单写了却没人看得见，是「用语太书面」反复失守的第三个机制**
+  console.log(必答清单);
 }
 
 if (process.argv[1] && process.argv[1].endsWith('chan-check.ts')) {

@@ -31,28 +31,126 @@ function wrap(text: string, fs: number, maxW: number): string[] {
 }
 
 /**
- * 折行**均分**，不要贪心塞满第一行。
+ * **手动断点**。写在稿件的 `say[].text` 里，只对字幕生效 ——
+ * `lineText()` 会在送 TTS／SRT／体检之前把它剥掉。
  *
- * 中文没有词间空格，贪心填行会把词从中间劈开：
- * 「系统里一直显示待审批」十个字按宽度贪心是 **6/4** —— 断在「显/示」中间。
- * 均分成 **5/5** 就落在「一直 | 显示」的缝上。**不是因为均分懂中文**，
- * 是因为一行填满时断点落在哪儿纯属巧合，而均分至少让两行都不满、
- * 断点有机会挪到词边界上。
- *
- * ⚠ **只重排，不改行数。** 行数由贪心那一遍定（那一遍才知道宽度装得下几行），
- * 这儿只是把字重新摊平；摊完还要再验一遍宽度，装不下就退回贪心的结果。
+ * ⚠ **为什么非要有它。** 下面那个打分器能消灭「断错」，但判不出「哪个合法断点最好」：
+ * 「读完回我一句辛苦了」断成 4/5 和 6/3 都合法，可「辛苦了」该独占一行 ——
+ * 因为那是领导说的原话。**这件事只有写稿的人知道**，规则再多也推不出来。
  */
-function wrapBalanced(text: string, fs: number, maxW: number): string[] {
-  const greedy = wrap(text, fs, maxW);
-  if (greedy.length < 2) return greedy;
+export const BREAK_MARK = '|';
+
+/**
+ * **附着字**：不能出现在下一行开头的字。它们得挂在前一个字后面才有意思，
+ * 拎到行首读者要往上一行找主人。**这跟好不好看无关，是读得动读不动。**
+ *
+ * ⚠ 跟 `laoma-long-cover.ts` 的 `CLINGY` 同源，那边比这边少四个
+ *（么呢吗吧）—— 封面是四五个字的短标题，撞不上语气字。**改这边不要顺手改那边**：
+ * 封面那十条已出片的断口会跟着变。
+ */
+const CLINGY = '的了着过地得们之么呢吗吧';
+
+/** 数词。跟量词之间不许断 —— 「一句」劈成「一／句」是硬错 */
+const NUM = '一二两三四五六七八九十几半零';
+/** 量词。断在它**后面**反而是好断点（数量词说完了） */
+const CLASSIFIER = '个次回下条句版天年月日分秒遍趟页人只件张份步口杯遍层';
+/** 这些字必须挂着后面的字，不能结行 */
+const PROCLITIC = '不没别很太更最又再也就还挺比跟和把被给对从在向往用于把';
+/** 介词。它和它后面那个宾语是一整块，**断点只能在整块之前或之后** */
+const PREP = '比跟和把被给对从在向往为替按照朝';
+/** 否定词。「否定＋动词」也是一整块，不能把动词留在行尾 */
+const NEG = '不没别';
+/** 标点后面是最好的断点 */
+const AFTER_PUNCT = '，、；：。！？…—」』）';
+
+const isAlnum = (c: string) => /[A-Za-z0-9]/.test(c);
+
+/**
+ * 折行：**枚举所有合法断点，打分取最高**。
+ *
+ * ⚠ **正文在 `horse/SUBTITLE_SPEC.md` §五之二** —— 六条硬禁止、两条加分、
+ * 手动断点、以及「还没做的那两条」都写在那儿。**判据要改先改那一节**，
+ * 别只改这儿：下面这些注释是给读代码的人看的，规范才是给写稿的人看的。
+ *
+ * ── 为什么不是贪心，也不是均分 ──
+ *
+ * 原来是「贪心塞满 → 再盲目均分到同样行数」。拿 laoma-019 的 13 屏字幕量过，
+ * **均分是净负的**：3 处改好、5 处改坏。你要的两处（`AI` 不劈、「一句」不劈）
+ * 贪心本来就断对了，是均分又把它们断坏的。
+ *
+ * ⚠ **平衡度不能当主目标，只能当平手判据。** 同样是量出来的：
+ * 「读完回我一句辛苦了」九个字，最该要的 6/3 恰好是**最不平衡**的那个断法，
+ * 而 5/4、4/5 都更平衡、都断错。所以平衡只配一个很小的权重。
+ *
+ * 硬禁止四条（命中就出局，不参与打分）：
+ *   ① 断在拉丁字母／数字串内部　　「领导用 AI 读周报」→「领导用 A／I 读周报」
+ *   ② 下一行以附着字开头　　　　　「…写／了」
+ *   ③ 断在数词和量词之间　　　　　「读完回我一／句辛苦了」
+ *   ④ 上一行以粘着字结尾　　　　　「那周报不／是我写的」
+ */
+export function wrapSmart(text: string, fs: number, maxW: number): string[] {
+  // 手动断点最优先 —— 标了就照标的来，一个字都不商量
+  if (text.includes(BREAK_MARK))
+    return text
+      .split(BREAK_MARK)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
   const chars = [...text];
-  const per = Math.ceil(chars.length / greedy.length);
-  const out: string[] = [];
-  for (let i = 0; i < chars.length; i += per) out.push(chars.slice(i, i + per).join(''));
-  // 摊平之后行数变多、或者哪一行超宽，都退回贪心
-  if (out.length !== greedy.length) return greedy;
-  if (out.some((l) => textWidth(l, fs) > maxW)) return greedy;
-  return out;
+  if (textWidth(text, fs) <= maxW) return [text];
+
+  // 需要几行：按宽度算，跟原来那一遍贪心得到的行数一致
+  const need = wrap(text, fs, maxW).length;
+  if (need < 2) return [text];
+  return split(chars, fs, maxW, need);
+}
+
+/** 递归切：先给第一行挑断点，剩下的接着切 */
+function split(chars: string[], fs: number, maxW: number, need: number): string[] {
+  if (need <= 1) return [chars.join('')];
+  const per = chars.length / need; // 理想的每行字数，只用来算平衡度
+  let best = -1;
+  let bestScore = -Infinity;
+  for (let i = 1; i < chars.length; i++) {
+    const head = chars.slice(0, i);
+    const tail = chars.slice(i);
+    if (textWidth(head.join(''), fs) > maxW) break; // 再往后只会更宽
+    // 剩下的必须装得进 need-1 行
+    if (wrap(tail.join(''), fs, maxW).length > need - 1) continue;
+
+    const prev = chars[i - 1];
+    const next = chars[i];
+    if (isAlnum(prev) && isAlnum(next)) continue; // ① 拉丁／数字串
+    if (CLINGY.includes(next)) continue; //           ② 附着字起行
+    if (NUM.includes(prev) && CLASSIFIER.includes(next)) continue; // ③ 数量词
+    if (PROCLITIC.includes(prev)) continue; //        ④ 粘着字结行
+    // ⑤ 介词短语内部：「我是学得比它｜更新得慢」把「比它」和它比的东西拆开了。
+    //    要断就断在介词之前 —— 「我是学得｜比它更新得慢」。
+    if (i >= 2 && PREP.includes(chars[i - 2])) continue;
+    // ⑥ 否定＋动词：「那周报不是｜我写的」把「不是」和它否定的东西拆开了。
+    //    要断就断在否定词之前 —— 「那周报｜不是我写的」。
+    if (i >= 2 && NEG.includes(chars[i - 2])) continue;
+
+    let s = 0;
+    if (AFTER_PUNCT.includes(prev)) s += 4;
+    // 数量词说完了是个好断点：「一句｜辛苦了」
+    if (CLASSIFIER.includes(prev) && i >= 2 && NUM.includes(chars[i - 2])) s += 2;
+    s -= Math.abs(i - per) * 0.4; // 平衡度，权重故意小
+    if (i >= chars.length - i) s += 0.3; // 打平时前行不短于后行
+
+    if (s > bestScore) {
+      bestScore = s;
+      best = i;
+    }
+  }
+  // 一个合法断点都没有：退回等分，别把整句挤成一行溢出去
+  if (best < 0) best = Math.max(1, Math.round(per));
+  // ⚠ **每行掐掉首尾空格。** 「我用 AI 写周报」断在 AI 后面，第二行会是「␣写周报」——
+  // 左对齐排版下那个空格是看得见的，整行往右缩一格，跟上一行对不齐。
+  return [
+    chars.slice(0, best).join('').trim(),
+    ...split(chars.slice(best), fs, maxW, need - 1).map((l) => l.trim()),
+  ];
 }
 
 function tspans(line: string, highlight: string | undefined, ink: (c: string) => string): string {
@@ -516,8 +614,19 @@ export function sideText(
   let fs = opts.fontSize ?? spec.fs;
   const MIN_FS = 34;
   while (fs > MIN_FS && textWidth('测', fs) > opts.colW) fs -= 2;
+  // ⚠ **只超一点点的，缩字号塞进一行，别折。**
+  //
+  // 2026-08-23 那次改动（字号定死、长句折行）是为了废掉「一路缩回 48 号」，
+  // 但钟摆甩过头了：现在一个像素都不让。「没有一个人看过」七个字 560px、
+  // 列宽 515px，**只超 45px（9%）就被折成两行** —— 而那是一句该一口气读完的短句。
+  //
+  // 窗口只给 10%（80 → 72 号），够把 6.4 字/行抬到 7.15 字/行。**再宽就是缩字号了**，
+  // 那正是上一次要废掉的东西。超得多的（十个字 800px）该折还折。
+  const SHRINK = 0.9;
+  const widest = Math.max(...want.map((c) => textWidth(c, fs)));
+  if (widest > opts.colW && widest * SHRINK <= opts.colW) fs = Math.floor((fs * opts.colW) / widest);
   const lh = fs * LAOMA_SUB.lineH;
-  const lines = want.flatMap((c) => wrapBalanced(c, fs, opts.colW));
+  const lines = want.flatMap((c) => wrapSmart(c, fs, opts.colW));
   const top = opts.cy - ((lines.length - 1) * lh) / 2;
   const haloInk = opts.ink(P.paper);
   const glyphs = (l: string, i: number, pass: 'halo' | 'fill') =>

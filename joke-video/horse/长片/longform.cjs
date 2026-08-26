@@ -241,28 +241,67 @@ function narr(lines,halo,bg,prog){
  *
  * 字号 26、半透明 —— 它是给人认场用的，**不该跟台词抢**。
  */
+/**
+ * ⚠ **牌匾用单点式那三个色，不用场景那套线色**（`horse/plaque.mjs` 顶上的常量）。
+ * 挂绳原先拿的是 `LINE`（#8C8072，场景细线那支）—— 那是画墙和桌子用的浅灰褐，
+ * 挂在木牌上像根尼龙线；单点式那块牌子上下一体都是 #3B322B 的墨。
+ */
+const PL_LINE='#3B322B', PL_WOOD='#D8BE93', PL_SHADE='#A98A5C';
+/** 牌子中心的 y。**不是随便定的**，见 label() 里那条「绳结要留在画布里」 */
+const LABEL_CY=106;
+
 function label(text,bg){
   if(!text) return '';
   // **照单点式那块木牌的样子**（`horse/plaque.mjs` 的 `style:"wood"`）：
   // 两根挂绳从顶角斜上去、木色底、上下两道横木、墨色描边。
   // ⚠ **不搬 `rough.mjs` 的手绘抖动** —— 长片这套画面是干净的细线，
   // 抖出来的边在这儿是另一种笔触，两种线放一起就花了。**借的是样式，不是笔法。**
-  const WOOD='#D8BE93', SHADE='#B08E5E';
   const w = 26*[...text].length + 46, h = 56;
-  const cx = 150, cy = 88, x = -w/2, y = -h/2;
-  const dark = lum(bg)>0.4;
-  return `<g transform="translate(${cx},${cy}) rotate(-1.6)" opacity="${dark?0.95:0.9}">`
-    // 两根挂绳，收在牌子正上方一点，像挂在画外的钉子上
-    + `<path d="M${-w*0.32} ${y} L${-w*0.14} ${y-42} L0 ${y-70} L${w*0.14} ${y-42} L${w*0.32} ${y}" fill="none" stroke="${LINE}" stroke-width="2.4" stroke-linejoin="round" opacity="0.75"/>`
-    + `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${WOOD}"/>`
-    // 木纹：三道斜线，压在木色上
-    + [0.28,0.5,0.72].map(f=>`<path d="M${x+8} ${y+h*f+6} L${x+w-8} ${y+h*f}" stroke="${SHADE}" stroke-width="1.4" opacity="0.35"/>`).join('')
+  const x = -w/2, y = -h/2;
+  // ⚠ **绳结要留在画布里**，这条 plaque.mjs 里记着，长片头一版照样踩了：
+  // 绳子从牌顶往上 70px 收成结，牌高 56 —— 中心定在 88 时结落在 **y = −10**，
+  // 被上沿切掉一截，看着不像「挂在画外」，像画漏了。106 让它落在 y = 8。
+  const cx = 150, cy = LABEL_CY;
+  // ⚠ `lum(bg)>0.4` 是**浅底**，不是深底 —— 变量原先叫 `dark`，名字反着。两档只差 0.05，
+  // 看不出来，但下一个人要照它加规则就会加反。
+  const light = lum(bg)>0.4;
+  return `<g transform="translate(${cx},${cy}) rotate(-1.6)" opacity="${light?0.95:0.9}">`
+    // **两根挂绳**，各自从一个顶角斜上去，在牌子正上方收成一个结，
+    // 像挂在画外的钉子上。⚠ 原先是一条折线串下来 —— 那是**一根**绳绕过钉子，
+    // 规范写的是两根（`plaque.mjs` 也是两条独立的 stroke）。
+    // ⚠ **绳子的颜色要过 `ensure()`，牌子的描边不用。**
+    // 绳子挂在**背景**上：墨色 #3B322B 落在夜景底 #322E29 上对比度只有 1.05，
+    // 整根看不见 —— 剩一块木牌浮在半空，跟绳结被切掉是同一种「像画漏了」。
+    // 描边压在**木色底**上，那儿一直是浅的，照单点式用墨色不动。
+    // （这条不是新规矩：§四之三 那三条自动规则里就有「字色按底色保证对比度」。）
+    + [-1,1].map(sx=>`<path d="M${sx*w*0.34} ${y} L${sx*w*0.18} ${y-42} L0 ${y-70}" fill="none" stroke="${ensure(PL_LINE,bg)}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" opacity="0.8"/>`).join('')
+    + `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="${PL_WOOD}"/>`
+    // 木纹：三道斜线，压在木色上（单点式那边是 hatch，这边不抖，三道就够）
+    + [0.28,0.5,0.72].map(f=>`<path d="M${x+8} ${y+h*f+6} L${x+w-8} ${y+h*f}" stroke="${PL_SHADE}" stroke-width="1.4" opacity="0.35"/>`).join('')
     // 上下两道横木
-    + [0.16,0.84].map(f=>`<path d="M${x+9} ${y+h*f} L${x+w-9} ${y+h*f}" stroke="${SHADE}" stroke-width="2.6" opacity="0.55"/>`).join('')
-    + `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="none" stroke="${INK}" stroke-width="2.2" opacity="0.85"/>`
-    + `<text x="0" y="10" font-family="${FAM_NARR}" font-size="26" font-weight="700" fill="${INK}" text-anchor="middle" letter-spacing="2">${text}</text></g>`;
+    + [0.16,0.84].map(f=>`<path d="M${x+9} ${y+h*f} L${x+w-9} ${y+h*f}" stroke="${PL_SHADE}" stroke-width="2.6" opacity="0.55"/>`).join('')
+    + `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="none" stroke="${PL_LINE}" stroke-width="2.2" opacity="0.9"/>`
+    // ⚠ **牌匾上的字是站酷快乐体**，跟单点式那块一样（`plaque.mjs` 的 `FONT`）。
+    // 原先用的是旁白那支雅黑 —— 字幕规范 §二 禁站酷快乐体是**禁在字幕上**，
+    // 牌匾是场景里的一块牌子、不是台词，**可以有语气**（`config.ts` 的 FONT_FILES
+    // 注释写得很清楚：那支字体「只给标题牌匾」）。
+    + `<text x="0" y="10" font-family="${FAM_LINE}" font-size="26" fill="${PL_LINE}" text-anchor="middle" letter-spacing="2">${text}</text></g>`;
 }
 
+/**
+ * 一帧。
+ *
+ * ⚠ **`maX` / `maH` / `overlay` 这三个是第四处接线改动**（2026-08-26，给封面用），
+ * **画法仍旧一个像素没动**：出帧脚本不传它们，出来的帧跟以前逐字节一样。
+ *
+ *   maX      老马站在哪儿（缺省 300，也就是画面左三分之一）。封面要他站右边
+ *   maH      老马多高（缺省 366）。**脚底永远落在 y=566 那条地面线上** ——
+ *            改高度是从头顶往上长，不是把人抬起来。封面推近了看才有分量
+ *   overlay  最后叠一层 svg（封面的标题块）。画在所有东西之上
+ *
+ * 封面为什么走这个函数、而不是另画一张：**片子里是什么样，封面就该是什么样。**
+ * 场景、鱼缸、灯光、色温差全是这儿定的，抄一份到封面脚本里就是第二个真相。
+ */
 function frame(o){
   if(o.fish!==undefined) FISH=o.fish;
   if(o.t!==undefined) TIME=o.t;
@@ -272,8 +311,9 @@ function frame(o){
   const HALO = BG;
   let s = o.bg ? `<rect width="${W}" height="${H}" fill="${o.bg}"/>`+sc.art.replace(/^<rect[^>]*\/>/,'') : sc.art;
   const seat=(SCENES[o.scene||'street_dusk']||{}).seat||0;
-  const maX = seat?470:300, niuX = seat?700:720;   // 并排坐同侧时靠拢
-  s+=rig(MA,maX,200+seat,366,false,o.ma?(o.mouthMa||'A'):'closed');
+  const maX = o.maX!==undefined ? o.maX : (seat?470:300), niuX = seat?700:720;   // 并排坐同侧时靠拢
+  const maH = o.maH || 366;
+  s+=rig(MA,maX,566+seat-maH,maH,false,o.ma?(o.mouthMa||'A'):'closed');
   if(o.two) s+=rig(NIU,niuX,178+seat,392,seat?false:true,o.niu?(o.mouthNiu||'A'):'closed');
   if(o.label) s+=label(o.label,BG);
   if(o.narr) s+=narr(o.narr,HALO,BG,o.narrProg);
@@ -281,6 +321,7 @@ function frame(o){
   if(scObj && scObj.fg) s+=scObj.fg();
   if(o.ma)  s+=line(o.ma,{cx:seat?400:360,headY:206+seat,color:ensure(C_MA,BG),halo:HALO});
   if(o.niu) s+=line(o.niu,{cx:seat?940:900,headY:182+seat,color:ensure(C_NIU,BG),halo:HALO});
+  if(o.overlay) s+=o.overlay;
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${NIUFILTER}</defs>${s}</svg>`;
 }
 

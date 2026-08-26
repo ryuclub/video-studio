@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="214" height="239" viewBox="386 362 214 239" role="img">
+<title>敲键盘</title>
+<g fill="none" stroke="#2E2C29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="490" cy="418" r="32" fill="#FFFFFF"/>
+<path d="M484,389 C486,376 500,378 500,390"/>
+<circle cx="479" cy="414" r="3.5" fill="#2E2C29" stroke="none"/>
+<circle cx="501" cy="414" r="3.5" fill="#2E2C29" stroke="none"/>
+<path d="M483,428 L497,428"/>
+<path d="M482,448 L482,456"/>
+<path d="M498,448 L498,456"/>
+<path d="M476,456 C464,457 456,464 450,474 C446,481 444,487 444,491 L460,488 C463,495 463,508 460,522 L520,522 C517,508 517,495 520,488 L536,491 C536,487 534,481 530,474 C524,464 516,457 504,456 Z" fill="#6E9EC4"/>
+<path d="M478,457 C484,464 496,464 502,457"/>
+<path d="M460,522 L520,522 C522,532 522,538 521,544 L459,544 C458,538 458,532 460,522 Z" fill="#4E5A69"/>
+<path d="M452,490 C446,506 452,520 464,527"/>
+<circle cx="470" cy="530" r="6"/>
+<path d="M528,490 C534,506 528,520 516,527"/>
+<circle cx="510" cy="530" r="6"/>
+<path d="M476,518 L480,511" stroke-width="1.8"/>
+<path d="M504,518 L500,511" stroke-width="1.8"/>
+<rect x="452" y="530" width="78" height="14" rx="3" fill="#C7CDD4"/>
+<path d="M458,537 L524,537" stroke-width="1.2"/>
+<rect x="422" y="544" width="142" height="9" rx="2" fill="none"/>
+<path d="M434,553 L434,584"/>
+<path d="M552,553 L552,584"/>
+<path d="M400,586 L586,586" stroke-width="1.8"/>
+</g>
+</svg>

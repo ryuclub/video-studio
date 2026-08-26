@@ -613,6 +613,16 @@ export interface JokeCfg {
    * 而那时候片子已经发出去两个月了。
    */
   sourceNo?: number;
+  /**
+   * 单点式选题池里的编号（`horse/单点式_选题池.json`，1–16）。
+   *
+   * ⚠ **跟 `sourceNo` 是两个字段，不许合并。** 两个池子的编号各从 1 起，
+   * 合用一个字段的话「第 1 号」会同时指累积式的《说了也白说》和单点式的《收到》，
+   * 出片计划那张表就会把别的体裁的片子认成自己的。
+   *
+   * 跟 `sourceNo` 一样，**状态不手写** —— 汇总页扫 `jokes/*.json` 反查。
+   */
+  topicNo?: number;
   /** 开场空镜时长（秒），默认 2 */
   intro?: number;
   /**
@@ -705,6 +715,49 @@ export interface JokeCfg {
      * 标题块整体从 0.115 下移到画布高的 0.40。
      */
     titleLow?: boolean;
+    /**
+     * **长片封面专用**（16:9 那一档，`laoma-long-cover.ts`；规范见
+     * 封面设计规范-COVER.md §九）。竖版三条线一个字都不看这一块。
+     *
+     * ⚠ **`title` / `sub` 仍旧走上面那两个字段** —— 两档共用同一套贴纸大字，
+     * 分开写的话改一次标题得记得改两处，然后总有一处是上一版的。
+     */
+    long?: {
+      /** 哪个场景当底。六个 key 见 horse/长片_出片方案.md §四之三 */
+      scene?: 'office_dawn' | 'office_day' | 'corridor' | 'dinner' | 'street_dusk' | 'office_night';
+      /** 角色站哪边。**标题永远排对侧**（§七之三「绝不压脸」） */
+      side?: 'left' | 'right';
+      /** 鱼在缸里的位置 0–1。红点是全片唯一的高饱和色，它在哪儿视线就在哪儿 */
+      fish?: number;
+      /** 老马站位 x。**改它就得改左栏那条界**（`colRightK`），两处是一对 */
+      maX?: number;
+      /** 老马多高。脚底永远落在地面线 y=566 上 */
+      maH?: number;
+      /**
+       * **封面版式库**里挑哪一档（`laoma-long-cover.ts` 的 `LAYOUTS`）。
+       * 不写用缺省那一档。库里现有哪几档、怎么往里加，见
+       * 封面设计规范-COVER.md §九之七。
+       */
+      layout?: string;
+      /**
+       * 单期覆盖版式里的署名位：`canvas-br` 画布右下 ／ `feet` 角色脚边。
+       * **一般不写** —— 要常用就往版式库里加一档，别在稿件里一期一期地调。
+       */
+      sig?: 'canvas-br' | 'feet';
+      /**
+       * 方版（1:1）的字怎么摆：横排 ／ 竖排。**只管方版** —— 横版永远横排。
+       * 竖排是大字贴左边排成一列、从上贯到下，顺手把上半那块空白用掉。
+       */
+      sqText?: '横排' | '竖排';
+      /**
+       * 标题块的垂直中线，占画布高。缺省 0.46。
+       *
+       * ⚠ **一行标题之后这个数受约束**：标题是一条横带，眼睛和鱼缸中间那条缝
+       * 装不下它，必然压到一样。0.46 压下巴和胸口，0.50 让开脸和鱼。
+       * 对照表在  的 。
+       */
+      centerK?: number;
+    };
     /** 右下角系列标签，'none' 关掉 */
     tag?: string;
     /** 情绪符号，'none' 关掉 */
@@ -893,8 +946,12 @@ export interface Timeline {
  *
  * 这条规矩人工提过两次，这里落成代码，不再靠每条稿件自己注意。
  */
-export function subtitleText(line: LineCfg): string {
-  return (line.subtitle ?? lineText(line)).replace(/[。，、！？；：…—～.,!?;:~-]+$/, '');
+export function subtitleText(line: LineCfg, opts?: { keepBreak?: boolean }): string {
+  // ⚠ **缺省要剥掉手动断点。** 这一支还被预览页和 方案.md 读着 ——
+  // 那两处是给人看的文本，冒出一个 `|` 只会让人以为稿子写错了。
+  // 只有 `render.ts` 渲侧边字幕那一处传 `keepBreak`，因为断点就是渲给它看的。
+  const s = (line.subtitle ?? rawText(line)).replace(/[。，、！？；：…—～.,!?;:~-]+$/, '');
+  return opts?.keepBreak ? s : s.split('|').join('');
 }
 
 /**
@@ -920,6 +977,14 @@ export function dayNo(cfg: JokeCfg): number | null {
 }
 
 export function lineText(line: LineCfg): string {
+  // ⚠ **剥掉字幕的手动断点**（`subtitle.ts` 的 `BREAK_MARK`）。
+  // 它写在 `say[].text` 里，只该影响屏上怎么折行 —— 这一支是送 TTS 的那一串，
+  // 顺带也是 SRT、时长估算、体检读的那一串。**漏剥的话 TTS 会把它念出来。**
+  return rawText(line).split('|').join('');
+}
+
+/** 拼起来但**保留手动断点**。只有渲字幕那一处该用它，见 `subtitleText` 的 `keepBreak` */
+function rawText(line: LineCfg): string {
   if (line.say?.length) return line.say.map((s) => s.text).join('');
   return line.text ?? '';
 }

@@ -40,11 +40,12 @@ body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
 .nav-item:hover { background:rgba(127,127,127,.1); }
 /* 左侧目录里的栏目（工位/一个人住/众目睽睽/回家）—— 扫一眼就知道这条是哪个栏目的 */
 .nav-col { color:var(--accent); font-weight:700; }
-/* 体裁牌：两种体裁的判据好几处是反过来的，得一眼分得出 */
-.tag-one, .tag-cum { display:inline-block; padding:0 5px; border-radius:3px;
+/* 体裁牌：三种体裁的判据好几处是反过来的，得一眼分得出 */
+.tag-one, .tag-cum, .tag-long { display:inline-block; padding:0 5px; border-radius:3px;
   font-size:10px; font-weight:700; vertical-align:1px; color:#fff; }
 .tag-one { background:var(--accent); }
 .tag-cum { background:var(--gold); color:#3a2c07; }
+.tag-long { background:var(--hot); }
 /* 页顶那两个块。⚠ **.card 原来是个没有任何规则的类名**（符号库一直是裸着排在页面上的）——
    折叠之后它得看着像个可点的条，所以补上跟稿件块同一套框 */
 .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
@@ -105,6 +106,8 @@ td.w-老牛 { color:var(--gold); font-weight:700; }
 .nav-st { display:flex; align-items:center; gap:5px; font-size:10.5px;
   color:var(--dim); font-variant-numeric:tabular-nums; }
 .nav-st b { padding:0 5px; border-radius:3px; font-weight:700; }
+/* 缺片、栏目空了 —— 摘要行里要一眼看得见，收起来也算数 */
+.warn-hot { color:var(--hot); }
 .st-done { background:rgba(127,127,127,.22); color:var(--dim); }
 .st-todo { background:rgba(31,58,95,.14); color:var(--accent); }
 .st-none { background:transparent; color:var(--hot); border:1px solid currentColor; padding:0 4px !important; }
@@ -151,6 +154,9 @@ h3 { font-size:15px; color:var(--dim); margin:26px 0 12px; font-weight:600; }
 .pub-row .v.slot.none { color:#B0563F; }
 .film video { width:250px; max-height:60vh; border-radius:10px; border:1px solid var(--line);
   background:#000; display:block; }
+/* 长片那一套样式**不在这儿** —— 它只有老马汇总页用得上，走 page() 的 extraCss（LONG_CSS）。
+   骨架一改，25 张单条页跟着一起变，每张都多背一段自己永远用不到的规则。
+   （这段注释在模板字符串里，**别写反引号** —— 反引号会当场把字符串截断。） */
 .film-note { color:var(--dim); font-size:12px; padding-bottom:4px; }
 .film-none { color:var(--dim); font-size:13px; margin-bottom:20px;
   padding:10px 14px; border:1px dashed var(--line); border-radius:8px; }
@@ -232,17 +238,55 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 }
 @media (max-width:640px){ .row{grid-template-columns:110px 1fr; gap:14px;} .text{font-size:16px;} }
 
+/* ⚠ **长片是横屏。** 250px 宽是给 1080×1920 竖版定的（一条竖片摆成一栏，右边留给发片信息）；
+   1280×720 套进去只有 140px 高，字幕一个字都看不清 —— 而它恰恰是这张页上唯一能审的东西。 */
+.joke.long .film { display:block; }
+.joke.long .film video { width:100%; max-width:640px; max-height:none; }
+.joke.long .film.with-pub { display:flex; align-items:flex-start; }
+.joke.long .film.with-pub .film-main { flex:1 1 640px; min-width:0; }
+.long-note { color:var(--dim); font-size:12.5px; line-height:1.75; margin:0 0 16px;
+  padding:9px 13px; border-left:3px solid var(--hot); background:rgba(200,69,46,.05); border-radius:0 8px 8px 0; }
+.long-note code { font-size:11.5px; }
+.long-audio { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin:14px 0 4px;
+  font-size:12px; color:var(--dim); }
+.long-audio .k { font-weight:700; }
+.long-audio .dim { color:var(--dim); font-size:11.5px; }
+.long-audio a { color:inherit; }
+.long-audio audio { height:32px; }
+.long-layers { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin:10px 0 4px; }
+.long-layers .pill b { font-variant-numeric:tabular-nums; }
+.alarm-inline { color:var(--hot); font-size:12px; font-weight:700; }
+.long-cover { display:flex; align-items:flex-start; gap:14px; margin:14px 0 4px; flex-wrap:wrap; }
+.long-cover .big { width:100%; max-width:420px; border-radius:6px; display:block; }
+.long-cover .sq { width:270px; border-radius:6px; display:block; }
+.long-cover figure { margin:0; text-align:center; font-size:11px; color:var(--dim); line-height:1.5; }
+.long-cover figure img { width:200px; display:block; border-radius:4px; }
+.long-cover figcaption { margin-top:5px; }
+/* 目录里的长片没有场景图 —— 缩略图位摆个牌子，别留一块空白让人以为图挂了 */
+.nav-thumb.ph.long { display:flex; align-items:center; justify-content:center;
+  writing-mode:vertical-rl; font-size:10px; font-weight:700; letter-spacing:2px;
+  color:#fff; background:var(--hot); }
+
 </style>
 </head>
 <body id="top">
 <div class="layout"><nav class="side" id="side">
-  <div class="side-head">稿件目录<span class="side-count">19</span></div>
+  <div class="side-head">稿件目录<span class="side-count">23</span></div>
   <div class="fmt-filter" role="group" aria-label="体裁筛选">
-  <button type="button" data-fmt="all" class="on">全部 <b>18</b></button>
+  <button type="button" data-fmt="all" class="on">全部 <b>20</b></button>
   <button type="button" data-fmt="one">单点 <b>16</b></button>
-  <button type="button" data-fmt="cum">累积 <b>2</b></button>
+  <button type="button" data-fmt="cum">累积 <b>3</b></button>
+  <button type="button" data-fmt="long">长片 <b>1</b></button>
 </div>
-  <div class="side-list"><a class="nav-item" href="#_cumplan" data-target="_cumplan">
+  <div class="side-list"><a class="nav-item" href="#_schedule" data-target="_schedule" data-fmt-aux="one cum">
+  <span class="nav-thumb ph"></span>
+  <span class="nav-body"><span class="nav-title">档期</span><span class="nav-meta">库存与空档</span></span>
+</a>
+<a class="nav-item" href="#_onepool" data-target="_onepool" data-fmt-aux="one">
+  <span class="nav-thumb ph"></span>
+  <span class="nav-body"><span class="nav-title">单点式选题池</span><span class="nav-meta">16 条 · 已写 9</span></span>
+</a>
+<a class="nav-item" href="#_cumplan" data-target="_cumplan" data-fmt-aux="cum">
   <span class="nav-thumb ph"></span>
   <span class="nav-body"><span class="nav-title">累积式出片计划</span><span class="nav-meta">35 条 · 已出片 2</span></span>
 </a>
@@ -316,10 +360,20 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
     <span class="nav-cast">老马</span>
   </span>
 </a>
+<a class="nav-item" href="#laoma-019" data-target="laoma-019" data-fmt="cum">
+  <img class="nav-thumb" src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/00-开场.png" alt="" loading="lazy">
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">8</b>laoma-019</span>
+    
+    <span class="nav-st"><b class="st-none">未排期</b></span>
+    <span class="nav-meta"><b class="nav-col">工位</b> · <b class="tag-cum">累积</b> · 29.5s · 7 句</span>
+    <span class="nav-cast">老马</span>
+  </span>
+</a>
 <a class="nav-item is-done" href="#laoma-001" data-target="laoma-001" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/未排期_段子_工位_练了三年_1847/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">8</b>老马的第 1847 天</span>
+    <span class="nav-title"><b class="nav-num">9</b>老马的第 1847 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b></span>
     <span class="nav-meta"><b class="nav-col">工位</b> · <b class="tag-one">单点</b> · 28.8s · 6 句</span>
@@ -329,7 +383,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-002" data-target="laoma-002" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/未排期_段子_回家_我妈的天气预报_1848/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">9</b>laoma-002</span>
+    <span class="nav-title"><b class="nav-num">10</b>laoma-002</span>
     
     <span class="nav-st"><b class="st-done">已发</b></span>
     <span class="nav-meta"><b class="nav-col">回家</b> · <b class="tag-one">单点</b> · 29.1s · 7 句</span>
@@ -339,7 +393,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-003" data-target="laoma-003" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/未排期_段子_众目睽睽_决定看哪儿_1849/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">10</b>老马的第 1849 天</span>
+    <span class="nav-title"><b class="nav-num">11</b>老马的第 1849 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b></span>
     <span class="nav-meta"><b class="nav-col">众目睽睽</b> · <b class="tag-one">单点</b> · 21.6s · 6 句</span>
@@ -349,7 +403,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-004" data-target="laoma-004" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/未排期_段子_一个人住_从来不备注_1850/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">11</b>老马的第 1850 天</span>
+    <span class="nav-title"><b class="nav-num">12</b>老马的第 1850 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b></span>
     <span class="nav-meta"><b class="nav-col">一个人住</b> · <b class="tag-one">单点</b> · 24.8s · 7 句</span>
@@ -359,7 +413,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-005" data-target="laoma-005" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/2026-08-25_2100JST_段子_工位_对齐了三次_1851/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">12</b>老马的第 1851 天</span>
+    <span class="nav-title"><b class="nav-num">13</b>老马的第 1851 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b><span>2026-08-25</span></span>
     <span class="nav-meta"><b class="nav-col">工位</b> · <b class="tag-one">单点</b> · 25.2s · 6 句</span>
@@ -369,7 +423,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-006" data-target="laoma-006" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/2026-08-27_2100JST_段子_一个人住_按时不去_1852/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">13</b>老马的第 1852 天</span>
+    <span class="nav-title"><b class="nav-num">14</b>老马的第 1852 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b><span>2026-08-27</span></span>
     <span class="nav-meta"><b class="nav-col">一个人住</b> · <b class="tag-one">单点</b> · 25.7s · 6 句</span>
@@ -379,7 +433,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-007" data-target="laoma-007" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/2026-08-30_2100JST_段子_工位_优化以后_1853/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">14</b>老马的第 1853 天</span>
+    <span class="nav-title"><b class="nav-num">15</b>老马的第 1853 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b><span>2026-08-30</span></span>
     <span class="nav-meta"><b class="nav-col">工位</b> · <b class="tag-one">单点</b> · 24.7s · 6 句</span>
@@ -389,7 +443,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-008" data-target="laoma-008" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/2026-09-01_2100JST_段子_众目睽睽_十七分钟_1854/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">15</b>老马的第 1854 天</span>
+    <span class="nav-title"><b class="nav-num">16</b>老马的第 1854 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b><span>2026-09-01</span></span>
     <span class="nav-meta"><b class="nav-col">众目睽睽</b> · <b class="tag-one">单点</b> · 26.6s · 6 句</span>
@@ -399,7 +453,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-009" data-target="laoma-009" data-fmt="one">
   <img class="nav-thumb" src="段子/_已发/2026-09-03_2100JST_段子_工位_我拉个群_1855/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">16</b>老马的第 1855 天</span>
+    <span class="nav-title"><b class="nav-num">17</b>老马的第 1855 天</span>
     
     <span class="nav-st"><b class="st-done">已发</b><span>2026-09-03</span></span>
     <span class="nav-meta"><b class="nav-col">工位</b> · <b class="tag-one">单点</b> · 28.4s · 6 句</span>
@@ -409,7 +463,7 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-017" data-target="laoma-017" data-fmt="cum">
   <img class="nav-thumb" src="段子/_已发/未排期_段子_工位_我都点头_闲聊-017/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">17</b>laoma-017</span>
+    <span class="nav-title"><b class="nav-num">18</b>laoma-017</span>
     
     <span class="nav-st"><b class="st-done">已发</b></span>
     <span class="nav-meta"><b class="nav-col">工位</b> · <b class="tag-cum">累积</b> · 28.7s · 7 句</span>
@@ -419,19 +473,77 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <a class="nav-item is-done" href="#laoma-018" data-target="laoma-018" data-fmt="cum">
   <img class="nav-thumb" src="段子/_已发/未排期_段子_工位_说了也白说_闲聊-018/stills/00-开场.png" alt="" loading="lazy">
   <span class="nav-body">
-    <span class="nav-title"><b class="nav-num">18</b>laoma-018</span>
+    <span class="nav-title"><b class="nav-num">19</b>laoma-018</span>
     
     <span class="nav-st"><b class="st-done">已发</b></span>
     <span class="nav-meta"><b class="nav-col">工位</b> · <b class="tag-cum">累积</b> · 32.0s · 8 句</span>
     <span class="nav-cast">老马</span>
   </span>
+</a>
+<a class="nav-item" href="#laoma-long-001" data-target="laoma-long-001" data-fmt="long">
+  <span class="nav-thumb ph long">长片</span>
+  <span class="nav-body">
+    <span class="nav-title"><b class="nav-num">20</b>老牛走的那天</span>
+    <span class="nav-meta"><b class="tag-long">长片</b> · 5:48 · 82 句</span>
+    <span class="nav-cast">老马 · 老牛</span>
+  </span>
 </a></div>
   <a class="side-top" href="#top">回到顶部</a>
 </nav><div class="wrap"><h1>老马 · 稿件与成片</h1>
-<p class="sub">共 18 条 —— <b class="tag-one">单点</b>式 16 条（带日子牌，占天数号）· <b class="tag-cum">累积</b>式 2 条（排比自嘲，不占时间轴）。
-两种体裁的判据好几处是<b>反过来</b>的，见 joke-video/horse/单点式_出片方案.md ／ 累积式_出片方案.md。
+<p class="sub">共 20 条 —— <b class="tag-one">单点</b>式 16 条（带日子牌，占天数号）·
+<b class="tag-cum">累积</b>式 3 条（排比自嘲，不占时间轴）·
+<b class="tag-long">长片</b> 1 条（横屏五分钟，说破一次，<b>不进排期树</b>）。
+三种体裁的判据好几处是<b>反过来</b>的，见 joke-video/horse/ 下的
+单点式_出片方案.md ／ 累积式_出片方案.md ／ 长片_出片方案.md。
 目录名带发布日和时刻，排期见 horse/SCHEDULE.md</p>
-<details class="card fold" id="_cumplan">
+<details class="card fold" id="_schedule" data-fmt-aux="one cum" open>
+  <summary><h2>档期　<span class="sub-inline"><b class="warn-hot">待发库存 3 ／ 7，该补产</b> · 出了片没排期 5 条</span></h2></summary>
+  <p class="sub"><b>最便宜的补货是先把这 5 条定档</b> —— 它们已经出片了，
+  只是目录名还是 <code>未排期_…</code>，所以不算进库存。定了就 <code>mv</code> 上
+  <code>&lt;日期&gt;_2100JST_</code> 前缀，再把日期写进 <code>publish.json</code>。
+  <b>库存立刻从 3 变 8</b>，一个字新稿都不用写。</p>
+  <div class="plan-wrap"><table class="plan">
+  <thead><tr><th>#</th><th>栏目</th><th>目录</th><th>空档</th></tr></thead>
+  <tbody><tr><td class="no">1</td><td class="ttl">众目睽睽</td><td class="mono">未排期_段子_众目睽睽_laoma-013_1866</td><td><b class="st-todo">建议 2026-09-08 周二</b></td></tr>
+<tr><td class="no">2</td><td class="ttl">回家</td><td class="mono">未排期_段子_回家_laoma-016_1874</td><td><b class="st-todo">建议 2026-09-13 周日</b></td></tr>
+<tr><td class="no">3</td><td class="ttl">工位</td><td class="mono">未排期_段子_工位_laoma-011_1861</td><td><b class="st-todo">建议 2026-09-15 周二</b></td></tr>
+<tr><td class="no">4</td><td class="ttl">工位</td><td class="mono">未排期_段子_工位_laoma-014_1868</td><td><b class="st-todo">建议 2026-09-20 周日</b></td></tr>
+<tr><td class="no">5</td><td class="ttl">工位</td><td class="mono">未排期_段子_工位_写得比我认真_闲聊-019</td><td><b class="st-todo">建议 2026-09-22 周二</b></td></tr></tbody>
+  </table></div>
+  <p class="sub">往后的空档（周二／周四／周日 21:00 JST）：<b>2026-09-08 周二　·　2026-09-13 周日　·　2026-09-15 周二　·　2026-09-20 周日　·　2026-09-22 周二　·　2026-09-24 周四　·　2026-09-27 周日　·　2026-09-29 周二</b></p>
+  <p class="sub">下一条要发的是 <code>2026-09-06_2100JST_段子_工位_一直显示待审批_1858</code>。
+  完整校验跑 <code>npm run laoma:schedule</code> —— 这张卡只挑「缺不缺片、哪天空着」两件事，
+  跳号、指针、平台错开那些还在命令行那边。
+  ⚠ <b>长片不进排期树</b>（见 <code>长片_出片方案.md</code> §一），所以这张卡跟长片无关。</p>
+</details>
+<details class="card fold" id="_onepool" data-fmt-aux="one">
+  <summary><h2>单点式选题池　<span class="sub-inline">16 条，已写 9，没写 7</span></h2></summary>
+  <p class="sub">出处是 <code>joke-video/horse/horse_standup_plan.md</code> §五，机读的一份在
+  <code>joke-video/horse/单点式_选题池.json</code>。<b>状态不手写</b>——稿件里写 <code>topicNo</code>，这张表自己去比。</p>
+  <p class="sub">没写的还剩：<b>工位 2</b> · <b>一个人住 3</b> · <b>众目睽睽 2</b> · <b class="warn-hot">回家 0</b>　——
+  ⚠ <b>010–016 那七条片子不占号</b>：它们是池外新写的选题。
+  栏目占比目标见 <code>horse_standup_plan.md</code> §三（工位 40% ／ 一个人住 25% ／ 众目睽睽 20% ／ 回家 15%）。</p>
+  <div class="plan-wrap"><table class="plan">
+  <thead><tr><th>#</th><th>选题</th><th>栏目</th><th>状态</th></tr></thead>
+  <tbody><tr class="done"><td class="no">1</td><td class="ttl">群里最恐怖的两个字是「收到」</td><td>工位</td><td><b class="st-done">已写</b> <code>laoma-001</code></td></tr>
+<tr class="done"><td class="no">2</td><td class="ttl">对齐一下</td><td>工位</td><td><b class="st-done">已写</b> <code>laoma-005</code></td></tr>
+<tr class="done"><td class="no">3</td><td class="ttl">优化流程</td><td>工位</td><td><b class="st-done">已写</b> <code>laoma-007</code></td></tr>
+<tr class="done"><td class="no">4</td><td class="ttl">这个我拉个群</td><td>工位</td><td><b class="st-done">已写</b> <code>laoma-009</code></td></tr>
+<tr><td class="no">5</td><td class="ttl">周报里的「稳步推进」</td><td>工位</td><td><b class="st-none">没写</b></td></tr>
+<tr><td class="no">6</td><td class="ttl">离领导座位的距离与人生自由度</td><td>工位</td><td><b class="st-none">没写</b></td></tr>
+<tr class="done"><td class="no">7</td><td class="ttl">我点外卖从来不备注</td><td>一个人住</td><td><b class="st-done">已写</b> <code>laoma-004</code></td></tr>
+<tr class="done"><td class="no">8</td><td class="ttl">健身卡是一种理财</td><td>一个人住</td><td><b class="st-done">已写</b> <code>laoma-006</code></td></tr>
+<tr><td class="no">9</td><td class="ttl">快递柜的取件码</td><td>一个人住</td><td><b class="st-none">没写</b></td></tr>
+<tr><td class="no">10</td><td class="ttl">冰箱里那半棵白菜</td><td>一个人住</td><td><b class="st-none">没写</b></td></tr>
+<tr><td class="no">11</td><td class="ttl">周末两天，我睡了一天半</td><td>一个人住</td><td><b class="st-none">没写</b></td></tr>
+<tr class="done"><td class="no">12</td><td class="ttl">电梯里该看哪儿</td><td>众目睽睽</td><td><b class="st-done">已写</b> <code>laoma-003</code></td></tr>
+<tr class="done"><td class="no">13</td><td class="ttl">医院叫号系统</td><td>众目睽睽</td><td><b class="st-done">已写</b> <code>laoma-008</code></td></tr>
+<tr><td class="no">14</td><td class="ttl">地铁上的让座</td><td>众目睽睽</td><td><b class="st-none">没写</b></td></tr>
+<tr><td class="no">15</td><td class="ttl">排队时前面那个人开始打电话</td><td>众目睽睽</td><td><b class="st-none">没写</b></td></tr>
+<tr class="done"><td class="no">16</td><td class="ttl">我妈的天气预报</td><td>回家</td><td><b class="st-done">已写</b> <code>laoma-002</code></td></tr></tbody>
+  </table></div>
+</details>
+<details class="card fold" id="_cumplan" data-fmt-aux="cum">
   <summary><h2>累积式出片计划　<span class="sub-inline">35 条，已出片 2，待做 33</span></h2></summary>
   <p class="sub">稿源是素材包三辑（<code>E:\ryu\laoma\</code>），全文抄在
   <code>joke-video/horse/累积式_出片计划.md</code> 里，<b>抄进来之后以那一份为准</b>。
@@ -1908,6 +2020,182 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <p>  &gt; 三舅点点头说，还行就是不多。</p>
 <ul>
 <li><strong>封面大字</strong>　``</li>
+</ul>
+<h3>五、人工核对</h3>
+<ul>
+<li class="task"><input type="checkbox" disabled > 每一镜的画面和台词对得上（看 index.html 的场景图）</li>
+<li class="task"><input type="checkbox" disabled > 音画同步：配音起点落在字幕窗口内</li>
+<li class="task"><input type="checkbox" disabled > 站位：<code>npm run layout</code> 零冲突</li>
+<li class="task"><input type="checkbox" disabled > 节奏：句间缓冲听着不赶</li>
+<li class="task"><input type="checkbox" disabled > 内容风控</li>
+</ul>
+  </details>
+</section>
+<section class="joke" id="laoma-019" data-fmt="cum">
+  <header>
+    <h2>laoma-019</h2>
+    <div class="facts">
+      <span><b class="tag-cum">累积</b>式 · office-desk</span>
+      <span>片长 29.5s</span>
+      <span>笑点 22.9s</span>
+      <span>定格 27.5s</span>
+      <span>ma=老马</span>
+    </div>
+  </header>
+  
+  <div class="film with-pub"><div class="film-main"><video src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/out.mp4" controls preload="metadata" playsinline></video><div class="film-note">成片　<code>out.mp4</code></div></div><aside class="pub"><div class="pub-row"><span class="k">排期</span><span class="v slot none">未排期　<em>待发</em></span></div>
+<div class="pub-row"><span class="k">标题</span><span class="v title">我用 AI 写周报，领导用 AI 读周报</span></div>
+<div class="pub-row"><span class="k">关键词</span><span class="v tags">#碎嘴老马 #碎嘴 #老马 #打工人 #AI提效 #周报 #职场日常 #AI #提效
+#提示词 #领导 #职场 #AI办公 #形式主义</span></div></aside></div>
+  <div class="rows"><div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/01-台词.png" alt="第 1 句场景" loading="lazy"><span class="ts">0.0s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">公司让我们用 AI 提效</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.20s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/02-台词.png" alt="第 2 句场景" loading="lazy"><span class="ts">2.6s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我用 AI 写周报，它写得比我认真</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.24s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/03-台词.png" alt="第 3 句场景" loading="lazy"><span class="ts">6.2s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">领导用 AI 读周报，读完回我一句辛苦了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 3.65s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/04-台词.png" alt="第 4 句场景" loading="lazy"><span class="ts">10.3s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">那份周报从头到尾，没有一个人看过</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.63s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/05-台词.png" alt="第 5 句场景" loading="lazy"><span class="ts">14.1s</span></div>
+  <div class="talk">
+    <div class="beat">铺垫</div>
+    <div class="who">ma</div>
+    <p class="text">我学了三个提示词技巧，学完发现新版本不用这么写了</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 4.26s</div>
+  </div>
+</div>
+<div class="row">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/06-台词.png" alt="第 6 句场景" loading="lazy"><span class="ts">18.8s</span></div>
+  <div class="talk">
+    <div class="beat">回应</div>
+    <div class="who">ma</div>
+    <p class="text">我不是不学。我是学得比它更新得慢</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">平</span>
+      <span class="meta">zh-CN-YunxiNeural · -6% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 2.57s</div>
+  </div>
+</div>
+<div class="row punch">
+  <div class="shot"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/07-台词.png" alt="第 7 句场景" loading="lazy"><span class="ts">22.9s</span></div>
+  <div class="talk">
+    <div class="beat">反转 · 笑点</div>
+    <div class="who">ma</div>
+    <p class="text">不过这样也挺好，至少我知道，那周报不是我写的</p>
+    <div class="voice">
+      <span class="pill">老马</span>
+      <span class="pill alt">叙平</span>
+      <span class="meta">zh-CN-YunxiNeural · -16% · pitch 1.20 · formant 1.20</span>
+    </div>
+    <div class="meta">实测配音 4.34s</div>
+  </div>
+</div></div>
+  <h3>封面 / 开场 / 定格 / 钩子</h3><div class="extras"><figure class="is-cover"><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/thumb.png" alt="封面" loading="lazy">
+  <figcaption>封面　<span class="ts-inline">第一帧</span></figcaption></figure><figure><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/00-开场.png" alt="开场大字" loading="lazy">
+  <figcaption>开场大字　<span class="ts-inline">1.1s</span></figcaption></figure>
+<figure><img src="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/stills/90-定格.png" alt="定格去色" loading="lazy">
+  <figcaption>定格去色　<span class="ts-inline">28.0s</span></figcaption></figure></div>
+  
+  <details class="analysis" open>
+    <summary>落地方案 · 分镜表 · 发布文案<a class="src" href="段子/_待发/未排期_段子_工位_写得比我认真_闲聊-019/方案.md" target="_blank">方案.md ↗</a></summary>
+    <h2>laoma-019　落地方案</h2>
+<blockquote>带 <code>AUTO</code> 标记的区块由 <code>npm run preview</code> 从当前配置重新生成，改了会被覆盖。</blockquote>
+<blockquote><strong>其余部分随便改，重新生成时原样保留。</strong></blockquote>
+<h3>一、稿件定位</h3>
+<ul>
+<li><strong>类型</strong>　A 类（管线上的时间轴结构）／<strong>体裁：累积式</strong>（<code>format: "cumulative"</code>）</li>
+<li><strong>一句话讲什么</strong>　公司要求用 AI 提效，他照做了，对面也照做了，两头都提了效，中间那份周报没有一个人看过；最后他连「我在偷懒」都不认领，只说那周报不是他写的。</li>
+<li><strong>为什么这么分镜</strong>　一个人从头说到尾，不切镜。节拍全交给字幕分屏和两处「留一拍」——第 4 句（支点，也是全片唯一把话说到底的一句）和第 6 句（沉底前那一拍）。</li>
+<li><strong>不能动的地方</strong></li>
+</ul>
+<p>  - <strong>第 4 句的 <code>beatPause</code> ＋ 闭目 0.9 秒</strong>：全片唯一一次闭目，读作认命不是眨眼。「没有一个人看过」说完不留这一拍，它就只是一句陈述。</p>
+<p>  - <strong>第 6 句两小句用句号不用逗号</strong>：「我不是不学。我是学得比它更新得慢。」——转折要顿得实（用语规范 §1.2），并成一句就成了辩解。</p>
+<p>  - <strong>落点第 1 屏逐字「不过这样也挺好」</strong>，<code>gap: 0.5</code> 是给那一拍腾的位置。</p>
+<p>  - <strong>视角是共谋者</strong>：老马自己就是那个不写周报的人。改成「我看见同事用 AI」就退回旁观者档，前 18 条已经全是那个姿势了（§六之二.1）。</p>
+<p>  - <strong>不出收尾卡、不带日子牌</strong>：累积式不占老马那条时间轴。</p>
+<h3>二、分镜表</h3>
+<div class="tw"><table><thead><tr><th>时间</th><th>画面</th><th>台词</th><th>音效 / BGM</th></tr></thead><tbody><tr><td>0:00.0–0:00.0</td><td>开场空镜　场景 <code>office-desk</code></td><td>—</td><td>BGM 关</td></tr><tr><td>0:00.0–0:02.2</td><td>场景 <code>office-desk</code>　在场 ma　单人镜<br><em class="note">立：把制度摆出来。<strong>这一句是公司的原话，不是老马的判断</strong> —— 他只是复述，判断留给后面五层自己长出来。</em></td><td><strong>ma</strong>：公司让我们用 AI 提效</td><td>—</td></tr><tr><td>0:02.6–0:05.8</td><td>同上<br><em class="note">拆：提效的第一层落地。「它写得比我认真」——<strong>认真是给人看的词，用在 AI 身上就是错位</strong>。两小句一句一屏。</em></td><td><strong>ma</strong>：我用 AI 写周报，它写得比我认真</td><td>—</td></tr><tr><td>0:06.2–0:09.9</td><td>同上<br><em class="note">累积①：另一头也换成了 AI。「辛苦了」三个字是全片第一个空转的信号。<strong>钩子埋在这儿</strong> —— 「周报」在落点结账。</em></td><td><strong>ma</strong>：领导用 AI 读周报，读完回我一句辛苦了</td><td>—</td></tr><tr><td>0:10.3–0:12.9</td><td>同上<br><em class="note">累积②：全片的支点，也是唯一一句把话说到底的。前两层各自成立，合起来才是这一句。说完<strong>留一拍 ＋ 闭目 0.9</strong> —— 全片唯一一次闭目，读作认命，不是眨眼（照 018 的用法）。</em></td><td><strong>ma</strong>：那份周报从头到尾，没有一个人看过</td><td>—</td></tr><tr><td>0:13.0–0:13.9</td><td><strong>闭目</strong> 0.9s　<em class="note">不是眨眼 —— 忍耐</em></td><td>—</td><td>静音</td></tr><tr><td>0:14.1–0:18.4</td><td>同上<br><em class="note">累积③：从「写」换到「学」，同一个机制换个地方再来一次。「三个」是不圆的具体数（§一之十六）。</em></td><td><strong>ma</strong>：我学了三个提示词技巧，学完发现新版本不用这么写了</td><td>—</td></tr><tr><td>0:18.8–0:21.4</td><td>同上<br><em class="note">话锋转了：前面全是事，这一句是他对自己的交代。<strong>认输句不是判断句</strong>（用语规范 §7.3）——「我不是不学」先挡掉一个误会，「我是学得比它更新得慢」是承认，不是给自己下定义。转折用句号不用逗号（§1.2），两小句两屏。全片唯一一次扭头。说完留一拍，给沉底句助跑。</em></td><td><strong>ma</strong>：我不是不学。我是学得比它更新得慢</td><td>—</td></tr><tr><td>0:22.9–0:27.2</td><td>同上<br><em class="note">沉底：<strong>往下沉半寸，不往上扬</strong>。签名屏「不过这样也挺好」自成一屏、停一拍，再落到「那周报不是我写的」——「周报」在这儿结账。⚠ 落点不是庆幸，是把功劳一起推掉：连那点认真都不是他的。</em></td><td><strong>ma</strong>：不过这样也挺好，至少我知道，那周报不是我写的</td><td>—</td></tr><tr><td>0:27.5–0:29.5</td><td>定格去色　<strong>不出收尾卡</strong></td><td>—</td><td>BGM 骤停</td></tr></tbody></table></div>
+<h3>三、场景 / 角色 / 节奏</h3>
+<p><strong>场景</strong>　<code>office-desk</code></p>
+<p><strong>节奏</strong>　<code>standup-fast</code></p>
+<p>句内 0.25/0.15s　句间 0.40s　换镜 0.90s</p>
+<div class="tw"><table><thead><tr><th>角色</th><th>形象</th><th>音色</th></tr></thead><tbody><tr><td>ma</td><td><code>horse</code>　x=290</td><td><code>老马</code></td></tr></tbody></table></div>
+<p><strong>片长</strong> 29.54s　<strong>7</strong> 句　<strong>1</strong> 个分镜</p>
+<h3>四、发布文案</h3>
+<blockquote>发平台时直接抄这一段。</blockquote>
+<ul>
+<li><strong>标题候选</strong></li>
+</ul>
+<p>  1. <code>我用 AI 写周报，领导用 AI 读周报</code>　←主选</p>
+<p>  2. <code>那份周报从头到尾没有一个人看过</code></p>
+<p>  3. <code>我不是不学，我是学得比它更新得慢</code></p>
+<ul>
+<li><strong>内容关键词</strong>　AI / 周报 / 提效 / 提示词 / 领导</li>
+<li><strong>热度关键词</strong>　职场 / 打工人 / AI办公 / 周报 / 形式主义</li>
+<li><strong>话题标签</strong>　#AI提效 #周报 #职场日常</li>
+<li><strong>简介</strong></li>
+</ul>
+<p>  &gt; 公司让我们用 AI 提效。我用 AI 写周报，它写得比我认真。</p>
+<p>  &gt;</p>
+<p>  &gt; 领导用 AI 读周报，读完回我一句辛苦了。</p>
+<p>  &gt; 那份周报从头到尾，没有一个人看过。</p>
+<ul>
+<li><strong>封面大字</strong>　<code>写得比我认真</code></li>
 </ul>
 <h3>五、人工核对</h3>
 <ul>
@@ -4028,6 +4316,205 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
 <li class="task"><input type="checkbox" disabled > 内容风控</li>
 </ul>
   </details>
+</section>
+<section class="joke long" id="laoma-long-001" data-fmt="long">
+  <header>
+    <h2>老牛走的那天</h2>
+    <div class="facts">
+      <span><b class="tag-long">长片</b> · 横屏 1280×720</span>
+      <span><code>laoma-long-001</code></span>
+      <span>片长 5:48</span>
+      <span>82 句 · 8 章</span>
+      <span>ma=老马　niu=老牛</span>
+    </div>
+  </header>
+  <p class="long-note">长片是第三条线：<b>横屏、五分钟、全片说破一次</b>，
+  <b>不进段子那棵排期树</b>（那棵树按天数号、一周三档，长片一条都不适用），
+  所以它没有日子牌、没有收尾卡，左边目录上也不带排期状态。
+  规矩见 <code>joke-video/horse/长片_出片方案.md</code> ／ <code>长片_稿件规范.md</code>。</p>
+  <div class="film with-pub"><div class="film-main"><video src="长片/laoma-long-001/out.mp4" controls preload="metadata" playsinline></video><div class="film-note">成片　<code>out.mp4</code></div></div><aside class="pub"><div class="pub-row"><span class="k">标题</span><span class="v title">他在这儿待了六年，走那天留下一条鱼</span></div>
+<div class="pub-row"><span class="k">关键词</span><span class="v tags">#离职 #同事 #交接 #六年 #鱼缸 #职场 #打工人 #中年 #原创动画 #老马</span></div></aside></div>
+  <div class="long-cover">
+  <img class="big" src="长片/laoma-long-001/cover/laoma-long-001-16x9.png" alt="封面 1280×720">
+  <figure><img src="长片/laoma-long-001/cover/laoma-long-001-210.png" alt="封面 210px"><figcaption>210px<br><b>横版验收</b></figcaption></figure>
+  <img class="sq" src="长片/laoma-long-001/cover/laoma-long-001-1x1.png" alt="封面 1080×1080">
+  <figure><img src="长片/laoma-long-001/cover/laoma-long-001-200.png" alt="方版 200px"><figcaption>200px<br><b>方版验收</b></figcaption></figure>
+</div>
+  <div class="long-audio"><span class="k">试听</span><audio src="长片/laoma-long-001/laoma-long-001-%E8%AF%95%E5%90%AC-%E7%8E%AF%E5%A2%83%E9%9F%B3.mp3" controls preload="none"></audio><code>laoma-long-001-试听-环境音.mp3</code></div>
+  <div class="long-audio"><span class="k">字幕</span><a href="长片/laoma-long-001/laoma-long-001-%E8%AF%95%E5%90%AC.srt" target="_blank"><code>laoma-long-001-试听.srt</code></a><span class="dim">跟音轨同一条时间轴，可以直接当软字幕传</span></div>
+  <div class="long-layers">三层：<span class="pill">旁白 <b>47</b></span><span class="pill">台词 <b>31</b></span><span class="pill">回忆 <b>4</b></span></div>
+  <h3>章</h3><div class="plan-wrap"><table class="plan">
+  <thead><tr><th>章</th><th>起</th><th>时长</th><th>句</th><th>头一句</th></tr></thead>
+  <tbody><tr>
+  <td class="ttl">一、早上</td>
+  <td class="no">0:00</td>
+  <td class="no">29s</td>
+  <td class="no">6 句</td>
+  <td class="tip">老牛的桌子是早上七点半空的。</td>
+</tr>
+<tr>
+  <td class="ttl">二、老牛是谁</td>
+  <td class="no">0:29</td>
+  <td class="no">41s</td>
+  <td class="no">10 句</td>
+  <td class="tip">老牛在这儿待了六年。</td>
+</tr>
+<tr>
+  <td class="ttl">三、他为什么走</td>
+  <td class="no">1:10</td>
+  <td class="no">41s</td>
+  <td class="no">7 句</td>
+  <td class="tip">他去了一个更小的地方。工资低了点，通勤短了四十分钟。他老家在那边，他…</td>
+</tr>
+<tr>
+  <td class="ttl">四、中午</td>
+  <td class="no">1:51</td>
+  <td class="no">43s</td>
+  <td class="no">9 句</td>
+  <td class="tip">中午组里请他吃饭。十二个人一张大桌子，点了十四个菜，吃完剩七个。</td>
+</tr>
+<tr>
+  <td class="ttl">五、下午</td>
+  <td class="no">2:35</td>
+  <td class="no">41s</td>
+  <td class="no">10 句</td>
+  <td class="tip">下午他还在干活。</td>
+</tr>
+<tr>
+  <td class="ttl">六、傍晚</td>
+  <td class="no">3:16</td>
+  <td class="no">79s</td>
+  <td class="no">24 句</td>
+  <td class="tip">六点，我送他到楼下。天还亮着，风挺大。</td>
+</tr>
+<tr>
+  <td class="ttl">七、然后</td>
+  <td class="no">4:34</td>
+  <td class="no">23s</td>
+  <td class="no">6 句</td>
+  <td class="tip">他走了，往地铁站那边。走了几步又停住，把手里的鱼缸放地上，回头冲我招…</td>
+</tr>
+<tr>
+  <td class="ttl">八、晚上</td>
+  <td class="no">4:58</td>
+  <td class="no">50s</td>
+  <td class="no">10 句</td>
+  <td class="tip">我把鱼缸拎回工位，搁在窗台上。</td>
+</tr></tbody></table></div>
+  <details class="analysis">
+    <summary>发布文案<a class="src" href="长片/laoma-long-001/发布文案.md" target="_blank">发布文案.md ↗</a></summary>
+    <h2>《老牛走的那天》 · 发布文案</h2>
+<blockquote><strong>这份是复制源。</strong> 每个代码块整块选中、直接粘到平台的输入框里，中间不用挑。</blockquote>
+<blockquote>取舍的理由在 [horse/长片_出片方案.md](../../../../joke-video/horse/长片_出片方案.md) §七，不放这儿。</blockquote>
+<blockquote></blockquote>
+<blockquote>⚠ <strong>长片这一份是手写的</strong>，不是 <code>yiye-publish.ts</code> 生成的 ——</blockquote>
+<blockquote>那个脚本是按短片的字段做的（收尾卡、日子牌、逐句稿），长片没有那几样。</blockquote>
+<blockquote>改稿之后<strong>这份要手动跟一遍</strong>。</blockquote>
+<blockquote></blockquote>
+<blockquote>成片：<code>out.mp4</code>　5 分 48 秒　1280×720</blockquote>
+<h3>标题</h3>
+<p>```</p>
+<p>他在这儿待了六年，走那天留下一条鱼</p>
+<p>```</p>
+<p>备选（换平台或者数据不好时替）：</p>
+<p>```</p>
+<p>老牛走的那天</p>
+<p>```</p>
+<p>```</p>
+<p>我一直以为他傻</p>
+<p>```</p>
+<h3>简介</h3>
+<p>```</p>
+<p>老牛在这家公司待了六年。没升过职，也没谁夸过他。</p>
+<p>他走的那天还是七点半到的。最后半天写了份交接文档，十一页。</p>
+<p>临走把养了四年的鱼留给了我。</p>
+<p>—— 关于老马 ——</p>
+<p>每天嘀咕一句，说完就走。不愤怒，只是累到平静。</p>
+<p>长片一月一条，短片周更。</p>
+<p>```</p>
+<h3>章节（YouTube 描述里贴这一段，B 站分 P 点也用它）</h3>
+<blockquote>这几个时刻<strong>汇总页也有一份</strong>（<code>projects/老马/index.html</code> 的「章」表，从时间轴现算的）。</blockquote>
+<blockquote>改稿之后两边要对上 —— <strong>以页面那份为准</strong>，它跟着配音时长走，这一份是手抄的。</blockquote>
+<blockquote>时刻一律向下取整：<strong>章节标记只能早不能晚</strong>，进位之后跳过去，那一章的头一个字已经过去了。</blockquote>
+<p>```</p>
+<p>0:00 早上</p>
+<p>0:29 老牛是谁</p>
+<p>1:10 他为什么走</p>
+<p>1:51 中午</p>
+<p>2:35 下午</p>
+<p>3:16 傍晚</p>
+<p>4:34 然后</p>
+<p>4:58 晚上</p>
+<p>```</p>
+<h3>字幕</h3>
+<p><code>laoma-long-001-试听.srt</code>（112 条）—— <strong><code>npm run audio</code> 顺手出的</strong>，</p>
+<p>跟 <code>out.mp4</code> 同一条时间轴、没有前置偏移，<strong>直接当软字幕传上去就行，不用平移</strong>。</p>
+<p>YouTube 走「字幕 → 上传文件」；B 站走「字幕 → 导入」。</p>
+<p>⚠ 改稿之后要重跑 <code>npm run audio</code>，<strong>这一份不会自己跟着变</strong>。</p>
+<h3>关键词</h3>
+<p><strong>每个词自带 <code>#</code></strong>，整块粘进去就是话题，不用人工逐个补井号</p>
+<p>（跟短片那条线同一条规矩，见 <code>yiye-publish.ts</code> 的 <code>hashify</code>）。</p>
+<p>前五个是内容本身，后面几个是观众会搜的。</p>
+<p>```</p>
+<p>#离职 #同事 #交接 #六年 #鱼缸 #职场 #打工人 #中年 #原创动画 #老马</p>
+<p>```</p>
+<h3>标签</h3>
+<p>⚠ <strong>B 站 TAG 框和 YouTube 的 tags 字段不吃 <code>#</code></strong> —— 所以同一批词还要一份不带井号的。</p>
+<p><strong>词是同一批，只是渲两次</strong>，别当成两组词各自维护。</p>
+<p>B 站 TAG（≤10 个，第一个进推荐权重最高）：</p>
+<p>```</p>
+<p>原创动画 职场 离职 打工人 手绘 短片 老马 中年 治愈 故事</p>
+<p>```</p>
+<h3>置顶评论</h3>
+<p>老马的语气，<strong>不解释视频、不共情、不谢观看</strong>（BASE §五之三 那四条硬规则，长片照用）。</p>
+<p>```</p>
+<p>那条鱼还活着。</p>
+<p>```</p>
+<h3>中心思想（落点）</h3>
+<p><strong>不要写进简介。</strong> 长片的支点是说破那一次（4:00 起那七句），</p>
+<p>简介里提前说出来，等于把观众来听的那一下先讲了。</p>
+<p>这一栏是给写稿的人回头核的：<strong>这几句值不值得被人截下来。</strong></p>
+<p>```</p>
+<p>我那不叫看得开。</p>
+<p>我什么都不干，我就永远不用知道自己到底行不行。</p>
+<p>我哪明白啊。我就是……我就是没敢试。</p>
+<p>```</p>
+<p>老牛的回答（全片唯一一次有人接住他）：</p>
+<p>```</p>
+<p>那你现在知道了。</p>
+<p>```</p>
+<h3>封面</h3>
+<p>✅ <strong>出了</strong>，一次四张：</p>
+<div class="tw"><table><thead><tr><th>文件</th><th>传哪儿</th></tr></thead><tbody><tr><td><code>cover/laoma-long-001-16x9.png</code></td><td>1280×720 —— YouTube／B站</td></tr><tr><td><code>cover/laoma-long-001-1x1.png</code></td><td>1080×1080 —— <strong>微信那一路</strong>（公众号列表、视频号）。16:9 传过去两边被裁，裁掉的正好是左边那块标题</td></tr><tr><td><code>-210.png</code> ／ <code>-200.png</code></td><td><strong>验收图，两张都要看</strong> —— 缩到那么大读不出来的，大图上再好看也没用</td></tr></tbody></table></div>
+<p>选的是<strong>夜景那一帧</strong>（原来备选三帧里的第二条）：工位 · 夜，老马一个人站在窗边，</p>
+<p>窗台上那缸鱼在他右手边 —— <strong>全片最后一个视觉事实</strong>，老牛已经走了。</p>
+<p>大字排左、角色和鱼在右，不剧透说破段。</p>
+<div class="tw"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>大字</td><td>老牛走的那天（断成「老牛走的／那天」）</td></tr><tr><td>副标</td><td>他写了十一页</td></tr></tbody></table></div>
+<p>⚠ <strong>这条大字跟正标题有词重叠（「走那天」），是知情的。</strong></p>
+<p>§一 铁律 2「封面大字和标题不能重复」这一条<strong>就蹭了</strong> ——</p>
+<p>用户 2026-08-26 定：<strong>能夺眼球优先</strong>。别当成疏漏改回去。</p>
+<p><strong>换掉上一版「他走以后」的理由是指代</strong>：封面上只站着一个角色（老马），</p>
+<p>而大字和副标里两个「他」都是老牛 —— 观众会把「他」认成画面里这匹马。</p>
+<p>「他走以后」还有个自解的矛盾（他走了、画面里却站着一个）撑着，</p>
+<p>「他写了十一页」<strong>没有</strong>，会被直接读成这匹马写的。具名一次，副标那个「他」就有主了。</p>
+<p>备选（换平台或者数据不好时替，都不碰说破段）：</p>
+<p>```</p>
+<p>最后半天</p>
+<p>```</p>
+<p>```</p>
+<p>我以为他傻</p>
+<p>```</p>
+<p>重出一版：</p>
+<p>```</p>
+<p>cd joke-video</p>
+<p>npm run laoma:long-cover -- jokes/laoma-long-001.json</p>
+<p>npm run laoma:long-cover -- jokes/laoma-long-001.json --title 最后半天 --sub 他写了十一页</p>
+<p>```</p>
+<p>⚠ <strong>大字和副标写在稿件 json 的 <code>cover</code> 块里，由 <code>tools/long-parse.mts</code> 写</strong> ——</p>
+<p><strong>别手改 json</strong>，改了下一次重跑就没了。要换成常用的那一版，改 <code>long-parse.mts</code>。</p>
+<p>版式规范见 [<code>封面设计规范-COVER.md</code>](../../../../joke-video/封面设计规范-COVER.md) §九</p>
+<p>（<strong>不是 §七</strong>，§七 是竖版 1080×1920 那一档；这一档只借它的字，版面自己量）。</p>
+  </details>
 </section></div></div>
 <script>
 // 滚动到哪条稿件，左边就高亮哪一条
@@ -4076,21 +4563,33 @@ code { background:rgba(127,127,127,.16); padding:1px 6px; border-radius:4px; fon
   var bar = document.querySelector('.fmt-filter');
   if (!bar) return;
   var btns = [].slice.call(bar.querySelectorAll('button'));
-  // **只筛带 data-fmt 的**：出片计划那一项和符号库没有体裁，任何时候都留着
-  var targets = [].slice.call(document.querySelectorAll('[data-fmt]')).filter(function (el) {
-    return el.tagName !== 'BUTTON';
-  });
+  // 两类东西一起筛，判据是同一个：
+  //   · [data-fmt]     稿件本身（左边目录项 + 右边那一节）
+  //   · [data-fmt-aux] 不是稿件、但只属于某个体裁的块 —— 现在只有累积式出片计划
+  // **符号库没有体裁**（三种体裁都要查符号），两个属性都不带，任何时候都留着。
+  var targets = [].slice.call(document.querySelectorAll('[data-fmt], [data-fmt-aux]')).filter(
+    function (el) { return el.tagName !== 'BUTTON'; }
+  );
+  var apply = function (want) {
+    targets.forEach(function (el) {
+      // aux 允许写多个体裁（档期卡是 "one cum"：长片不进排期树，所以选长片时该藏）
+      var f = (el.dataset.fmt || el.dataset.fmtAux || '').split(' ');
+      el.classList.toggle('is-off', want !== 'all' && f.indexOf(want) < 0);
+    });
+    // 抬头那个数跟着变 —— 筛到只剩 2 条、抬头还写着 19，看着就像坏了。
+    // ⚠ 数的是 [data-fmt]，**出片计划不算一条稿件** —— 算进去的话
+    // 抬头会比「全部」按钮上的数多 1，两个数摆在一起对不上就像坏了。
+    var count = document.querySelector('.side-count');
+    if (count) count.textContent = String(document.querySelectorAll('.nav-item[data-fmt]:not(.is-off)').length);
+  };
+  // 进页面先跑一次：抬头那个数是 navPanel 按目录项个数印的（含出片计划＝20），
+  // 跟「全部 19」对不上。**不点按钮就不会被纠正**，所以在这儿对齐一次。
+  apply('all');
   bar.addEventListener('click', function (e) {
     var b = e.target.closest('button');
     if (!b) return;
-    var want = b.dataset.fmt;
     btns.forEach(function (x) { x.classList.toggle('on', x === b); });
-    targets.forEach(function (el) {
-      el.classList.toggle('is-off', want !== 'all' && el.dataset.fmt !== want);
-    });
-    // 抬头那个数跟着变 —— 筛到只剩 2 条、抬头还写着 19，看着就像坏了
-    var count = document.querySelector('.side-count');
-    if (count) count.textContent = String(document.querySelectorAll('.nav-item[data-fmt]:not(.is-off)').length);
+    apply(b.dataset.fmt);
   });
 })();
 </script>

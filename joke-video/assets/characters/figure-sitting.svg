@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="176" height="225" viewBox="112 362 176 225" role="img">
+<title>坐</title>
+<g fill="none" stroke="#2E2C29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="200" cy="418" r="32" fill="#FFFFFF"/>
+<path d="M194,389 C196,376 210,378 210,390"/>
+<circle cx="189" cy="414" r="3.5" fill="#2E2C29" stroke="none"/>
+<circle cx="211" cy="414" r="3.5" fill="#2E2C29" stroke="none"/>
+<path d="M192,426 C197,433 203,433 208,426"/>
+<path d="M192,448 L192,456"/>
+<path d="M208,448 L208,456"/>
+<path d="M186,456 C174,457 166,464 160,474 C156,481 154,487 154,491 L170,488 C173,495 173,508 170,522 L230,522 C227,508 227,495 230,488 L246,491 C246,487 244,481 240,474 C234,464 226,457 214,456 Z" fill="#6E9EC4"/>
+<path d="M188,457 C194,464 206,464 212,457"/>
+<ellipse cx="156" cy="556" rx="13" ry="7" fill="#4E5A69"/>
+<ellipse cx="244" cy="556" rx="13" ry="7" fill="#4E5A69"/>
+<path d="M170,522 L230,522 C248,530 258,548 248,558 C228,566 172,566 152,558 C142,548 152,530 170,522 Z" fill="#4E5A69"/>
+<path d="M160,552 C186,566 214,566 240,552"/>
+<path d="M162,490 C152,508 148,524 148,534"/>
+<circle cx="148" cy="541" r="6.5"/>
+<path d="M238,490 C248,508 252,524 252,534"/>
+<circle cx="252" cy="541" r="6.5"/>
+<path d="M126,572 L274,572" stroke-width="1.8"/>
+</g>
+</svg>

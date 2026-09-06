@@ -21,6 +21,7 @@ import { createRequire } from 'node:module';
 import { POSE } from './pose.mjs';
 import { 取色系, ass色 } from './色系.mjs';
 import { 开场卡 } from './开场卡.mjs';
+import { 读稿件库, 认大字, 大字表, 最短标 } from './稿件库.mjs';
 
 const require = createRequire(path.join(process.cwd(), 'package.json'));
 const { Resvg } = require('@resvg/resvg-js');
@@ -61,6 +62,20 @@ const manifest = JSON.parse(fs.readFileSync(path.join(DIR, 'vo/manifest.json'), 
 const plan = JSON.parse(fs.readFileSync(path.join(DIR, '动作表.json'), 'utf8'));
 const segs = manifest.segments;
 const BG_DIR = plan.背景目录 || BG_DIR_默认;
+/**
+ * **场景可以是视频**（2026-09-06 起）。场景库是分批到位的，第二批开始给的是 mp4。
+ *
+ * ⚠ **必须 `fps=30` 归一。** 手上这三条一条 60fps、一条 30、一条 24 ——
+ * 不归一的话 `xfade` 的 offset 和整片帧数全是错的，**而且不报错**，
+ * 只是声画慢慢对不上（越到后面差得越多）。
+ *
+ * ⚠ **`-stream_loop -1`**：素材比它要占的那一段短就接不满，最后几秒是黑的。
+ * 循环 ＋ 输入侧 `-t` 截断，静图那条路的 `-loop 1` 是同一个意思。
+ *
+ * 几何走的是**跟静图完全一样的那条**（缩到 2400 见方再裁窗）—— 分两套的话
+ * 同一期里视频镜和静图镜的取景会对不上，那是看得出来的。
+ */
+const 是视频 = (f) => /\.(mp4|mov|webm|mkv)$/i.test(f);
 
 /**
  * ⚠ **有配音层却没用它跑配音，是会静默走偏的。**
@@ -77,16 +92,27 @@ if (fs.existsSync(配音层) && !manifest.配音层) {
     ` --配音 ${斜(配音层)} --out ${斜(path.join(DIR, 'vo'))}`);
   process.exit(1);
 }
-// ⚠ **vo.mp3 是手工 concat 出来的，重跑 tts-match 不会自动更新它。**
-// 不更新的话：时间轴按新的、声音是旧的，**片子照合、长度照对**，只有声画对不上 ——
-// 这是这条链路上最贵的一种静默失效
+/**
+ * ⚠ **vo.mp3 是手工 concat 出来的，重跑 tts-match 不会更新它。**
+ *
+ * 不更新的话：时间轴按新的、声音是旧的，**片子照合、长度照对**，只有声画对不上 ——
+ * 这是这条链路上最贵的一种静默失效。
+ *
+ * ⚠ **判据是「时长对不对得上」，不是 mtime。** 第一版拿 mtime 比，2026-09-07 误报了：
+ * 切一次 git 分支，manifest.json（跟踪的）被重写、mtime 变新，vo.mp3（忽略的）没动，
+ * 于是闸拦住了一份其实完全正确的音频。**mtime 记录的是文件被碰过，不是内容变过。**
+ */
 {
-  const mf = path.join(DIR, 'vo/manifest.json'), vo = path.join(DIR, 'vo.mp3');
-  if (fs.existsSync(vo) && fs.statSync(vo).mtimeMs < fs.statSync(mf).mtimeMs) {
-    const 斜 = (x) => x.split('\\').join('/');
-    console.error('vo.mp3 比 vo/manifest.json 旧 —— 重跑过配音但没重新 concat。');
-    console.error(`  cd ${斜(DIR)} && ffmpeg -y -f concat -safe 0 -i vo/list.txt -c copy vo.mp3`);
-    process.exit(1);
+  const vo = path.join(DIR, 'vo.mp3');
+  if (fs.existsSync(vo)) {
+    const 实 = +spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration',
+      '-of', 'csv=p=0', vo], { encoding: 'utf8' }).stdout.trim();
+    if (Math.abs(实 - manifest.total) > 0.15) {
+      const 斜 = (x) => x.split('\\').join('/');
+      console.error(`vo.mp3 是 ${实.toFixed(2)}s，时间轴说该是 ${manifest.total.toFixed(2)}s —— 配音重跑过但没重新 concat。`);
+      console.error(`  cd ${斜(DIR)} && ffmpeg -y -f concat -safe 0 -i vo/list.txt -c copy vo.mp3`);
+      process.exit(1);
+    }
   }
 }
 /**
@@ -239,9 +265,21 @@ function 整句(seg, 标, 标色) {
   let 彩 = 素;
   for (const 词 of 标) {
     const t = assEsc(词);
-    // 折行可能正好把要标的词劈开 —— 劈开了就标不上，得说出来
+    // ⚠ **两种失败要分开报。** 都是「标不上」，但方向完全相反：
+    //   句子里压根没这个词 → 多半是从稿子的「大字」抄过来的，而大字是**提炼＋改写**过的
+    //     （八条稿 16 处大字，一半不是台词的原样子串，六处是「大字用阿拉伯数字、台词用汉字数字」）
+    //   句子里有、折行劈开了 → 那才是排版问题
+    // 混成一句报的话，人会去查折行，查半天发现是数字格式 —— 白绕一圈
+    if (!tidyCaption(seg.text).includes(词)) {
+      console.error(`第 ${seg.index} 句里**没有**「${词}」这个词：${seg.text}`);
+      console.error('  标只能标台词里原样出现的字。从稿子的「大字」抄过来的话对不上 ——');
+      console.error('  大字是提炼＋改写的（「30 套」对「三十套」、「上一位什么时候搬走的」对');
+      console.error('  「上一位租客什么时候搬走的」）。要么改成台词里的写法，要么这处交给大字层。');
+      process.exit(1);
+    }
     if (!彩.includes(t)) {
-      console.error(`第 ${seg.index} 句要标「${词}」，但它被折行劈开了：${行.join(' / ')}`);
+      console.error(`第 ${seg.index} 句要标「${词}」，句子里有，但**被折行劈开了**：${行.join(' / ')}`);
+      console.error('  换个短一点的词，或者把句子拆开');
       process.exit(1);
     }
     彩 = 彩.replace(t, `{\\1c${标色}}${t}{\\1c&HFFFFFF&}`);
@@ -305,16 +343,19 @@ if (卡 && plan.逐句[0]?.标?.length) {
  *
  * ⚠ **背景变了：不会有本人录音了，后续走克隆音。** 克隆音同样是 TTS，
  * **一样没有重音控制** —— 所以「等真人录音到位，眼睛和耳朵一起重」这条路是**永久断的**。
- * 结论：**颜色是这条线唯一的、也是永远唯一的强调通道**。正因为只有这一个，
- * 它只能给「观众会截图带走的东西」，不能给语气。
+ * 结论：**这条线只有两个强调通道：颜色，和标点。**
+ * 颜色给「观众会截图带走的东西」（跟大字走）；
+ * 语气那一头交给**标点**（把要强调的词用停顿孤立出来，见出片方案「标点符号调音师」）。
+ * ⚠ 2026-09-06 这儿原本写的是「颜色是唯一的、也是永远唯一的强调通道」——
+ * 2026-09-07 被推翻了：没有重音控制不等于没有语气手段，标点就是。
  *
- * 标什么，判据是**数／名／令**三类（写稿时的口径见 `老石出片方案.md` §五）：
- *   数  数字（3 套、125%、第 1 套）
- *   名  这一期给一个东西起的名字（定锚）
- *   令  观众能照着做的那一句（顺序你定）
- * 语气词（一定／根本／才／就／专门）**一律不标** —— 声音是平的，标了就是让字幕替声音撒谎。
+ * **标什么：跟稿子里的「大字」走**（2026-09-07 用户定，取代了原来的「数／名／令」）。
+ * 字幕里有跟大字对得上的就标，没有就不标 —— **判据从编辑判断变成了查表**，
+ * 所以这一条现在闸得住（原来那套自己承认「判据本身闸不住」）。
+ * 顺带把「哪个词该突出」从排片挪回了写稿：在稿子里定一次，不用每期重想。
+ * 语气词（一定／根本／才／就）**一律不标** —— 声音是平的，标了就是让字幕替声音撒谎。
  *
- * 三道闸：
+ * 四道闸：
  *   ① 总数（**开场卡算一处** —— 它就是一块类型色的字，观众不会因为它长在别处就少看一眼）
  *   ② 一句最多一处（§1.3「一屏最多一个 accent」照字面执行）
  *   ③ 相邻两句不能都标 —— 跟「生气不能相邻」同一个道理，连着说两次「看这儿」两次都废
@@ -324,13 +365,31 @@ const 标数 = plan.逐句.reduce((a, x) => a + (x.标?.length || 0), 0) + (卡 
 if (标数 > CAP.最多标) {
   console.error(`一条片子最多标 ${CAP.最多标} 处（频道方案 §1.3），这条 ${标数} 处` +
     (卡 ? '（含开场卡那一处）' : '') + '。');
-  console.error('  标多了等于没标 —— 只留「数／名／令」那几个，语气词不算');
+  console.error('  标多了等于没标 —— 只留稿子里当大字的那几个，语气词和光是数字都不算');
   process.exit(1);
 }
 for (const x of plan.逐句) {
   if ((x.标?.length || 0) > 1) {
     console.error(`第 ${x.句} 句标了 ${x.标.length} 处：${x.标.join(' / ')}`);
     console.error('  一句最多一处 —— 一屏两个重点等于没有重点（§1.3）');
+    process.exit(1);
+  }
+}
+// ④ 每个标必须对得上这一期稿子里的某个大字
+if (标数 - (卡 ? 1 : 0) > 0) {
+  const 条 = 读稿件库()[plan.稿件];
+  if (!条) {
+    console.error(`稿件库（老石频道方案.md §四）里没有「${plan.稿件}」—— 动作表的「稿件」写错了？`);
+    process.exit(1);
+  }
+  const 全 = 大字表(条);
+  for (const x of plan.逐句) for (const 词 of x.标 || []) {
+    const 中 = 认大字(词, 条);
+    if (中) { console.log(`  句${x.句} 标「${词}」← 大字「${中}」`); continue; }
+    console.error(`第 ${x.句} 句标的「${词}」对不上这一期的任何一个大字。`);
+    console.error(`  ${plan.稿件} 的大字：${全.length ? 全.map((z) => '「' + z + '」').join(' ') : '（这条稿一个大字都没有）'}`);
+    console.error(`  **标色跟大字走**：字幕里有跟大字对得上的才标，没有就不标（至少 ${最短标} 个字）。`);
+    console.error('  想标的词不在大字里 —— 那是稿子该加大字，不是排片自己挑。');
     process.exit(1);
   }
 }
@@ -410,7 +469,8 @@ const args = ['-y', '-loglevel', 'error', '-stats'];
 bgs.forEach((b, i) => {
   const 叠 = bgs[i + 1]?.转场?.秒 || 0;
   b.输入时长 = +(b.dur + 叠).toFixed(3);
-  args.push('-loop', '1', '-t', String(b.输入时长), '-framerate', '30', '-i', b.file);
+  if (是视频(b.file)) args.push('-stream_loop', '-1', '-t', String(b.输入时长), '-i', b.file);
+  else args.push('-loop', '1', '-t', String(b.输入时长), '-framerate', '30', '-i', b.file);
 });
 args.push('-framerate', '30', '-i', path.join(framesDir, 'f%05d.png'));
 args.push('-i', path.join(DIR, 'vo.mp3'));
@@ -511,8 +571,12 @@ function 写舞台(file) {
 }
 
 // 遮罩要等 BG 定义完才能生成（写遮罩 里用到它），所以这一路输入放在这儿加
-args.push('-loop', '1', '-i', 写演播室(path.join(DIR, '_暗底.png')));
-args.push('-loop', '1', '-i', 写舞台(path.join(DIR, '_舞台.png')));
+// ⚠ **这两张也必须给 `-framerate 30`。** `-loop 1` 不带 framerate 默认是 **25**，
+// 而暗底是 overlay 的**底层** —— overlay 的输出帧率跟第一路走，整条链就被它拽成 25fps。
+// 2026-09-07 发现：渲了 1195 帧、编码进去只有 995 帧，**六帧丢一帧**，
+// 口型是逐帧驱动的，丢帧直接变卡。**不报错**，长度还对得上，只有帧数不对
+args.push('-loop', '1', '-framerate', '30', '-i', 写演播室(path.join(DIR, '_暗底.png')));
+args.push('-loop', '1', '-framerate', '30', '-i', 写舞台(path.join(DIR, '_舞台.png')));
 // ⚠ 音乐比片子短就接不满，所以一律 -stream_loop -1，长度靠 -shortest 收
 const 音乐文件 = plan.音乐 ? path.join(音乐目录, plan.音乐) : null;
 if (音乐文件) {
@@ -541,7 +605,9 @@ function bgSeg(b, i) {
   // ⚠ **不能直接 `scale=SRCPX:SRCPX`** —— 那是硬拉成正方。试片那四张本来就是 1024×1024
   // 所以没露馅，2026-09-06 接进一张 1376×768 的城市街景，整条街被竖着抻了 2.4 倍。
   // 现在是**按短边铺满再中心裁方**，方图走这条路一模一样、宽图才对
-  const pre = `[${i}:v]scale=${SRCPX}:${SRCPX}:force_original_aspect_ratio=increase,` +
+  // ⚠ fps 归一必须在最前面 —— 60/30/24 三种源混在一起，不归一 xfade 的 offset 就是错的
+  const pre = `[${i}:v]` + (是视频(b.file) ? 'fps=30,' : '') +
+    `scale=${SRCPX}:${SRCPX}:force_original_aspect_ratio=increase,` +
     `crop=${SRCPX}:${SRCPX},setsar=1,`;
   // 背景整块**均匀虚化**（舞台模式起）。原来是「上下糊中间清」的移轴糊法 ——
   // 那是为了「人站在这个地方」；现在人站自己的台子上、背景退成远处一块屏，整块该一样糊
@@ -671,6 +737,7 @@ if (静帧) {
 args.push(
   '-filter_complex', filter + 声,
   '-map', '[v]', '-map', '[a]',
+  '-r', '30',                      // 兜一道：上面哪一路再漏了 framerate 也不会静默降帧
   '-c:v', 'libx264', '-preset', 'slow', '-crf', '19',
   '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-level', '4.1',
   '-c:a', 'aac', '-b:a', '192k',

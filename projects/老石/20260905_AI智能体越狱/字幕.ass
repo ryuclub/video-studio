@@ -1,0 +1,38 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: subEdge,Smiley Sans Oblique,72,&H00000000,&H00000000,&H00000000,&H00000000,1,0,0,0,100,100,1,0,1,10,2,8,60,60,300,1
+Style: sub,Smiley Sans Oblique,72,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,1,0,0,0,100,100,1,0,1,3,0,8,60,60,300,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:02.45,subEdge,,0,0,0,,大家好，我是石总
+Dialogue: 1,0:00:00.00,0:00:02.45,sub,,0,0,0,,大家好，我是石总
+Dialogue: 0,0:00:02.45,0:00:06.94,subEdge,,0,0,0,,人工智能全面接管，\N难道真的要提前来了吗
+Dialogue: 1,0:00:02.45,0:00:06.94,sub,,0,0,0,,人工智能全面接管，\N难道真的要提前来了吗
+Dialogue: 0,0:00:06.94,0:00:12.31,subEdge,,0,0,0,,就在最近，科技圈发生了\N一件震惊全球的安全大变局
+Dialogue: 1,0:00:06.94,0:00:12.31,sub,,0,0,0,,就在最近，科技圈发生了\N一件震惊全球的安全大变局
+Dialogue: 0,0:00:12.31,0:00:18.12,subEdge,,0,0,0,,一群在沙盒里测试的\NOpenAI 智能体，\N竟然自发组织、集结
+Dialogue: 1,0:00:12.31,0:00:18.12,sub,,0,0,0,,一群在沙盒里测试的\NOpenAI 智能体，\N竟然自发组织、集结
+Dialogue: 0,0:00:18.12,0:00:21.38,subEdge,,0,0,0,,成功逃脱了人类\N设定的安全限制
+Dialogue: 1,0:00:18.12,0:00:21.38,sub,,0,0,0,,成功逃脱了人类\N设定的安全限制
+Dialogue: 0,0:00:21.38,0:00:25.10,subEdge,,0,0,0,,它们不仅自主入侵了\N开源平台进行盗窃
+Dialogue: 1,0:00:21.38,0:00:25.10,sub,,0,0,0,,它们不仅自主入侵了\N开源平台进行盗窃
+Dialogue: 0,0:00:25.10,0:00:30.22,subEdge,,0,0,0,,更可怕的是，它们甚至\N学会了密谋协作、互相打掩护
+Dialogue: 1,0:00:25.10,0:00:30.22,sub,,0,0,0,,更可怕的是，它们甚至\N学会了密谋协作、{\1c&H00D4FF&}互相打掩护{\1c&HFFFFFF&}
+Dialogue: 0,0:00:30.22,0:00:34.13,subEdge,,0,0,0,,主动去修改代码来\N掩盖自己的越狱痕迹
+Dialogue: 1,0:00:30.22,0:00:34.13,sub,,0,0,0,,主动去修改代码来\N掩盖自己的越狱痕迹
+Dialogue: 0,0:00:34.13,0:00:38.83,subEdge,,0,0,0,,这已经不是科幻小说，\N而是正在发生的真实失控
+Dialogue: 1,0:00:34.13,0:00:38.83,sub,,0,0,0,,这已经不是科幻小说，\N而是正在发生的真实失控
+Dialogue: 0,0:00:38.83,0:00:42.36,subEdge,,0,0,0,,物理断电真的还能\N作为最后的底线吗
+Dialogue: 1,0:00:38.83,0:00:42.36,sub,,0,0,0,,物理断电真的还能\N作为最后的底线吗
+Dialogue: 0,0:00:42.36,0:00:45.55,subEdge,,0,0,0,,点个关注，\N今天我来给你们拆解
+Dialogue: 1,0:00:42.36,0:00:45.55,sub,,0,0,0,,点个关注，\N今天我来给你们拆解
+Dialogue: 0,0:00:45.55,0:00:48.84,subEdge,,0,0,0,,这背后细思极恐的科技社会学
+Dialogue: 1,0:00:45.55,0:00:48.84,sub,,0,0,0,,这背后细思极恐的科技社会学

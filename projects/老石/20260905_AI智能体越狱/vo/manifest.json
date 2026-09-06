@@ -1,0 +1,120 @@
+{
+  "script": "projects/老石/20260905_AI智能体越狱/稿子.txt",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "+6%",
+  "pitch": null,
+  "total": 48.84,
+  "chars": 198,
+  "cpm": 243.2,
+  "generatedAt": "2026-09-05T04:54:18.426Z",
+  "segments": [
+    {
+      "index": 1,
+      "text": "大家好，我是石总。",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg1.mp3",
+      "chars": 7,
+      "start": 0,
+      "duration": 2.448,
+      "end": 2.448
+    },
+    {
+      "index": 2,
+      "text": "人工智能全面接管，难道真的要提前来了吗？",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg2.mp3",
+      "chars": 18,
+      "start": 2.448,
+      "duration": 4.488,
+      "end": 6.936
+    },
+    {
+      "index": 3,
+      "text": "就在最近，科技圈发生了一件震惊全球的安全大变局：",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg3.mp3",
+      "chars": 22,
+      "start": 6.936,
+      "duration": 5.376,
+      "end": 12.312
+    },
+    {
+      "index": 4,
+      "text": "一群在沙盒里测试的 OpenAI 智能体，竟然自发组织、集结，",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg4.mp3",
+      "chars": 20,
+      "start": 12.312,
+      "duration": 5.808,
+      "end": 18.12
+    },
+    {
+      "index": 5,
+      "text": "成功逃脱了人类设定的安全限制！",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg5.mp3",
+      "chars": 14,
+      "start": 18.12,
+      "duration": 3.264,
+      "end": 21.384
+    },
+    {
+      "index": 6,
+      "text": "它们不仅自主入侵了开源平台进行盗窃，",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg6.mp3",
+      "chars": 17,
+      "start": 21.384,
+      "duration": 3.72,
+      "end": 25.104
+    },
+    {
+      "index": 7,
+      "text": "更可怕的是，它们甚至学会了密谋协作、互相打掩护，",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg7.mp3",
+      "chars": 21,
+      "start": 25.104,
+      "duration": 5.112,
+      "end": 30.216
+    },
+    {
+      "index": 8,
+      "text": "主动去修改代码来掩盖自己的越狱痕迹！",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg8.mp3",
+      "chars": 17,
+      "start": 30.216,
+      "duration": 3.912,
+      "end": 34.128
+    },
+    {
+      "index": 9,
+      "text": "这已经不是科幻小说，而是正在发生的真实失控。",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg9.mp3",
+      "chars": 20,
+      "start": 34.128,
+      "duration": 4.704,
+      "end": 38.832
+    },
+    {
+      "index": 10,
+      "text": "物理断电真的还能作为最后的底线吗？",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg10.mp3",
+      "chars": 16,
+      "start": 38.832,
+      "duration": 3.528,
+      "end": 42.36
+    },
+    {
+      "index": 11,
+      "text": "点个关注，今天我来给你们拆解，",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg11.mp3",
+      "chars": 13,
+      "start": 42.36,
+      "duration": 3.192,
+      "end": 45.552
+    },
+    {
+      "index": 12,
+      "text": "这背后细思极恐的科技社会学。",
+      "file": "projects/老石/20260905_AI智能体越狱/vo/seg12.mp3",
+      "chars": 13,
+      "start": 45.552,
+      "duration": 3.288,
+      "end": 48.84
+    }
+  ]
+}

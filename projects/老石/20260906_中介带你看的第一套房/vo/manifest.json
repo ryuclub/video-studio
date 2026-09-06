@@ -1,0 +1,104 @@
+{
+  "script": "projects/老石/20260906_中介带你看的第一套房/稿子.txt",
+  "配音层": "projects/老石/20260906_中介带你看的第一套房/配音.json",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "+6%",
+  "pitch": null,
+  "total": 40.008,
+  "chars": 162,
+  "cpm": 243,
+  "generatedAt": "2026-09-06T08:06:04.483Z",
+  "segments": [
+    {
+      "index": 1,
+      "text": "中介带你看的第一套房，一定不是最好的那套。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg1.mp3",
+      "chars": 19,
+      "start": 0,
+      "duration": 3.984,
+      "end": 3.984
+    },
+    {
+      "index": 2,
+      "text": "你以为他是随手挑的。不是。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg2.mp3",
+      "chars": 11,
+      "start": 3.984,
+      "duration": 3.552,
+      "end": 7.536
+    },
+    {
+      "index": 3,
+      "text": "第一套房有个专门的作用，叫「定锚」。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg3.mp3",
+      "chars": 14,
+      "start": 7.536,
+      "duration": 3.84,
+      "end": 11.376,
+      "念": "第一套房有个专门的作用，叫——「定锚」。"
+    },
+    {
+      "index": 4,
+      "text": "他要先让你看一套贵一点、或者差一点的。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg4.mp3",
+      "chars": 17,
+      "start": 11.376,
+      "duration": 3.456,
+      "end": 14.832
+    },
+    {
+      "index": 5,
+      "text": "这样后面那几套，你才会觉得「还行」。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg5.mp3",
+      "chars": 14,
+      "start": 14.832,
+      "duration": 4.104,
+      "end": 18.936
+    },
+    {
+      "index": 6,
+      "text": "你的判断标准，是从看到第一套那一刻开始被定下来的。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg6.mp3",
+      "chars": 23,
+      "start": 18.936,
+      "duration": 4.92,
+      "end": 23.856
+    },
+    {
+      "index": 7,
+      "text": "所以有个办法：让他先发全部房源清单，你自己挑三套。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg7.mp3",
+      "chars": 22,
+      "start": 23.856,
+      "duration": 5.328,
+      "end": 29.184
+    },
+    {
+      "index": 8,
+      "text": "顺序你定，锚就定不下来。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg8.mp3",
+      "chars": 10,
+      "start": 29.184,
+      "duration": 3.096,
+      "end": 32.28
+    },
+    {
+      "index": 9,
+      "text": "这不是说中介坏。这是这行的标准做法。",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg9.mp3",
+      "chars": 16,
+      "start": 32.28,
+      "duration": 4.056,
+      "end": 36.336
+    },
+    {
+      "index": 10,
+      "text": "你被这样带看过吗？第一套是什么样的？",
+      "file": "projects/老石/20260906_中介带你看的第一套房/vo/seg10.mp3",
+      "chars": 16,
+      "start": 36.336,
+      "duration": 3.672,
+      "end": 40.008
+    }
+  ]
+}

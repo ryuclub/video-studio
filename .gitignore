@@ -88,6 +88,21 @@ projects/禅佛典/*/成片/*/_concat.txt
 projects/治愈/*/成片/*/scenes/
 projects/治愈/*/成片/*/_concat.txt
 
+# 老石 2D 口播：逐帧人物图（一条 49 秒的片子 1465 张、201M）＋ 配音包络。
+# 帧是 `node shi-2d/shoot.mjs <项目目录>` 重跑就有的，包络是 3d-render/envelope.mjs 算的。
+# **稿子.txt / 动作表.json / 字幕.ass 要入库** —— 那三份是稿，不是产物。
+projects/老石/*/frames/
+projects/老石/*/frames-probe/
+projects/老石/*/envelope.json
+# 2026-09-06 补：build.mjs 每次现画的垫图（暗底/舞台）、--静帧 的调试帧、
+# concat 清单（mp3 本身被全局 *.mp3 挡着，单留清单没用）、汇总页
+# ⚠ **vo/manifest.json 要留** —— 那是时间轴（每句 start/duration），不是产物：
+# 配音重跑一次时长就变了，没有它对不回当初那一版
+projects/老石/*/_*.png
+projects/老石/*/静帧/
+projects/老石/*/vo/list.txt
+projects/老石/index.html
+
 # 旧选题的留档素材（27M），文档留着、素材不留
 /history/**/*.png
 

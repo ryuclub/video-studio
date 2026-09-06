@@ -1,0 +1,106 @@
+{
+  "script": "projects/老石/20260907_即入居可这四个字/稿子.txt",
+  "配音层": "projects/老石/20260907_即入居可这四个字/配音.json",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "+6%",
+  "pitch": null,
+  "total": 40.32,
+  "chars": 153,
+  "cpm": 227.7,
+  "generatedAt": "2026-09-06T10:32:33.656Z",
+  "segments": [
+    {
+      "index": 1,
+      "text": "房源上写着「即入居可」，你先别高兴。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg1.mp3",
+      "chars": 14,
+      "start": 0,
+      "duration": 4.08,
+      "end": 4.08
+    },
+    {
+      "index": 2,
+      "text": "这四个字的意思只有一个：现在没人住。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg2.mp3",
+      "chars": 16,
+      "start": 4.08,
+      "duration": 3.624,
+      "end": 7.704
+    },
+    {
+      "index": 3,
+      "text": "它不告诉你的是，空了多久。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg3.mp3",
+      "chars": 11,
+      "start": 7.704,
+      "duration": 3.24,
+      "end": 10.944,
+      "念": "它不告诉你的是，——空了多久。"
+    },
+    {
+      "index": 4,
+      "text": "空一个月，是正常周转。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg4.mp3",
+      "chars": 9,
+      "start": 10.944,
+      "duration": 2.856,
+      "end": 13.8
+    },
+    {
+      "index": 5,
+      "text": "空半年，那就得问了：为什么别人看了都没租。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg5.mp3",
+      "chars": 18,
+      "start": 13.8,
+      "duration": 4.56,
+      "end": 18.36,
+      "念": "空半年，那就得问了：——为什么别人看了都没租。"
+    },
+    {
+      "index": 6,
+      "text": "可能是采光，可能是隔壁，可能是楼里出过事。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg6.mp3",
+      "chars": 18,
+      "start": 18.36,
+      "duration": 4.296,
+      "end": 22.656
+    },
+    {
+      "index": 7,
+      "text": "问中介一句话就行：这套房上一位租客什么时候搬走的。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg7.mp3",
+      "chars": 23,
+      "start": 22.656,
+      "duration": 5.76,
+      "end": 28.416,
+      "念": "问中介一句话就形：这套房，上一位租客，什么时候搬走的。"
+    },
+    {
+      "index": 8,
+      "text": "他答得含糊，你就该多问两句了。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg8.mp3",
+      "chars": 13,
+      "start": 28.416,
+      "duration": 3.624,
+      "end": 32.04
+    },
+    {
+      "index": 9,
+      "text": "房子空着是要花钱的。空着还挂在网上，一定有原因。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg9.mp3",
+      "chars": 21,
+      "start": 32.04,
+      "duration": 5.712,
+      "end": 37.752
+    },
+    {
+      "index": 10,
+      "text": "你看过空很久的房子吗。",
+      "file": "projects/老石/20260907_即入居可这四个字/vo/seg10.mp3",
+      "chars": 10,
+      "start": 37.752,
+      "duration": 2.568,
+      "end": 40.32
+    }
+  ]
+}

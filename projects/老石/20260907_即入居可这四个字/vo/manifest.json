@@ -1,13 +1,20 @@
 {
   "script": "projects/老石/20260907_即入居可这四个字/稿子.txt",
   "配音层": "projects/老石/20260907_即入居可这四个字/配音.json",
+  "backend": "sovits-v2proplus",
+  "sovits": {
+    "host": "http://127.0.0.1:9880",
+    "ref": "D:/GPT-SoVITS-v2pro-20250604/laoshi2/ref/ref.wav",
+    "refText": "这个规矩是你看这是店家定的规矩，我作为客人呢，你自己没有提前注意到，这就是一个习惯嘛。你要说在日本。",
+    "seed": 42
+  },
   "voice": "zh-CN-YunxiNeural",
   "rate": "+6%",
   "pitch": null,
-  "total": 40.32,
+  "total": 38.784,
   "chars": 153,
-  "cpm": 227.7,
-  "generatedAt": "2026-09-06T10:32:33.656Z",
+  "cpm": 236.7,
+  "generatedAt": "2026-09-08T07:15:26.554Z",
   "segments": [
     {
       "index": 1,
@@ -15,26 +22,26 @@
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg1.mp3",
       "chars": 14,
       "start": 0,
-      "duration": 4.08,
-      "end": 4.08
+      "duration": 3.36,
+      "end": 3.36
     },
     {
       "index": 2,
       "text": "这四个字的意思只有一个：现在没人住。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg2.mp3",
       "chars": 16,
-      "start": 4.08,
-      "duration": 3.624,
-      "end": 7.704
+      "start": 3.36,
+      "duration": 4.032,
+      "end": 7.392
     },
     {
       "index": 3,
       "text": "它不告诉你的是，空了多久。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg3.mp3",
       "chars": 11,
-      "start": 7.704,
-      "duration": 3.24,
-      "end": 10.944,
+      "start": 7.392,
+      "duration": 3.024,
+      "end": 10.416,
       "念": "它不告诉你的是，——空了多久。"
     },
     {
@@ -42,18 +49,18 @@
       "text": "空一个月，是正常周转。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg4.mp3",
       "chars": 9,
-      "start": 10.944,
-      "duration": 2.856,
-      "end": 13.8
+      "start": 10.416,
+      "duration": 3.12,
+      "end": 13.536
     },
     {
       "index": 5,
       "text": "空半年，那就得问了：为什么别人看了都没租。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg5.mp3",
       "chars": 18,
-      "start": 13.8,
-      "duration": 4.56,
-      "end": 18.36,
+      "start": 13.536,
+      "duration": 4.344,
+      "end": 17.88,
       "念": "空半年，那就得问了：——为什么别人看了都没租。"
     },
     {
@@ -61,18 +68,18 @@
       "text": "可能是采光，可能是隔壁，可能是楼里出过事。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg6.mp3",
       "chars": 18,
-      "start": 18.36,
-      "duration": 4.296,
-      "end": 22.656
+      "start": 17.88,
+      "duration": 5.112,
+      "end": 22.992
     },
     {
       "index": 7,
       "text": "问中介一句话就行：这套房上一位租客什么时候搬走的。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg7.mp3",
       "chars": 23,
-      "start": 22.656,
-      "duration": 5.76,
-      "end": 28.416,
+      "start": 22.992,
+      "duration": 5.832,
+      "end": 28.824,
       "念": "问中介一句话就形：这套房，上一位租客，什么时候搬走的。"
     },
     {
@@ -80,27 +87,27 @@
       "text": "他答得含糊，你就该多问两句了。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg8.mp3",
       "chars": 13,
-      "start": 28.416,
-      "duration": 3.624,
-      "end": 32.04
+      "start": 28.824,
+      "duration": 3.168,
+      "end": 31.992
     },
     {
       "index": 9,
       "text": "房子空着是要花钱的。空着还挂在网上，一定有原因。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg9.mp3",
       "chars": 21,
-      "start": 32.04,
-      "duration": 5.712,
-      "end": 37.752
+      "start": 31.992,
+      "duration": 4.104,
+      "end": 36.096
     },
     {
       "index": 10,
       "text": "你看过空很久的房子吗。",
       "file": "projects/老石/20260907_即入居可这四个字/vo/seg10.mp3",
       "chars": 10,
-      "start": 37.752,
-      "duration": 2.568,
-      "end": 40.32
+      "start": 36.096,
+      "duration": 2.688,
+      "end": 38.784
     }
   ]
 }

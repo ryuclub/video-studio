@@ -8,6 +8,7 @@
     "all": "tsx src/cli.ts all",
     "one": "tsx src/cli.ts one",
     "voices": "tsx src/cli.ts voices",
+    "check": "node 录音体检.mjs",
     "doctor": "tsx src/cli.ts doctor"
   },
   "dependencies": {

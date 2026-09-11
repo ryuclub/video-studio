@@ -4,8 +4,8 @@
 
 | 文件 | 授权 | 谁在用 | 在不在 git 里 |
 |---|---|---|---|
-| `smiley-sans-v2.0.1/SmileySans-Oblique.otf` | SIL OFL | 老马线字幕（`FONT_LAOMA`） | **在**（1.9M） |
-| `ZCOOLKuaiLe-Regular.ttf` | SIL OFL | 老马线标题牌匾（`horse/plaque.mjs`） | **在**（1.5M） |
+| `smiley-sans-v2.0.1/SmileySans-Oblique.otf` | SIL OFL（[许可证](smiley-sans-v2.0.1/OFL.txt)）| 老马线字幕（`FONT_LAOMA`） | **在**（1.9M） |
+| `ZCOOLKuaiLe-Regular.ttf` | SIL OFL（[许可证](ZCOOLKuaiLe-OFL.txt)）| 老马线标题牌匾（`horse/plaque.mjs`） | **在**（1.5M） |
 | `NotoSerifCJKsc/` | SIL OFL | 说书线题字 | **不在**（162M，自己下） |
 
 ## 为什么那两个必须进版本库

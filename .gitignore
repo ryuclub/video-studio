@@ -41,9 +41,11 @@ assets/manual/test_*.mp4
 fonts/*
 !fonts/README.md
 !fonts/ZCOOLKuaiLe-Regular.ttf
+!fonts/ZCOOLKuaiLe-OFL.txt
 !fonts/smiley-sans-v2.0.1/
 fonts/smiley-sans-v2.0.1/*
 !fonts/smiley-sans-v2.0.1/SmileySans-Oblique.otf
+!fonts/smiley-sans-v2.0.1/OFL.txt
 
 # ── 成品目录 projects/ ──
 #
